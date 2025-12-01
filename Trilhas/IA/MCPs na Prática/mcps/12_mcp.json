@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "busca-wikipedia-stdio": {
+      "command": "/home/juliano/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/home/juliano/Desktop",
+        "run",
+        "12_servidor_cursorai_stdio.py"
+    ],
+    "description": "Um servidor de MCP local que faz uma busca na Wikipedia e retorna um resumo do principal resultado."
+    },
+    "busca-wikipedia-sse": {
+      "url": "http://localhost:8000/sse",
+    "description": "Um servidor de MCP remoto que faz uma busca na Wikipedia e retorna um resumo do principal resultado."
+    }
+  }
+}

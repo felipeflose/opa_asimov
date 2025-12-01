@@ -9,7 +9,9 @@ dependencies = [
     "fastmcp>=2.13.1",
     "google>=3.0.0",
     "google-genai>=1.52.0",
+    "npx>=0.1.6",
     "openai>=2.8.1",
     "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
     "wikipedia>=1.4.0",
 ]
