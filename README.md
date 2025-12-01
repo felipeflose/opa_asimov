@@ -15,5 +15,11 @@ ao iniciar um dia de aula, fazer:
 4 - git push origin nome_branch
 
 
+------------------
+
+
+.venv\Scripts\activate
+
+
 
 
