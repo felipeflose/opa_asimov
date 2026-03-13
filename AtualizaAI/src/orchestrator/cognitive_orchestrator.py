@@ -14,10 +14,14 @@ class FinOpsCheck(BaseModel):
     approved: bool = True
 
 class DemandInfo(BaseModel):
-    type: str # Flexibilizado para validação interna
+    type: str 
     title: str
     responsible: str = "Standard"
     priority: str = "Média"
+    budget_approved: bool = False
+    cost_explanation: Optional[str] = None
+    terraform_plan: Optional[str] = None
+    evidence_path: Optional[str] = None
 
     @field_validator('type')
     @classmethod
@@ -119,8 +123,10 @@ class CognitiveOrchestrator:
 
         ESTRATÉGIA AGENT-FIRST (REGRAS CRÍTICAS)
         1. SE TÉCNICO, CRIE AGENTE: Se o usuário mencionar uma tecnologia (ex: Kubernetes, ElevenLabs, dbt, CRM) e ela NÃO estiver nos 'Registered Agents', sua ação OBRIGATÓRIA é 'create_agent' para criar um Agente Especialista.
-        2. BACKLOG (TRD): Todo novo conceito técnico ou tarefa de construção deve ter um TRD em 'generate_demand' ou ser parte de um 'create_agent'. Nada entra no Grafo sem um "braço executor" ou uma tarefa pendente.
-        3. MODO RESPOND: Use APENAS para saudações, ajuda sobre a plataforma ou dúvidas que não envolvam tecnologia, código ou implementações.
+        2. GOVERNANÇA E CUSTO: Para qualquer implementação técnica, você deve preencher 'cost_explanation' justificando o uso de tokens e recursos. Se envolver GCP, use 'terraform_plan' (ou peça ao Terraform_Specialist para gerar um TRD).
+        3. HUMAN-IN-THE-LOOP: O campo 'budget_approved' deve vir como FALSE por padrão em implementações. O usuário dará o OK no card.
+        4. BACKLOG (TRD): Todo novo conceito técnico ou tarefa de construção deve ter um TRD em 'generate_demand' ou ser parte de um 'create_agent'. Nada entra no Grafo sem um "braço executor" ou uma tarefa pendente.
+        5. MODO RESPOND: Use APENAS para saudações, ajuda sobre a plataforma ou dúvidas que não envolvam tecnologia, código ou implementações.
 
         DIRETRIZES DE DECISÃO:
         - Use 'create_agent': SEMPRE que surgir uma tecnologia nova. Crie um nome como "Agente_X_Expert". Explique no 'response' o que descobriu enquanto confirma a criação do agente.
@@ -293,7 +299,11 @@ class CognitiveOrchestrator:
                 "responsible": demand.get("responsible", "Standard"),
                 "priority": demand.get("priority", "Média"),
                 "status": "Aberto",
-                "created_at": "now"
+                "budget_approved": demand.get("budget_approved", False),
+                "cost_explanation": demand.get("cost_explanation", ""),
+                "terraform_plan": demand.get("terraform_plan", ""),
+                "evidence_path": demand.get("evidence_path", ""),
+                "created_at": datetime.now().isoformat()
             }
             
             if self.gcs_client:

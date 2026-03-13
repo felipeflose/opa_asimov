@@ -520,18 +520,51 @@ with tabs[7]:
                     st.info(f"Sem itens em {state}")
                 else:
                     for _, task in state_tasks.iterrows():
+                        # --- Governance & Approval Info ---
+                        budget_ok = task.get('budget_approved', False)
+                        has_tf = bool(task.get('terraform_plan'))
                         priority_color = "#f9ed69" if task['priority'] == 'Alta' else "#e0e0e0"
+                        
                         with st.container():
                             st.markdown(f"""
                             <div style="background-color: #1e1e1e; border-left: 5px solid {colors[i]}; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-right: 1px solid #333; border-top: 1px solid #333; border-bottom: 1px solid #333;">
-                                <h4 style="margin: 0; color: #fff;">{task['title']}</h4>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <h4 style="margin: 0; color: #fff;">{task['title']}</h4>
+                                    <span>{'✅' if budget_ok else '⏳'}</span>
+                                </div>
                                 <p style="font-size: 12px; color: #aaa; margin: 5px 0;">ID: <code>{task['id']}</code></p>
+                                
+                                {f'<div style="font-size: 11px; color: #4dabf7; margin-top: 5px;">🏗️ Terraform Ready</div>' if has_tf else ''}
+                                
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                                     <span style="background-color: {priority_color}; color: #333; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">{task['priority']}</span>
                                     <span style="color: #888; font-size: 11px;">👤 {task['responsible']}</span>
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
+                            
+                            # Interações de Governança
+                            if state == "Aberto":
+                                col_btn1, col_btn2 = st.columns(2)
+                                with col_btn1:
+                                    if st.button("📄 Ver Specs", key=f"spec_{task['id']}"):
+                                        st.info(f"**Custo/Explicação:** {task.get('cost_explanation', 'Aguardando Análise...')}")
+                                        if has_tf: 
+                                            st.code(task.get('terraform_plan'), language="hcl")
+                                with col_btn2:
+                                    if not budget_ok:
+                                        if st.button("👍 Dar OK", key=f"ok_{task['id']}", type="primary"):
+                                            # Atualiza no GCS
+                                            for idx, d in enumerate(demands_data['demands']):
+                                                if d['id'] == task['id']:
+                                                    demands_data['demands'][idx]['budget_approved'] = True
+                                                    break
+                                            st.session_state.gcs.upload_json(demands_data, "demands/registry.json")
+                                            st.success("Aprovado!")
+                                            time.sleep(1)
+                                            st.rerun()
+                                    else:
+                                        st.write("✅ **Aprovado**")
                             
         st.markdown("---")
         
@@ -556,7 +589,10 @@ with tabs[7]:
             
             with col_tr3:
                 st.write("") # ajuste
-                if st.button("🚀 EXECUTAR TAREFA", type="primary", use_container_width=True):
+                # Trava de Segurança: Só executa se aprovado
+                can_execute = selected_task.get('budget_approved', False)
+                
+                if st.button("🚀 EXECUTAR TAREFA", type="primary", use_container_width=True, disabled=not can_execute):
                     with st.spinner(f"O agente {selected_agent_name} está trabalhando..."):
                         # Busca os dados do agente
                         agent_data = next((a for a in reg['agents'] if a['agent_name'] == selected_agent_name), None)
