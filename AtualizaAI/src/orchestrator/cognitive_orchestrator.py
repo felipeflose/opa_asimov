@@ -1,9 +1,39 @@
 import google.generativeai as genai
 import json
 import os
+import time
 from PIL import Image
+from pydantic import BaseModel, Field
+from typing import List, Optional, Literal
 from src.agents.base_agent import BaseAgent
 from src.storage.vector_store import VectorStore
+
+class FinOpsCheck(BaseModel):
+    estimated_tokens: int = 0
+    estimated_cost_usd: float = 0.0
+    approved: bool = True
+
+class DemandInfo(BaseModel):
+    type: Literal["FollowUP", "reunião", "tarefa"]
+    title: str
+    responsible: str = "Standard"
+    priority: Literal["Alta", "Média", "Baixa"] = "Média"
+
+class NewAgentConfig(BaseModel):
+    agent_name: str
+    purpose: str
+    system_prompt: Optional[str] = None
+    tools: List[str] = []
+
+class OrchestratorDecision(BaseModel):
+    action: Literal["respond", "create_agent", "execute", "generate_demand"]
+    reasoning: str
+    finops_check: FinOpsCheck
+    agent_involved: Optional[str] = None
+    knowledge_graph_update: List[str] = []
+    demand_info: Optional[DemandInfo] = None
+    new_agent_config: Optional[NewAgentConfig] = None
+    response: str
 
 class CognitiveOrchestrator:
     def __init__(self, api_key=None, gcs_client=None, finops_manager=None):
@@ -117,48 +147,63 @@ class CognitiveOrchestrator:
                 semantic_context += f"- [{doc['source']}]: {doc['text']}\n"
             semantic_context += "------------------------------------\n"
 
-        prompt = f"""
-        Current System Context:
-        - GCP Project: {project_id}
-        - Region: {region}
-        - Telegram Bot: @{tg_bot}
-        - FinOps State: {finops_data}
-        - Registered Agents: {json.dumps(agents)}
-        
-        {semantic_context}
-        
-        {"[VISION AGENT OUTPUT]: " + visual_context if visual_context else ""}
-        
-        User Command: {user_command}
-        {"[IMAGE ATTACHED]" if image_path else ""}
-        
-        Decision:
-        """
-        
-        content = [self.system_prompt, prompt]
-        if image_path and os.path.exists(image_path):
-            img = Image.open(image_path)
-            content.append(img)
+        retry_count = 0
+        max_retries = 2
+        last_error = ""
+
+        while retry_count <= max_retries:
+            prompt = f"""
+            Current System Context:
+            - GCP Project: {project_id}
+            - Region: {region}
+            - Telegram Bot: @{tg_bot}
+            - FinOps State: {finops_data}
+            - Registered Agents: {json.dumps(agents)}
             
-        response = self.model.generate_content(content)
-        
-        # Tracking Real de Custos (FinOps)
-        if self.finops and hasattr(response, 'usage_metadata'):
-            usage = response.usage_metadata
-            self.finops.log_usage(usage.prompt_token_count, usage.candidates_token_count)
+            {semantic_context}
             
-        try:
-            raw_text = response.text.strip()
-            if "```json" in raw_text:
-                raw_text = raw_text.split("```json")[1].split("```")[0].strip()
-            elif "```" in raw_text:
-                raw_text = raw_text.split("```")[1].split("```")[0].strip()
+            {"[VISION AGENT OUTPUT]: " + visual_context if visual_context else ""}
             
-            decision = json.loads(raw_text)
-            return decision
-        except Exception as e:
-            print(f"Error parsing orchestrator response: {e}")
-            return {"error": "Invalid response format", "raw": response.text}
+            User Command: {user_command}
+            {"[IMAGE ATTACHED]" if image_path else ""}
+            
+            {"[CRITICAL: LAST ATTEMPT FAILED WITH ERROR: " + last_error + ". Please ensure valid JSON based on the schema.]" if last_error else ""}
+
+            Decision:
+            """
+            
+            content = [self.system_prompt, prompt]
+            if image_path and os.path.exists(image_path):
+                img = Image.open(image_path)
+                content.append(img)
+                
+            try:
+                response = self.model.generate_content(content)
+                
+                # Tracking Real de Custos (FinOps)
+                if self.finops and hasattr(response, 'usage_metadata'):
+                    usage = response.usage_metadata
+                    self.finops.log_usage(usage.prompt_token_count, usage.candidates_token_count)
+                
+                raw_text = response.text.strip()
+                # Extração robusta de JSON
+                json_match = raw_text
+                if "```json" in raw_text:
+                    json_match = raw_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in raw_text:
+                    json_match = raw_text.split("```")[1].split("```")[0].strip()
+                
+                # Validação Pydantic
+                decision_obj = OrchestratorDecision.model_validate_json(json_match)
+                return decision_obj.model_dump()
+
+            except Exception as e:
+                retry_count += 1
+                last_error = str(e)
+                print(f"⚠️ Tentativa {retry_count} falhou: {last_error}")
+                if retry_count > max_retries:
+                    return {"error": "Invalid response format after retries", "raw": last_error}
+                time.sleep(1) # Pequena pausa antes do retry
 
     def execute_decision(self, decision):
         # Primeiro, verificamos se o FinOps aprovou na simulação do LLM

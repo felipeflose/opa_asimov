@@ -68,8 +68,8 @@ def setup_page():
         password_input = st.text_input("Chave Mestra de Acesso", type="password")
         
         if st.button("🔐 DESBLOQUEAR PLATAFORMA"):
-            # Verificação simples de "Only Me" (Pode ser expandida para OAuth real)
-            if email_input == "feelip.flose@gmail.com" and password_input == os.getenv("MASTER_KEY", "flosetec"):
+            # Verificação de segurança sem fallback hardcoded
+            if email_input == "feelip.flose@gmail.com" and password_input == os.getenv("MASTER_KEY"):
                 st.session_state.authenticated = True
                 st.session_state.user_email = email_input
                 st.success("Acesso Concedido! Iniciando sistemas...")

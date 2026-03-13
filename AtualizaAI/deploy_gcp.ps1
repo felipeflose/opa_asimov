@@ -11,6 +11,7 @@ $env_lines = Get-Content $env_file
 $PROJECT_ID = (($env_lines | Select-String "GCP_PROJECT_ID=").ToString().Split("=")[1]).Trim()
 $GEMINI_KEY = (($env_lines | Select-String "GEMINI_API_KEY=").ToString().Split("=")[1]).Trim()
 $TG_TOKEN = (($env_lines | Select-String "TELEGRAM_BOT_TOKEN=").ToString().Split("=")[1]).Trim()
+$MASTER_KEY = (($env_lines | Select-String "MASTER_KEY=").ToString().Split("=")[1]).Trim()
 
 $REGION = "us-central1"
 $REPO_NAME = "flose-repo"
@@ -49,6 +50,7 @@ function Set-GCP-Secret-v2($Name, $Value) {
 
 Set-GCP-Secret-v2 "GEMINI_API_KEY" $GEMINI_KEY
 Set-GCP-Secret-v2 "TELEGRAM_BOT_TOKEN" $TG_TOKEN
+Set-GCP-Secret-v2 "MASTER_KEY" $MASTER_KEY
 
 # 4. Build
 Write-Host "Enviando Build (Ignore configurado)..."
@@ -62,6 +64,7 @@ $SERVICE_ACCOUNT = "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
 gcloud secrets add-iam-policy-binding GEMINI_API_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 gcloud secrets add-iam-policy-binding TELEGRAM_BOT_TOKEN --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
+gcloud secrets add-iam-policy-binding MASTER_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 
 # 6. Cloud Run Deploy
 Write-Host "Deploying to Cloud Run..."
@@ -71,7 +74,7 @@ gcloud run deploy $IMAGE_NAME `
     --region $REGION `
     --allow-unauthenticated `
     --project=$PROJECT_ID `
-    --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID,MASTER_KEY=flosetec" `
-    --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest"
+    --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID" `
+    --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,MASTER_KEY=MASTER_KEY:latest"
 
 Write-Host "--- DEPLOY v4.2 COMPLETADO ---" -ForegroundColor Green

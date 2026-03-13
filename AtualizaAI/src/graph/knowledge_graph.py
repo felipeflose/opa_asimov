@@ -31,74 +31,59 @@ class KnowledgeGraphManager:
             self.graph.add_node(topic, type="pilar", color="#f59e0b")
             self.graph.add_edge("Flose", topic, relation="defined_by")
 
+    def _sanitize(self):
+        """Remove nós de ruído e garante a estrutura core."""
+        nodes_to_remove = [
+            node for node in self.graph.nodes() 
+            if str(node).startswith("Interação") 
+            or str(node).startswith("Command") 
+            or str(node).startswith("TG:")
+            or self.graph.nodes[node].get('type') == 'task'
+        ]
+        for node in nodes_to_remove:
+            self.graph.remove_node(node)
+        
+        if "Flose" not in self.graph:
+            self.graph.add_node("Flose", type="core")
+
     def add_interaction(self, agent_name, task_name, outcome):
         """
         Sincroniza e adiciona apenas conceitos técnicos, conectando-os
-        diretamente aos pilares de conhecimento (sem nós de 'interação').
+        diretamente aos pilares de conhecimento com limpeza proativa.
         """
         self.load()
+        self._sanitize() # Limpeza proativa
         
         learned_concepts = outcome.get("learned_concepts", [])
         if not learned_concepts:
+            self.save() # Salva a limpeza mesmo sem novos conceitos
             return
 
-        # Pilares para conexão automática (fallback para 'Code' ou 'AI Architecture')
-        concept_pillars = ["AI Architecture", "GCP Infrastructure", "Agent Systems", "Vector Databases", "Code"]
-
-        # Mapeamento Inteligente e Abrangente de Categorias
+        # Mapeamento Inteligente de Categorias
         category_map = {
-            # BI & DataViz
             "PowerBI": "DataViz", "Tableau": "DataViz", "Looker": "DataViz", "Metabase": "DataViz", 
-            "Plotly": "DataViz", "Streamlit": "DataViz", "Grafana": "DataViz",
-            
-            # Cloud Infrastructure (GCP Focus)
-            "BigQuery": "GCP Infrastructure", "Firestore": "GCP Infrastructure", "Cloud Run": "GCP Infrastructure",
-            "GCS": "GCP Infrastructure", "Cloud Build": "GCP Infrastructure", "Vertex AI": "GCP Infrastructure",
-            "Artifact Registry": "GCP Infrastructure", "App Engine": "GCP Infrastructure",
-            
-            # AI & ML Models
-            "Gemini": "AI Models", "GPT-4": "AI Models", "Claude": "AI Models", "ElevenLabs": "AI Models",
-            "Whisper": "AI Models", "Stable Diffusion": "AI Models", "LangChain": "AI Models",
-            
-            # Data Engineering & Databases
-            "PostgreSQL": "Databases", "MongoDB": "Databases", "SQLite": "Databases", "Redis": "Databases",
-            "dbt": "Data Engineering", "Airflow": "Data Engineering", "Kafka": "Data Engineering",
-            "SQL": "Data Engineering", "ETL": "Data Engineering", "ELT": "Data Engineering",
-            
-            # DevOps & IaC
-            "Terraform": "DevOps", "Docker": "DevOps", "Kubernetes": "DevOps", "GitHub Actions": "DevOps",
-            "CI/CD": "DevOps", "Jenkins": "DevOps",
-            
-            # Software Development
-            "Python": "Programming", "JavaScript": "Programming", "Go": "Programming", "FastAPI": "Programming",
-            "Flask": "Programming", "Django": "Programming", "React": "Programming", "Next.js": "Programming",
-            
-            # Automations & Integration
-            "n8n": "Automation", "Make": "Automation", "Zapier": "Automation", "REST API": "Automation",
-            
-            # Security & Management
-            "IAM": "Security", "Secret Manager": "Security", "OAuth": "Security", "FinOps": "FinOps"
+            "Plotly": "DataViz", "Streamlit": "DataViz", "BigQuery": "GCP Infrastructure", 
+            "Firestore": "GCP Infrastructure", "Cloud Run": "GCP Infrastructure", "GCS": "GCP Infrastructure",
+            "Gemini": "AI Models", "ElevenLabs": "AI Models", "Terraform": "DevOps", "Docker": "DevOps",
+            "Python": "Programming", "SQL": "Data Engineering", "FinOps": "FinOps"
         }
 
         for concept in learned_concepts:
             concept = concept.strip()
-            if concept and len(concept) < 40:
+            if concept and len(concept) < 40 and not any(noise in concept for noise in ["Interação", "Command", "TG:"]):
                 self.graph.add_node(concept, type="concept", color="green")
                 
-                # Busca a categoria ou usa um pilar padrão inteligente
-                category = "General Knowledge"
+                category = "AI Architecture"
                 for key, val in category_map.items():
                     if key.lower() in concept.lower():
                         category = val
                         break
                 
-                # Garante que o nó da categoria existe
                 if category not in self.graph:
                     self.graph.add_node(category, type="pilar", color="#f59e0b")
                     self.graph.add_edge("Flose", category)
 
                 self.graph.add_edge(category, concept, relation="groups")
-                self.graph.add_edge(concept, "Code", relation="potential_integration")
 
         self.save()
 
