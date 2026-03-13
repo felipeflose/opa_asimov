@@ -133,8 +133,12 @@ with tabs[0]:
 
         with st.chat_message("assistant"):
             with st.spinner("Analisando..."):
-                # Call Orchestrator (com suporte a imagem se houver)
-                decision = st.session_state.orchestrator.process_command(prompt, image_path=temp_img_path)
+                # Call Orchestrator com histórico para manter contexto
+                decision = st.session_state.orchestrator.process_command(
+                    prompt, 
+                    image_path=temp_img_path,
+                    chat_history=st.session_state.messages
+                )
                 reasoning = st.session_state.last_reasoning = decision.get("reasoning", "Processando...")
                 
                 # Executa a decisão para obter o resultado final (mensagens tratadas)

@@ -144,7 +144,7 @@ class CognitiveOrchestrator:
         Se houver imagem, ative-o mentalmente: [VisionAgent ativado] e use o 'visual_context' fornecido.
         """
 
-    def process_command(self, user_command, image_path=None, visual_context=""):
+    def process_command(self, user_command, image_path=None, visual_context="", chat_history=None):
         # Fetch current state for real-time context
         project_id = os.getenv("GCP_PROJECT_ID", "Não configurado")
         region = os.getenv("GCP_REGION", "us-central1")
@@ -163,10 +163,21 @@ class CognitiveOrchestrator:
         semantic_context = ""
         relevant_docs = self.vector_store.search(user_command, top_k=3)
         if relevant_docs:
-            semantic_context = "\n--- MEMÓRIA RECUPERADA (CONTEXTO) ---\n"
+            semantic_context = "\n--- MEMÓRIA RECUPERADA (CONTEXTO EXTERNO) ---\n"
             for doc in relevant_docs:
                 semantic_context += f"- [{doc['source']}]: {doc['text']}\n"
             semantic_context += "------------------------------------\n"
+
+        # Histórico de Chat (Memória de Curto Prazo)
+        history_context = ""
+        if chat_history:
+            history_context = "\n--- ÚLTIMAS MENSAGENS DA CONVERSA ---\n"
+            # Pega as últimas 4 mensagens para dar contexto sem estourar tokens
+            for msg in chat_history[-4:]:
+                role = "Usuário" if msg['role'] == 'user' else "IA"
+                text = msg['content'][:200] # Capa o texto para eficiência
+                history_context += f"{role}: {text}\n"
+            history_context += "-------------------------------------\n"
 
         retry_count = 0
         max_retries = 2
@@ -181,6 +192,7 @@ class CognitiveOrchestrator:
             - FinOps State: {finops_data}
             - Registered Agents: {json.dumps(agents)}
             
+            {history_context}
             {semantic_context}
             
             {"[VISION AGENT OUTPUT]: " + visual_context if visual_context else ""}
