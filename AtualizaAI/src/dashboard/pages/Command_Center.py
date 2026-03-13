@@ -546,7 +546,8 @@ with tabs[7]:
                                 col_btn1, col_btn2 = st.columns(2)
                                 with col_btn1:
                                     if st.button("📄 Ver Specs", key=f"spec_{task['id']}"):
-                                        st.info(f"**Custo/Explicação:** {task.get('cost_explanation', 'Aguardando Análise...')}")
+                                        cost_text = task.get('cost_explanation') or 'Aguardando Análise...'
+                                        st.info(f"**Custo/Explicação:**\n{cost_text}")
                                         if has_tf: 
                                             st.code(task.get('terraform_plan'), language="hcl")
                                 with col_btn2:

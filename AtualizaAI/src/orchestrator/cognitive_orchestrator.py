@@ -112,7 +112,9 @@ class CognitiveOrchestrator:
              "type": "FollowUP" | "reunião" | "tarefa",
              "title": "Título curto",
              "responsible": "Nome ou cargo",
-             "priority": "Alta" | "Média" | "Baixa"
+             "priority": "Alta" | "Média" | "Baixa",
+             "cost_explanation": "Justificativa de custos detalhada e tokens",
+             "terraform_plan": "Código HCL funcional (opcional, gerar se GCP)"
           },
           "new_agent_config": {
              "agent_name": "NomeDoAgente", 
@@ -303,9 +305,9 @@ class CognitiveOrchestrator:
                 "priority": demand.get("priority", "Média"),
                 "status": "Aberto",
                 "budget_approved": demand.get("budget_approved", False),
-                "cost_explanation": demand.get("cost_explanation", ""),
-                "terraform_plan": demand.get("terraform_plan", ""),
-                "evidence_path": demand.get("evidence_path", ""),
+                "cost_explanation": demand.get("cost_explanation") or "",
+                "terraform_plan": demand.get("terraform_plan") or "",
+                "evidence_path": demand.get("evidence_path") or "",
                 "created_at": datetime.now().isoformat()
             }
             
