@@ -2,6 +2,7 @@ import google.generativeai as genai
 import json
 import os
 import time
+from datetime import datetime
 from PIL import Image
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Literal
