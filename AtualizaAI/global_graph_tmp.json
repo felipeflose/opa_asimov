@@ -1,0 +1,331 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "type": "core",
+      "id": "Flose"
+    },
+    {
+      "type": "concept",
+      "id": "AI Architecture"
+    },
+    {
+      "type": "concept",
+      "id": "GCP Infrastructure"
+    },
+    {
+      "type": "concept",
+      "id": "FinOps"
+    },
+    {
+      "type": "concept",
+      "id": "Agent Systems"
+    },
+    {
+      "type": "concept",
+      "id": "Terraform"
+    },
+    {
+      "type": "concept",
+      "id": "Vector Databases"
+    },
+    {
+      "type": "concept",
+      "id": "MVPs"
+    },
+    {
+      "type": "concept",
+      "id": "Code"
+    },
+    {
+      "type": "agent",
+      "id": "Orchestrator"
+    },
+    {
+      "type": "task",
+      "outcome": "{'status': 'executed', 'mvp': 'Generated_MVP', 'learned_concepts': ['ElevenLabs', 'Gera\u00e7\u00e3o de Voz', 'S\u00edntese de Fala', 'Text-to-Speech', 'Voice Cloning', 'IA de Voz']}",
+      "id": "Command: O que \u00e9 ElevenLabs?..."
+    },
+    {
+      "type": "concept",
+      "id": "ElevenLabs"
+    },
+    {
+      "type": "concept",
+      "id": "Gera\u00e7\u00e3o de Voz"
+    },
+    {
+      "type": "concept",
+      "id": "S\u00edntese de Fala"
+    },
+    {
+      "type": "concept",
+      "id": "Text-to-Speech"
+    },
+    {
+      "type": "concept",
+      "id": "Voice Cloning"
+    },
+    {
+      "type": "concept",
+      "id": "IA de Voz"
+    },
+    {
+      "type": "task",
+      "label": "Intera\u00e7\u00e3o",
+      "id": "Intera\u00e7\u00e3o_234527"
+    },
+    {
+      "type": "concept",
+      "id": "dbt"
+    },
+    {
+      "type": "concept",
+      "id": "Data Build Tool"
+    },
+    {
+      "type": "concept",
+      "id": "ELT"
+    },
+    {
+      "type": "concept",
+      "id": "Transforma\u00e7\u00e3o de Dados"
+    },
+    {
+      "type": "concept",
+      "id": "SQL"
+    },
+    {
+      "type": "concept",
+      "id": "Data Warehouse"
+    },
+    {
+      "type": "concept",
+      "id": "Engenharia de Dados"
+    },
+    {
+      "type": "concept",
+      "id": "Modelagem de Dados"
+    },
+    {
+      "type": "concept",
+      "id": "Qualidade de Dados"
+    },
+    {
+      "type": "concept",
+      "id": "Controle de Vers\u00e3o"
+    }
+  ],
+  "edges": [
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "AI Architecture"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "GCP Infrastructure"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "FinOps"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Agent Systems"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Terraform"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Vector Databases"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "MVPs"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Code"
+    },
+    {
+      "source": "Orchestrator",
+      "target": "Command: O que \u00e9 ElevenLabs?..."
+    },
+    {
+      "source": "Orchestrator",
+      "target": "Intera\u00e7\u00e3o_234527"
+    },
+    {
+      "relation": "revealed",
+      "source": "Command: O que \u00e9 ElevenLabs?...",
+      "target": "ElevenLabs"
+    },
+    {
+      "relation": "revealed",
+      "source": "Command: O que \u00e9 ElevenLabs?...",
+      "target": "Gera\u00e7\u00e3o de Voz"
+    },
+    {
+      "relation": "revealed",
+      "source": "Command: O que \u00e9 ElevenLabs?...",
+      "target": "S\u00edntese de Fala"
+    },
+    {
+      "relation": "revealed",
+      "source": "Command: O que \u00e9 ElevenLabs?...",
+      "target": "Text-to-Speech"
+    },
+    {
+      "relation": "revealed",
+      "source": "Command: O que \u00e9 ElevenLabs?...",
+      "target": "Voice Cloning"
+    },
+    {
+      "relation": "revealed",
+      "source": "Command: O que \u00e9 ElevenLabs?...",
+      "target": "IA de Voz"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "ElevenLabs",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Gera\u00e7\u00e3o de Voz",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "S\u00edntese de Fala",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Text-to-Speech",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Voice Cloning",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "IA de Voz",
+      "target": "Code"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "dbt"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "Data Build Tool"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "ELT"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "Transforma\u00e7\u00e3o de Dados"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "SQL"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "Data Warehouse"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "Engenharia de Dados"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "Modelagem de Dados"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "Qualidade de Dados"
+    },
+    {
+      "relation": "revealed",
+      "source": "Intera\u00e7\u00e3o_234527",
+      "target": "Controle de Vers\u00e3o"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "dbt",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Data Build Tool",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "ELT",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Transforma\u00e7\u00e3o de Dados",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "SQL",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Data Warehouse",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Engenharia de Dados",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Modelagem de Dados",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Qualidade de Dados",
+      "target": "Code"
+    },
+    {
+      "relation": "potential_integration",
+      "source": "Controle de Vers\u00e3o",
+      "target": "Code"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+google-cloud-storage
+google-generativeai
+streamlit
+networkx
+plotly
+pandas
+python-dotenv
+python-telegram-bot
+psutil
+Pillow
+google-cloud-run
+google-cloud-monitoring
+streamlit-agraph
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
