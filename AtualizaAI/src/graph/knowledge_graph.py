@@ -59,30 +59,58 @@ class KnowledgeGraphManager:
             self.save() # Salva a limpeza mesmo sem novos conceitos
             return
 
-        # Mapeamento Inteligente de Categorias
-        category_map = {
-            "PowerBI": "DataViz", "Tableau": "DataViz", "Looker": "DataViz", "Metabase": "DataViz", 
-            "Plotly": "DataViz", "Streamlit": "DataViz", "BigQuery": "GCP Infrastructure", 
-            "Firestore": "GCP Infrastructure", "Cloud Run": "GCP Infrastructure", "GCS": "GCP Infrastructure",
-            "Gemini": "AI Models", "ElevenLabs": "AI Models", "Terraform": "DevOps", "Docker": "DevOps",
-            "Python": "Programming", "SQL": "Data Engineering", "FinOps": "FinOps"
-        }
+    def _get_ai_cluster(self, concept):
+        """Usa a inteligência do Gemini para decidir o melhor pilar de clusterização para um conceito."""
+        # Se estivermos sem API Key (fallback), usamos um mapeamento básico
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return "General Technology"
+            
+        try:
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            prompt = f"""
+            Classifique o conceito técnico '{concept}' em exatamente UM dos seguintes pilares de clusters:
+            - AI Models (LLMs, Diffusion, etc)
+            - GCP Infrastructure (Services like Cloud Run, GCS)
+            - Data Engineering (ETL, SQL, dbt)
+            - Programming (Python, JS, Frameworks)
+            - DevOps & IaC (Terraform, Docker)
+            - UI & Analytics (Streamlit, PowerBI)
+            - Automation (n8n, Make)
+            - FinOps & Management
+            
+            Responda apenas com o nome do pilar. Se não encaixar, use 'General Technology'.
+            """
+            response = model.generate_content(prompt)
+            return response.text.strip()
+        except:
+            return "AI Architecture"
+
+    def add_interaction(self, agent_name, task_name, outcome):
+        """
+        Sincroniza e adiciona conceitos técnicos usando Clusterização via IA.
+        """
+        self.load()
+        self._sanitize() 
+        
+        learned_concepts = outcome.get("learned_concepts", [])
+        if not learned_concepts:
+            self.save()
+            return
 
         for concept in learned_concepts:
             concept = concept.strip()
-            if concept and len(concept) < 40 and not any(noise in concept for noise in ["Interação", "Command", "TG:"]):
-                self.graph.add_node(concept, type="concept", color="green")
+            # Filtro básico de ruído e tamanho
+            if concept and len(concept) < 40 and not any(noise in concept.lower() for noise in ["interação", "command", "tg:"]):
                 
-                category = "AI Architecture"
-                for key, val in category_map.items():
-                    if key.lower() in concept.lower():
-                        category = val
-                        break
+                # NOVO: Clusterização via IA ao invés de Dict estático
+                category = self._get_ai_cluster(concept)
                 
                 if category not in self.graph:
                     self.graph.add_node(category, type="pilar", color="#f59e0b")
                     self.graph.add_edge("Flose", category)
 
+                self.graph.add_node(concept, type="concept", color="green")
                 self.graph.add_edge(category, concept, relation="groups")
 
         self.save()
