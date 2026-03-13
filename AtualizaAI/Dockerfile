@@ -24,4 +24,4 @@ ENV PYTHONPATH=/app
 ENV STREAMLIT_SERVER_PORT=8080
 ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
 
-CMD ["streamlit", "run", "src/dashboard/Home.py"]
+CMD ["python", "entrypoint.py"]

@@ -658,31 +658,11 @@ with tabs[8]:
     col_t1, col_t2 = st.columns([2, 1])
     
     with col_t2:
-        st.subheader("Controle do Bot")
-        bot_on = is_bot_running()
+        st.subheader("Bot Bridge Status")
+        st.success("🤖 Bot Gerenciado pelo Sistema")
+        st.info("O serviço de Telegram está vinculado ao ciclo de vida do container em modo **Always Active**. Não é necessária intervenção manual.")
         
-        if bot_on:
-            st.success("🤖 Bot está ATIVO")
-            if st.button("♻️ Reiniciar Bot"):
-                for proc in psutil.process_iter(['cmdline']):
-                    cmdline = proc.info.get('cmdline')
-                    if cmdline and any('run_telegram_bot.py' in s for s in cmdline):
-                        proc.kill()
-                subprocess.Popen([sys.executable, "run_telegram_bot.py"], 
-                                 creationflags=subprocess.CREATE_NEW_CONSOLE if os.name == 'nt' else 0)
-                st.rerun()
-        else:
-            st.error("🛑 Bot está OFFLINE")
-            if st.button("🚀 Iniciar Bot Telegram"):
-                try:
-                    subprocess.Popen([sys.executable, "run_telegram_bot.py"], 
-                                     creationflags=subprocess.CREATE_NEW_CONSOLE if os.name == 'nt' else 0)
-                    st.success("Bot iniciado!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Erro ao iniciar bot: {e}")
-        
-        st.metric("Status do Processo", "ATIVO" if bot_on else "OFFLINE")
+        st.metric("Status do Serviço", "ATIVO (Auto-Restart)")
 
     with col_t1:
         st.subheader("Console de Logs Telegram")
