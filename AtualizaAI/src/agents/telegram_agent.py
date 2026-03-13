@@ -147,19 +147,25 @@ class TelegramAgent:
         self.log(f"Exception while handling an update: {context.error}")
 
     async def setup(self):
-        """Inicializa a aplicação do bot."""
+        """Inicializa sem iniciar nenhum updater/polling interno."""
         if not self.token:
             return False
             
-        self.application = Application.builder().token(self.token).build()
+        # Usamos Application apenas para os handlers, mas NÃO damos start() 
+        # para evitar que o updater interno tente fazer polling
+        self.application = (
+            Application.builder()
+            .token(self.token)
+            .updater(None)   # ← CRÍTICO: desativa o updater/polling interno
+            .build()
+        )
         self.application.add_handler(CommandHandler("start", self.start_handler))
         self.application.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.Document.IMAGE, self.message_handler))
         self.application.add_error_handler(self.error_handler)
         
         await self.application.initialize()
-        await self.application.start()
         self.is_running = True
-        print(f"Bot Application Initialized: {os.getenv('TELEGRAM_BOT_NAME')}")
+        print(f"✅ Bot inicializado em modo Webhook (sem polling): {os.getenv('TELEGRAM_BOT_NAME', 'Flose Bot')}")
         return True
 
     async def process_update(self, update_json):
