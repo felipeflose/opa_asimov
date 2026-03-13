@@ -6,7 +6,7 @@ import os
 from sklearn.decomposition import PCA
 
 class VectorStore:
-    def __init__(self, model_name='models/embedding-001', gcs_client=None):
+    def __init__(self, model_name='models/gemini-embedding-001', gcs_client=None):
         self.model_name = model_name
         self.gcs_client = gcs_client
         self.index = None
@@ -46,6 +46,11 @@ class VectorStore:
         
         self.index.add(np.array(embeddings).astype('float32'))
         
+        if sources and len(sources) == 1:
+            sources = sources * len(texts)
+        if types and len(types) == 1:
+            types = types * len(texts)
+
         new_metadata = pd.DataFrame({
             'id': ids,
             'text': texts,
