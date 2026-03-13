@@ -92,48 +92,32 @@ class TelegramAgent:
             log_data["decision"] = decision
     
             # Mostrar Reasoning Chain se solicitado (Transparência)
-            reasoning_msg = f"🧠 *AI Reasoning Chain:*\n_{reasoning}_"
-            try:
-                await update.message.reply_text(reasoning_msg, parse_mode='Markdown')
-            except:
-                await update.message.reply_text(f"AI Reasoning: {reasoning}")
+            reasoning_msg = f"🧠 AI Reasoning Chain:\n{reasoning}"
+            self.log(f"Enviando reasoning para @{user}...")
+            await update.message.reply_text(reasoning_msg)
 
             if action == "respond":
                 response = decision.get("response", "Não consegui processar sua dúvida.")
-                self.log(f"Resposta direta enviada para @{user}")
-                try:
-                    await update.message.reply_text(f"💬 *Flose AI*\n\n{response}", parse_mode='Markdown')
-                except:
-                    await update.message.reply_text(f"💬 Flose AI\n\n{response}")
+                self.log(f"Enviando resposta direta para @{user}")
+                await update.message.reply_text(f"💬 Flose AI\n\n{response}")
             
             elif action == "create_agent":
-                # Aqui criamos o agente e enviamos a confirmação
                 result = self.orchestrator.execute_decision(decision)
-                self.log(f"Agente criado via Telegram por @{user}")
-                try:
-                    await update.message.reply_text(f"🏗️ *Processamento de Agente*\n\n✅ {result}", parse_mode='Markdown')
-                except:
-                    await update.message.reply_text(f"🏗️ Processamento de Agente\n\n{result}")
+                self.log(f"Enviando confirmação de criação de agente para @{user}")
+                await update.message.reply_text(f"🏗️ Processamento de Agente\n\n✅ {result}")
             
             elif action == "generate_demand":
                 result = self.orchestrator.execute_decision(decision)
                 demand = decision.get("demand_info") or {}
                 title = demand.get("title", "Sem título")
                 dtype = demand.get("type", "tarefa")
-                self.log(f"Demanda '{title}' registrada via Telegram por @{user}")
-                try:
-                    await update.message.reply_text(f"📝 *Nova Demanda (TRD)*\n\n📌 *Título:* {title}\n📂 *Tipo:* {dtype}\n\n✅ {result}", parse_mode='Markdown')
-                except:
-                    await update.message.reply_text(f"📝 Nova Demanda (TRD)\n\nTítulo: {title}\nTipo: {dtype}\n\n{result}")
+                self.log(f"Enviando confirmação de demanda para @{user}")
+                await update.message.reply_text(f"📝 Nova Demanda (TRD)\n\nTítulo: {title}\nTipo: {dtype}\n\n{result}")
     
             else: # execute
-                # Executamos a tarefa e enviamos o resultado final para o Telegram
                 result = self.orchestrator.execute_decision(decision)
-                self.log(f"Tarefa executada via Telegram para @{user}")
-                try:
-                    await update.message.reply_text(f"⚙️ *Execução Finalizada*\n\n✅ *Resultado:* {result}", parse_mode='Markdown')
-                except:
-                    await update.message.reply_text(f"⚙️ Execução Finalizada\n\nResultado: {result}")
+                self.log(f"Enviando resultado de execução para @{user}")
+                await update.message.reply_text(f"⚙️ Execução Finalizada\n\nResultado: {result}")
             
             # Sincroniza o log final (com a decisão) no GCS
             if self.gcs_client:

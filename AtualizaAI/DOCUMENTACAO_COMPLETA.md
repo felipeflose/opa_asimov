@@ -4,50 +4,57 @@ Esta documentação fornece uma visão detalhada de todos os componentes, arquit
 
 ---
 
-## 🏛️ Visão Geral da Arquitetura
+# 📔 DOCUMENTAÇÃO TÉCNICA - FLOSE AI PLATFORM
 
-A Flose AI é uma plataforma de inteligência artificial multi-agente construída sobre a infraestrutura do **Google Cloud Platform (GCP)**, utilizando o modelo **Gemini 2.5 Flash** como cérebro central.
+## Versão: 4.8 - "Eco & Governance Edition"
+**Data:** 13 de Março de 2026
 
-### Diferenciais da v4.3:
-- **Robustez Extrema**: Validação de saída via Pydantic com 3 níveis de retry e feedback corretivo.
-- **Memória Híbrida**: Combinação de RAG (longo prazo) com Contexto Conversacional (curto prazo).
-- **Clusterização via IA**: O Grafo de Conhecimento organiza-se dinamicamente usando o Gemini, sem categorias estáticas.
-- **Segurança Nativa**: Integração com **Google Secret Manager** para chaves sensíveis.
+### 1. Visão Geral
+A Flose AI Platform evoluiu para uma estrutura de **Micro-Serviços Orquestrados** com foco em economia de escala (FinOps), governança técnica (Terraform) e execução autônoma de tarefas.
+
+### 2. Novas Funcionalidades (v4.5 - v4.8)
+
+#### 🧬 Agent Task Runner (Execução Real)
+Os agentes deixaram de ser apenas prompts e passaram a ser executores.
+*   **Método `.run()`**: Cada agente especialista agora possui inteligência própria baseada em seu `system_prompt`.
+*   **Kanban Ativo**: Demandas no status "Aberto" podem ser delegadas a agentes específicos no Dashboard.
+*   **Entrega Transparente**: O resultado das execuções é salvo no GCS (`logs/executions/`) e pode ser visualizado diretamente no card "Concluído".
+
+#### 🛡️ Governança e FinOps (Human-in-the-loop)
+Implementação de regras estritas para evitar gastos desnecessários e garantir infraestrutura como código.
+*   **FinOps_Architect**: Agente especializado em estimativa de custos e justificativa de ROI.
+*   **Terraform_Specialist**: Gera planos `.tf` para qualquer alteração de infraestrutura requerida.
+*   **Trava de Aprovação**: Nenhuma tarefa técnica pode ser executada sem o **OK Orçamentário** (Selo ✅ no card). O usuário deve revisar as specs (Terraform/Custo) antes de liberar a execução.
+
+#### 📉 Eco-Mode (Economia Zero-Base)
+Arquitetura otimizada para custo mínimo no Google Cloud Run.
+*   **On-Demand Scaling**: O container escala para zero quando inativo, eliminando custos fixos de 24h.
+*   **Telegram Webhooks**: Substituição do polling constante por Webhooks. O Telegram "acorda" o container apenas quando há mensagens.
+*   **Gateway FastAPI**: Um entrypoint unificado gerencia o tráfego do Webhook e faz o proxy do Dashboard Streamlit usando WebSockets estáveis.
+
+### 3. Arquitetura de Software
+
+#### Orquestrador Cognitivo (`cognitive_orchestrator.py`)
+*   **Política Agent-First**: Prioriza a criação de especialistas antes de responder sobre novas tecnologias.
+*   **Short-term Memory**: Mantém o contexto da conversa recente para respostas mais precisas.
+*   **Schema Robusto**: Validação via Pydantic com campos para `budget_approved`, `terraform_plan` e `cost_explanation`.
+
+#### Fluxo de Dados
+1.  **Entrada**: Usuário interage via Telegram (Webhook) ou Dashboard.
+2.  **Decisão**: Orquestrador decide entre `respond`, `create_agent` ou `generate_demand`.
+3.  **Aprovação**: Se for uma demanda técnica, o usuário revisa o custo/plano Terraform e dá o `OK`.
+4.  **Execução**: O especialista selecionado processa a tarefa e salva a "Entrega" no GCS.
+5.  **Aprendizado**: O Grafo de Conhecimento é atualizado com os novos conceitos aprendidos ou implementados.
+
+### 4. Stack Tecnológica Atualizada
+*   **Core**: Python 3.11, FastAPI, Streamlit.
+*   **IA**: Gemini 2.5 Flash (Multimodal + Protoloco de decisão).
+*   **Storage/Infra**: GCS (Registry), GCP Cloud Run (Eco-Mode), Secret Manager.
+*   **Conectividade**: Webhooks Telegram, `fastapi-proxy-lib`.
+*   **Segurança**: Master Key via Secret Manager, SSL nativo GCP.
 
 ---
-
-## 📂 Componentes Principais
-
-### 1. Núcleo (Core)
-
-#### `src/orchestrator/cognitive_orchestrator.py`
-- **Classe**: `CognitiveOrchestrator`
-- **Inteligência**: Agora utiliza **Pydantic Schemas** para garantir que cada decisão do LLM siga o formato esperado.
-- **Mecanismo de Auto-Correção**: Se o modelo falhar na formatação, o sistema inicia um **Retry Loop** enviando o erro exato de volta para a IA se corrigir.
-- **Memória de Curto Prazo**: O orquestrador agora processa o `chat_history`, permitindo perguntas de acompanhamento (ex: "Quem é ele?" ou "Quanto custa essa tecnologia?").
-- **Modos de Operação**:
-  - `RESPOND`: Conhecimento teórico e conversa.
-  - `CREATE_AGENT`: Geração de novos agentes.
-  - `EXECUTE`: Delegação de tarefas.
-  - `GENERATE_DEMAND`: **Prioridade máxima** para novos pedidos no Backlog (TRD).
-
----
-
-### 2. Gestão de Conhecimento (`src/storage/` & `src/graph/`)
-
-#### `knowledge_graph.py`
-- **AI Clusterization**: O sistema não usa mais um dicionário fixo. Ele pergunta ao Gemini: *"A qual cluster técnico este conceito pertence?"*.
-- **Sanitização Proativa**: A lógica de limpeza de nós de ruído (commands, logs) agora é executada automaticamente em cada interação, mantendo o grafo limpo e profissional.
-- **Pilares Estratégicos**: AI Models, GCP Infrastructure, Data Engineering, Programming, DevOps, UI/Analytics, Automation e FinOps.
-
-#### `vector_store.py`
-- **Tecnologia**: FAISS + Gemini Embeddings (`models/gemini-embedding-001`).
-- **Persistência GCS**: Os índices e metadados são salvos e carregados do GCS, garantindo que a memória sobreviva a reinicializações de container.
-- **Visualização**: Implementa projeção PCA para visualizar a densidade da memória em 2D no dashboard.
-
----
-
-### 3. Segurança e Infraestrutura
+*Flose AI: Construindo a inteligência do futuro com governança e eficiência hoje.*
 
 #### Secret Manager Integration
 - A `MASTER_KEY` e outras chaves sensíveis não ficam mais em arquivos `.env` no servidor de produção. Elas são injetadas via **GCP Secret Manager** durante o deploy.

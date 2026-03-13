@@ -50,10 +50,13 @@ async def get_tg_agent():
 # --- 3. Endpoint do Webhook do Telegram ---
 @app.post("/telegram_webhook")
 async def telegram_webhook(request: Request):
-    """Ponto de entrada do Bot: Economiza CPU e R$."""
+    """Acordado pelo Telegram. Custo $0 quando parado."""
+    print("📥 Webhook recebido do Telegram!")
     data = await request.json()
     agent = await get_tg_agent()
+    print("🤖 Processando update via TelegramAgent...")
     await agent.process_update(data)
+    print("✅ Processamento concluído. Retornando 200 OK.")
     return {"status": "ok"}
 
 # --- 4. Proxy para o Dashboard Streamlit ---
