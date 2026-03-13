@@ -169,3 +169,27 @@ class TelegramAgent:
             
         update = Update.de_json(update_json, self.application.bot)
         await self.application.process_update(update)
+
+    def run(self):
+        """Modo Polling (uso local). Remove webhook automaticamente para evitar conflito."""
+        import asyncio
+        import httpx
+
+        # --- Garante que não haja webhook ativo ---
+        if self.token:
+            try:
+                r = httpx.get(
+                    f"https://api.telegram.org/bot{self.token}/deleteWebhook?drop_pending_updates=true",
+                    timeout=10
+                )
+                if r.json().get("result"):
+                    print("🔓 Webhook removido. Iniciando Polling local...")
+            except Exception as e:
+                print(f"Aviso: não foi possível verificar webhook: {e}")
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.setup())
+        
+        print("🤖 Bot rodando em modo Polling...")
+        self.application.run_polling(drop_pending_updates=True)
