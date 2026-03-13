@@ -22,11 +22,8 @@ Write-Host "Verificando dependencias..." -ForegroundColor Yellow
 & ".\.venv\Scripts\python.exe" -m pip install --upgrade pip
 & ".\.venv\Scripts\python.exe" -m pip install -r requirements.txt
 
-# 3. Iniciar Bot Telegram (Always On - Segundo Plano)
-Write-Host "🤖 Iniciando Telegram Bot Bridge (Segundo Plano)..." -ForegroundColor Cyan
-Start-Process -FilePath ".\.venv\Scripts\python.exe" -ArgumentList "run_telegram_bot.py" -WindowStyle Hidden
-
-# 4. Rodar Streamlit
-Write-Host "Abrindo Portal de Instanciacao..." -ForegroundColor Green
+# 3. Iniciar Dashboard
+Write-Host "Abrindo Portal de Instanciacao (Dashboard)..." -ForegroundColor Green
+Write-Host "NOTA: O Telegram Bot roda exclusivamente no GCP via Webhook." -ForegroundColor Yellow
 $env:PYTHONPATH = "."
 & ".\.venv\Scripts\streamlit.exe" run src/dashboard/Home.py
