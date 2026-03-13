@@ -1,20 +1,18 @@
-# Documentação da Plataforma Flose AI 🤖
+# Documentação da Plataforma Flose AI 🤖 (v4.3)
 
-Esta documentação fornece uma visão detalhada de todos os componentes, arquitetura e fluxos da **Flose AI Platform**.
+Esta documentação fornece uma visão detalhada de todos os componentes, arquitetura e fluxos da **Flose AI Platform**, atualizada com os protocolos de robustez e segurança de nível industrial.
 
 ---
 
 ## 🏛️ Visão Geral da Arquitetura
 
-A Flose AI é uma plataforma de inteligência artificial multi-agente construída sobre a infraestrutura do **Google Cloud Platform (GCP)**, utilizando o modelo **Gemini 2.5 Flash** como cérebro central. A plataforma integra processamento de linguagem natural, visão computacional, armazenamento vetorial e grafos de conhecimento.
+A Flose AI é uma plataforma de inteligência artificial multi-agente construída sobre a infraestrutura do **Google Cloud Platform (GCP)**, utilizando o modelo **Gemini 2.5 Flash** como cérebro central.
 
-### Fluxo de Dados:
-1. **Entrada**: Usuário interage via Telegram ou Dashboard.
-2. **Orquestração**: O `CognitiveOrchestrator` analisa a intenção (e imagens, se houver).
-3. **Decisão**: O Orchestrator decide se deve responder diretamente, criar um novo agente ou executar uma tarefa.
-4. **Segurança/FinOps**: O `FinOpsGuardian` valida se a execução cabe no orçamento de tokens e custos.
-5. **Persistência**: Dados são salvos no Google Cloud Storage (GCS) e indexados no `VectorStore`.
-6. **Aprendizado**: O `KnowledgeGraphManager` atualiza o grafo com novos conceitos técnicos aprendidos durante a interação.
+### Diferenciais da v4.3:
+- **Robustez Extrema**: Validação de saída via Pydantic com 3 níveis de retry e feedback corretivo.
+- **Memória Híbrida**: Combinação de RAG (longo prazo) com Contexto Conversacional (curto prazo).
+- **Clusterização via IA**: O Grafo de Conhecimento organiza-se dinamicamente usando o Gemini, sem categorias estáticas.
+- **Segurança Nativa**: Integração com **Google Secret Manager** para chaves sensíveis.
 
 ---
 
@@ -22,160 +20,69 @@ A Flose AI é uma plataforma de inteligência artificial multi-agente construíd
 
 ### 1. Núcleo (Core)
 
-#### `main.py`
-- **Função**: Ponto de entrada para testes e bootstrap da plataforma.
-- **Responsabilidades**: Inicializa as camadas de storage, vector DB, knowledge graph e orchestrator. Demonstra um fluxo completo de processamento de comando.
-
 #### `src/orchestrator/cognitive_orchestrator.py`
 - **Classe**: `CognitiveOrchestrator`
-- **Missão**: Decidir, agir e evoluir como o cérebro central (Gemini 2.5 Flash).
+- **Inteligência**: Agora utiliza **Pydantic Schemas** para garantir que cada decisão do LLM siga o formato esperado.
+- **Mecanismo de Auto-Correção**: Se o modelo falhar na formatação, o sistema inicia um **Retry Loop** enviando o erro exato de volta para a IA se corrigir.
+- **Memória de Curto Prazo**: O orquestrador agora processa o `chat_history`, permitindo perguntas de acompanhamento (ex: "Quem é ele?" ou "Quanto custa essa tecnologia?").
 - **Modos de Operação**:
-  - `RESPOND`: Resposta inteligente direta.
-  - `CREATE_AGENT`: Geração proativa de novos agentes.
-  - `EXECUTE`: Delegação para agentes existentes.
-  - `GENERATE_DEMAND`: Registro de TRDs (Tarefas, Reuniões, Follow-ups).
-- **Schema JSON (Obrigatório)**:
-  ```json
-  {
-    "action": "respond | create_agent | execute | generate_demand",
-    "reasoning": "Texto explicativo",
-    "finops_check": { "estimated_tokens": n, "estimated_cost_usd": n, "approved": true },
-    "agent_involved": "nome_do_agente",
-    "knowledge_graph_update": ["conceitos"],
-    "response": "Resposta final"
-  }
-  ```
+  - `RESPOND`: Conhecimento teórico e conversa.
+  - `CREATE_AGENT`: Geração de novos agentes.
+  - `EXECUTE`: Delegação de tarefas.
+  - `GENERATE_DEMAND`: **Prioridade máxima** para novos pedidos no Backlog (TRD).
 
 ---
 
-### 2. Sistema de Agentes (`src/agents/`)
-
-#### `base_agent.py`
-- **Classe**: `BaseAgent`
-- **Função**: Classe base abstrata para todos os agentes do ecossistema. Fornece métodos para registro no sistema e serialização.
-
-#### `telegram_agent.py`
-- **Classe**: `TelegramAgent`
-- **Função**: Ponte de comunicação via Telegram.
-- **Funcionalidades**:
-  - Recebe textos e imagens.
-  - Integra-se ao `VisionAgent` para análise visual.
-  - Traduz comandos do chat para decisões do Orchestrator.
-  - Mantém logs de atividade no GCS.
-
-#### `vision_agent.py`
-- **Classe**: `VisionAgent`
-- **Função**: Especialista em análise de imagens.
-- **Tecnologia**: Gemini 2.5 Flash (Multimodal).
-- **Uso**: Descreve conteúdos visuais para que o Orchestrator possa tomar decisões baseadas em fotos/documentos enviados.
-
-#### `finops_guardian.py`
-- **Classe**: `FinOpsGuardian`
-- **Função**: Guardião financeiro e de recursos.
-- **Responsabilidades**: Estima o uso de tokens e custos de infraestrutura antes da execução, bloqueando operações que excedam os limites configurados.
-
----
-
-### 3. Gestão de Conhecimento e Dados (`src/storage/` & `src/graph/`)
+### 2. Gestão de Conhecimento (`src/storage/` & `src/graph/`)
 
 #### `knowledge_graph.py`
-- **Classe**: `KnowledgeGraphManager`
-- **Função**: Gerencia o Grafo de Conhecimento (NetworkX).
-- **Recursos**: Mapeia conceitos técnicos (ex: Python, Terraform, BigQuery) e suas relações com pilares tecnológicos da plataforma.
+- **AI Clusterization**: O sistema não usa mais um dicionário fixo. Ele pergunta ao Gemini: *"A qual cluster técnico este conceito pertence?"*.
+- **Sanitização Proativa**: A lógica de limpeza de nós de ruído (commands, logs) agora é executada automaticamente em cada interação, mantendo o grafo limpo e profissional.
+- **Pilares Estratégicos**: AI Models, GCP Infrastructure, Data Engineering, Programming, DevOps, UI/Analytics, Automation e FinOps.
 
 #### `vector_store.py`
-- **Classe**: `VectorStore`
-- **Função**: Memória semântica de longo prazo.
-- **Tecnologia**: FAISS + Gemini Embeddings (`models/embedding-001`).
-- **Uso**: Armazena e recupera documentos e contextos com base em similaridade vetorial.
-
-#### `gcs_client.py`
-- **Classe**: `GCSClient`
-- **Função**: Interface simplificada com o Google Cloud Storage.
-- **Capacidades**: Upload/Download de arquivos e JSONs, listagem e verificação de existência de blobs.
-
-#### `finops_manager.py`
-- **Classe**: `FinOpsManager`
-- **Função**: Rastreamento real de custos.
-- **Responsabilidades**: Calcula custos baseados no uso real de tokens (Input/Output) do Gemini e gera summaries diários.
-
-#### `gcp_resource_manager.py`
-- **Classe**: `GCPResourceManager`
-- **Função**: Monitoramento de infraestrutura.
-- **Funcionalidades**: Checa o status de serviços no Cloud Run e busca métricas de utilização de recursos via Cloud Monitoring.
+- **Tecnologia**: FAISS + Gemini Embeddings (`models/gemini-embedding-001`).
+- **Persistência GCS**: Os índices e metadados são salvos e carregados do GCS, garantindo que a memória sobreviva a reinicializações de container.
+- **Visualização**: Implementa projeção PCA para visualizar a densidade da memória em 2D no dashboard.
 
 ---
 
-### 4. Interface e Dashboard (`src/dashboard/`)
+### 3. Segurança e Infraestrutura
 
-#### `Home.py`
-- **Framework**: Streamlit.
-- **Função**: Página principal do dashboard. Exibe o status de saúde do sistema, métricas financeiras e o estado dos agentes.
+#### Secret Manager Integration
+- A `MASTER_KEY` e outras chaves sensíveis não ficam mais em arquivos `.env` no servidor de produção. Elas são injetadas via **GCP Secret Manager** durante o deploy.
 
-#### `pages/Command_Center.py`
-- **Função**: Interface de controle interativa.
-- **Recursos**: Chat em tempo real com o Orchestrator, visualização de logs e histórico de decisões.
-
----
-
-### 5. Scripts de Manutenção
-
-#### `cleanup_graph.py` & `deep_clean_graph.py`
-- **Função**: Limpeza e normalização do `global_graph.json`.
-- **Ações**: Remove nós órfãos, normaliza nomes de conceitos e assegura a integridade da estrutura hierárquica do grafo.
-
----
+#### `deploy_gcp.ps1`
+- Script de automação total que gerencia: Artifact Registry, Cloud Build, IAM Permissions, Secret Manager e o Deploy final no Cloud Run.
 
 ---
 
 ## 🛠️ Manual Funcional e Fluxos de Operação
 
-### 1. Interação via Telegram
-O usuário interage com a plataforma através do bot oficial.
-- **Comando `/start`**: Inicializa a sessão e confirma o status do bridge.
-- **Envio de Texto**: Comandos diretos (ex: "Crie um relatório", "O que é Kubernetes?") são enviados ao Orchestrator.
-- **Envio de Imagem**: Ativa automaticamente o `VisionAgent`. A descrição da imagem é enviada como contexto extra para o Orchestrator.
-- **Feedback**: O bot exibe o raciocínio (`reasoning`) breve e o resultado final da execução.
+### 1. Ciclo de Decisão Robusto
+1. **Entrada**: Comando do usuário + Histórico recente + Imagem (opcional).
+2. **Avaliação**: O Orquestrador avalia a intenção comparando com a memória semântica (RAG).
+3. **Validação**: A saída é validada pelo schema Pydantic.
+4. **Execução**:
+   - Se for uma ação: Cria TRD no Kanban e notifica.
+   - Se for conhecimento: Responde e atualiza o Grafo via Clusterização IA.
+   - Se for complexo: Cria um agente especializado.
 
-### 2. Ciclo de Decisão do Orchestrator
-O sistema não apenas responde, ele **decide**:
-- **Respond (Responder)**: Para dúvidas gerais, o sistema utiliza sua base interna e o contexto do `VectorStore`.
-- **Create Agent (Criar Agente)**: Se o usuário pede uma automação recorrente, o sistema gera o código/configuração de um novo agente e o registra no `registry.json` no GCS.
-- **Execute (Executar)**: Se já existe um agente capaz de realizar a tarefa, o Orchestrator delega a execução.
-
-### 3. Proteção FinOps (Segurança de Custo)
-Toda execução pesada passa pelo `FinOpsGuardian`:
-1. **Estimativa**: O sistema conta os caracteres e estima o custo de tokens.
-2. **Validação**: Verifica no arquivo `daily_usage.json` se o limite diário (padrão $10.00) foi atingido.
-3. **Bloqueio**: Se exceder, a tarefa é abortada com uma mensagem de segurança, evitando gastos inesperados no GCP.
+### 2. Regra de Ouro do Conhecimento
+Para evitar que o Grafo se torne "sujo", o sistema segue a política: **Nenhum nó novo sem um agente ou um TRD prévio.** Isso garante que o conhecimento no grafo seja sempre validado por uma ação real.
 
 ---
 
-## 🚀 Casos de Uso (Exemplos Práticos)
+## 🚀 Como Executar
 
-### Caso A: Criação de um Agente de Notícias
-1. **Usuário no Telegram**: "Gostaria de um agente que monitore notícias de IA."
-2. **Orchestrator**: Identifica a ação `create_agent`.
-3. **Sistema**: Cria a entrada no registro, define o propósito e salva no GCS.
-4. **Resultado**: O usuário recebe a confirmação e o agente está pronto para ser instanciado.
+### Configuração Inicial
+1. Certifique-se de que a `MASTER_KEY` está definida no Secret Manager de seu projeto GCP.
+2. O bucket GCS deve seguir o padrão `flose-ai-platform-[PROJECT_ID]`.
 
-### Caso B: Análise de Print de Infraestrutura
-1. **Usuário no Telegram**: Envia um print da tela do GCP Console.
-2. **VisionAgent**: Analisa o print: "A imagem mostra um erro 403 no Cloud Run..."
-3. **Orchestrator**: Recebe a análise e sugere: "Parece um erro de permissão IAM. Verifique a service account."
-4. **Resultado**: Diagnóstico técnico rápido sem necessidade de digitar detalhes.
+### Comandos
+- **Deploy**: `./deploy_gcp.ps1`
+- **Reset de Emergência**: `python reset_system.py` (Zera grafo, memória e backlog).
+- **Dashboard**: `streamlit run src/dashboard/Home.py`
 
 ---
-
-## 🛠️ Configuração e Execução
-
-### Variáveis de Ambiente (.env)
-- `GEMINI_API_KEY`: Chave do Google AI Studio.
-- `TELEGRAM_BOT_TOKEN`: Token gerado pelo BotFather.
-- `GCP_PROJECT_ID`: ID do projeto no Google Cloud.
-- `GCP_REGION`: Região preferencial (ex: us-central1).
-
-### Comandos Úteis
-- **Rodar a Plataforma (CLI)**: `python main.py`
-- **Rodar o Bot do Telegram**: `python run_telegram_bot.py`
-- **Rodar o Dashboard**: `streamlit run src/dashboard/Home.py`
+**Flose AI Platform** - *Decidir, Agir e Evoluir.*
