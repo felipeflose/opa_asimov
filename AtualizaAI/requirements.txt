@@ -18,3 +18,7 @@ faiss-cpu
 scikit-learn
 pyarrow
 pydantic
+fastapi
+uvicorn
+httpx
+starlette-proxy

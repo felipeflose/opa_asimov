@@ -162,24 +162,33 @@ class TelegramAgent:
     async def error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
         self.log(f"Exception while handling an update: {context.error}")
 
-    def run(self):
+    async def setup(self):
+        """Inicializa a aplicação do bot."""
         if not self.token:
-            print("Telegram Token not found!")
-            return
-
+            return False
+            
         self.application = Application.builder().token(self.token).build()
         self.application.add_handler(CommandHandler("start", self.start_handler))
         self.application.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.Document.IMAGE, self.message_handler))
         self.application.add_error_handler(self.error_handler)
         
-        print(f"Starting Telegram Bot: {os.getenv('TELEGRAM_BOT_NAME')}")
+        await self.application.initialize()
+        await self.application.start()
         self.is_running = True
-        
-        # Loop de persistência para evitar desligamento por timeout de rede
-        while self.is_running:
-            try:
-                self.application.run_polling(drop_pending_updates=True, close_loop=False)
-            except Exception as e:
-                self.log(f"Bot crashado! Reiniciando em 5 segundos... Erro: {e}")
-                import time
-                time.sleep(5)
+        print(f"Bot Application Initialized: {os.getenv('TELEGRAM_BOT_NAME')}")
+        return True
+
+    async def process_update(self, update_json):
+        """Processa um update recebido via Webhook."""
+        if not self.application:
+            await self.setup()
+            
+        update = Update.de_json(update_json, self.application.bot)
+        await self.application.process_update(update)
+
+    def run(self):
+        # Mantido para compatibilidade local se necessário
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.setup())
+        self.application.run_polling(drop_pending_updates=True)

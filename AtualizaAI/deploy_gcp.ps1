@@ -67,16 +67,23 @@ gcloud secrets add-iam-policy-binding TELEGRAM_BOT_TOKEN --member="serviceAccoun
 gcloud secrets add-iam-policy-binding MASTER_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 
 # 6. Cloud Run Deploy
-Write-Host "Deploying to Cloud Run (Always Active Mode)..."
+Write-Host "Deploying to Cloud Run (On-Demand / Eco Mode)..."
 gcloud run deploy $IMAGE_NAME `
     --image "$FULL_IMAGE_PATH" `
     --platform managed `
     --region $REGION `
     --allow-unauthenticated `
     --project=$PROJECT_ID `
-    --no-cpu-throttling `
-    --min-instances 1 `
     --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID" `
     --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,MASTER_KEY=MASTER_KEY:latest"
 
-Write-Host "--- DEPLOY v4.2 COMPLETADO ---" -ForegroundColor Green
+# 7. Configurar Webhook do Telegram
+Write-Host "Configurando Webhook do Telegram..."
+$SERVICE_URL = gcloud run services describe $IMAGE_NAME --platform managed --region $REGION --project=$PROJECT_ID --format="value(status.url)"
+$WEBHOOK_URL = "${SERVICE_URL}/telegram_webhook"
+
+# Chamada simples para o Telegram registrar o webhook
+Invoke-RestMethod -Uri "https://api.telegram.org/bot${TG_TOKEN}/setWebhook?url=${WEBHOOK_URL}"
+
+Write-Host "--- DEPLOY Eco-Mode COMPLETADO ---" -ForegroundColor Green
+Write-Host "Webhook URL: $WEBHOOK_URL"
