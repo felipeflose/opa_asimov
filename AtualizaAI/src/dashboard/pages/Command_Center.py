@@ -173,9 +173,48 @@ with tabs[1]:
         st.info("Nenhum pensamento processado nesta sessão.")
 
 with tabs[2]:
-    st.header("🧠 Persistent Memory")
-    st.caption("Memória de longo prazo recuperada do GCS.")
-    st.write("Em breve: Visualização de embeddings e contexto recuperado.")
+    st.header("🧠 Persistent Memory (Embeddings)")
+    st.caption("Visualização tridimensional (projetada em 2D) da memória semântica da IA.")
+    
+    vs = st.session_state.orchestrator.vector_store
+    
+    col_mem1, col_mem2 = st.columns([2, 1])
+    
+    with col_mem1:
+        df_proj = vs.get_projections()
+        if df_proj is not None:
+            fig_mem = px.scatter(
+                df_proj, x='x', y='y', 
+                color='type', hover_data=['text', 'source'],
+                title="Mapa de Memória Semântica (Embedding Space)",
+                template="plotly_dark",
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            fig_mem.update_traces(marker=dict(size=12, opacity=0.8, line=dict(width=1, color='White')))
+            st.plotly_chart(fig_mem, use_container_width=True)
+        else:
+            st.info("A IA ainda não possui memórias suficientes para gerar o mapa de embeddings. Continue conversando!")
+
+    with col_mem2:
+        st.subheader("Últimas Entradas")
+        if not vs.metadata.empty:
+            for _, row in vs.metadata.tail(5).iterrows():
+                with st.expander(f"📍 {row['source']} ({row['type']})"):
+                    st.write(row['text'])
+        else:
+            st.write("Memória vazia.")
+            
+    st.markdown("---")
+    st.subheader("🔍 Recuperação de Contexto")
+    query_test = st.text_input("Teste de Busca Semântica", placeholder="O que a IA lembra sobre...")
+    if query_test:
+        results = vs.search(query_test, top_k=3)
+        if results:
+            for res in results:
+                st.write(f"✅ **Distância: {res['distance']:.4f}**")
+                st.code(res['text'])
+        else:
+            st.warning("Nenhum contexto similar encontrado.")
 
 with tabs[3]:
     st.header("💎 FinOps Monitoring")

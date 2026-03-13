@@ -3,11 +3,16 @@ import json
 import os
 from PIL import Image
 from src.agents.base_agent import BaseAgent
+from src.storage.vector_store import VectorStore
 
 class CognitiveOrchestrator:
     def __init__(self, api_key=None, gcs_client=None, finops_manager=None):
         self.gcs_client = gcs_client
         self.finops = finops_manager
+        
+        # Inicialização do VectorStore (Memória Semântica)
+        self.vector_store = VectorStore(gcs_client=gcs_client)
+        self.vector_store.load() # Tenta carregar do GCS
         
         # Usar apenas o SDK do Google Generative AI (AI Studio)
         # Nunca Vertex AI por ordem expressa do usuário
@@ -103,6 +108,15 @@ class CognitiveOrchestrator:
             if registry:
                 agents = registry.get("agents", [])
 
+        # RAG Interface: Recuperação de Memória Semântica
+        semantic_context = ""
+        relevant_docs = self.vector_store.search(user_command, top_k=3)
+        if relevant_docs:
+            semantic_context = "\n--- MEMÓRIA RECUPERADA (CONTEXTO) ---\n"
+            for doc in relevant_docs:
+                semantic_context += f"- [{doc['source']}]: {doc['text']}\n"
+            semantic_context += "------------------------------------\n"
+
         prompt = f"""
         Current System Context:
         - GCP Project: {project_id}
@@ -110,6 +124,8 @@ class CognitiveOrchestrator:
         - Telegram Bot: @{tg_bot}
         - FinOps State: {finops_data}
         - Registered Agents: {json.dumps(agents)}
+        
+        {semantic_context}
         
         {"[VISION AGENT OUTPUT]: " + visual_context if visual_context else ""}
         
@@ -152,6 +168,15 @@ class CognitiveOrchestrator:
 
         action = decision.get("action")
         
+        # Salva na memória semântica se houver uma resposta útil
+        final_response = decision.get("response", "")
+        if final_response and action == "respond":
+            self.vector_store.add_texts(
+                texts=[f"P: {decision.get('reasoning', '')} -> R: {final_response}"],
+                sources=["CognitiveOrchestrator"],
+                types=["memory_interaction"]
+            )
+
         if action == "respond":
             return decision.get("response", "Não consegui formular uma resposta.")
 
