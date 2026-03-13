@@ -527,21 +527,19 @@ with tabs[7]:
                         
                         with st.container():
                             st.markdown(f"""
-                            <div style="background-color: #1e1e1e; border-left: 5px solid {colors[i]}; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-right: 1px solid #333; border-top: 1px solid #333; border-bottom: 1px solid #333;">
-                                <div style="display: flex; justify-content: space-between;">
-                                    <h4 style="margin: 0; color: #fff;">{task['title']}</h4>
-                                    <span>{'✅' if budget_ok else '⏳'}</span>
-                                </div>
-                                <p style="font-size: 12px; color: #aaa; margin: 5px 0;">ID: <code>{task['id']}</code></p>
-                                
-                                {f'<div style="font-size: 11px; color: #4dabf7; margin-top: 5px;">🏗️ Terraform Ready</div>' if has_tf else ''}
-                                
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                                    <span style="background-color: {priority_color}; color: #333; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">{task['priority']}</span>
-                                    <span style="color: #888; font-size: 11px;">👤 {task['responsible']}</span>
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
+<div style="background-color: #1e1e1e; border-left: 5px solid {colors[i]}; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-right: 1px solid #333; border-top: 1px solid #333; border-bottom: 1px solid #333;">
+<div style="display: flex; justify-content: space-between;">
+<h4 style="margin: 0; color: #fff;">{task['title']}</h4>
+<span>{'✅' if budget_ok else '⏳'}</span>
+</div>
+<p style="font-size: 12px; color: #aaa; margin: 5px 0;">ID: <code>{task['id']}</code></p>
+{f'<div style="font-size: 11px; color: #4dabf7; margin-top: 5px;">🏗️ Terraform Ready</div>' if has_tf else ''}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+<span style="background-color: {priority_color}; color: #333; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">{task['priority']}</span>
+<span style="color: #888; font-size: 11px;">👤 {task['responsible']}</span>
+</div>
+</div>
+""", unsafe_allow_html=True)
                             
                             # Interações de Governança
                             if state == "Aberto":
