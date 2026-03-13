@@ -4,20 +4,23 @@ import uvicorn
 import asyncio
 import subprocess
 from fastapi import FastAPI, Request
-from starlette_proxy import ProxyMiddleware
+from fastapi_proxy_lib.core.http import ReverseHttpProxy
+from fastapi_proxy_lib.core.tool import ProxyEvent
 
 # --- 1. Inicia o Streamlit em Background ---
 print("🚀 Iniciando Streamlit na porta 8081...")
 os.environ["STREAMLIT_SERVER_PORT"] = "8081"
 os.environ["STREAMLIT_SERVER_ADDRESS"] = "127.0.0.1"
 
+# NOTA: Usamos cabeçalhos extras para garantir que o Streamlit aceite o tráfego do proxy
 subprocess.Popen([
     "streamlit", "run", "src/dashboard/Home.py",
     "--server.port", "8081",
     "--server.address", "127.0.0.1",
     "--server.headless", "true",
     "--browser.gatherUsageStats", "false",
-    "--server.enableXsrfProtection", "false"
+    "--server.enableXsrfProtection", "false",
+    "--server.enableCORS", "false"
 ])
 
 # --- 2. Setup do Bot (Carregamento Preguiçoso) ---
@@ -28,9 +31,6 @@ from src.graph.knowledge_graph import KnowledgeGraphManager
 from src.agents.vision_agent import VisionAgent
 
 app = FastAPI()
-
-# Middleware de Proxy para o Streamlit (Trata WebSockets e Estáticos)
-app.add_middleware(ProxyMiddleware, upstream="http://127.0.0.1:8081")
 
 tg_agent = None
 
@@ -48,21 +48,22 @@ async def get_tg_agent():
     return tg_agent
 
 # --- 3. Endpoint do Webhook do Telegram ---
-# Este endpoint PRECISA ser verificado antes do Proxy
 @app.post("/telegram_webhook")
 async def telegram_webhook(request: Request):
-    """Acordado pelo Telegram. Custo $0 quando parado."""
+    """Ponto de entrada do Bot: Economiza CPU e R$."""
     data = await request.json()
     agent = await get_tg_agent()
     await agent.process_update(data)
     return {"status": "ok"}
 
-# Rota de Health Check
-@app.get("/healthz")
-async def healthz():
-    return {"status": "ok"}
+# --- 4. Proxy para o Dashboard Streamlit ---
+# O proxy encaminha tudo que não for /telegram_webhook para o localhost:8081
+proxy = ReverseHttpProxy("http://127.0.0.1:8081")
+
+@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+async def dashboard_proxy(request: Request, path: str):
+    return await proxy.proxy(request)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8080"))
-    # O Uvicorn roda na 8080 recebendo tudo
     uvicorn.run(app, host="0.0.0.0", port=port)
