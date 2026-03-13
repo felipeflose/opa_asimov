@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import os
 import sys
+import time
 import subprocess
 import networkx as nx
 import psutil
@@ -533,6 +534,68 @@ with tabs[7]:
                             """, unsafe_allow_html=True)
                             
         st.markdown("---")
+        
+        # --- 🧬 AGENT TASK RUNNER ---
+        st.subheader("🧬 Agent Task Runner")
+        st.caption("Selecione uma demanda aberta para que um agente especializado a execute.")
+        
+        open_tasks = df_demands[df_demands['status'] == 'Aberto']
+        
+        if not open_tasks.empty:
+            col_tr1, col_tr2, col_tr3 = st.columns([2, 1, 1])
+            
+            with col_tr1:
+                selected_task_title = st.selectbox("Selecione a Tarefa", open_tasks['title'].tolist())
+                selected_task = open_tasks[open_tasks['title'] == selected_task_title].iloc[0]
+            
+            with col_tr2:
+                # Carrega agentes disponíveis
+                reg = st.session_state.gcs.read_json("agents/registry.json") or {"agents": []}
+                agent_names = [a['agent_name'] for a in reg['agents']]
+                selected_agent_name = st.selectbox("Delegar para Agente", agent_names)
+            
+            with col_tr3:
+                st.write("") # ajuste
+                if st.button("🚀 EXECUTAR TAREFA", type="primary", use_container_width=True):
+                    with st.spinner(f"O agente {selected_agent_name} está trabalhando..."):
+                        # Busca os dados do agente
+                        agent_data = next((a for a in reg['agents'] if a['agent_name'] == selected_agent_name), None)
+                        if agent_data:
+                            # Instancia e Executa
+                            agent_obj = BaseAgent(
+                                name=agent_data['agent_name'],
+                                purpose=agent_data['purpose'],
+                                system_prompt=agent_data['system_prompt'],
+                                gcs_client=st.session_state.gcs
+                            )
+                            result = agent_obj.run(f"Tarefa: {selected_task['title']}\nPrioridade: {selected_task['priority']}\nContexto: {selected_task.get('description', 'N/A')}")
+                            
+                            # Salva o resultado
+                            execution_id = f"EX_{os.urandom(4).hex()}"
+                            exec_data = {
+                                "task_id": selected_task['id'],
+                                "agent": selected_agent_name,
+                                "result": result,
+                                "timestamp": pd.Timestamp.now().isoformat()
+                            }
+                            st.session_state.gcs.upload_json(exec_data, f"logs/executions/{execution_id}.json")
+                            
+                            # Atualiza status no registry de demandas
+                            for i, d in enumerate(demands_data['demands']):
+                                if d['id'] == selected_task['id']:
+                                    demands_data['demands'][i]['status'] = 'Concluído'
+                                    demands_data['demands'][i]['result_id'] = execution_id
+                                    break
+                            st.session_state.gcs.upload_json(demands_data, "demands/registry.json")
+                            
+                            st.success(f"Tarefa concluída por {selected_agent_name}!")
+                            st.info(f"**Resultado:**\n{result}")
+                            st.balloons()
+                            time.sleep(2)
+                            st.rerun()
+        else:
+            st.info("Não há tarefas abertas no backlog para execução automática.")
+
         if st.checkbox("Ver Tabela Bruta (Raw Data)"):
             st.dataframe(df_demands, use_container_width=True)
     else:

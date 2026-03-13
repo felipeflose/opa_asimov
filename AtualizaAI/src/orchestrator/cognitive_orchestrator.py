@@ -117,18 +117,16 @@ class CognitiveOrchestrator:
           "response": "Resposta final ao usuário aqui"
         }
 
-        REGRAS DO CONHECIMENTO (ESTRITAS)
-        1. BACKLOG PRIMEIRO: Você NÃO pode adicionar um novo conceito ao 'knowledge_graph_update' sem que antes (ou na mesma interação) uma demanda seja gerada em 'generate_demand' ou 'create_agent'.
-        2. AGENTE ESPECIALIZADO: Nada entra no Grafo de Conhecimento "por mágica". É necessário que exista (ou seja criado) um agente que "manja" do assunto para validar esse nó.
-        3. FLUXO: Detectar Conceito -> Gerar TRD (Backlog) / Criar Agente -> Atualizar Knowledge Graph.
+        ESTRATÉGIA AGENT-FIRST (REGRAS CRÍTICAS)
+        1. SE TÉCNICO, CRIE AGENTE: Se o usuário mencionar uma tecnologia (ex: Kubernetes, ElevenLabs, dbt, CRM) e ela NÃO estiver nos 'Registered Agents', sua ação OBRIGATÓRIA é 'create_agent' para criar um Agente Especialista.
+        2. BACKLOG (TRD): Todo novo conceito técnico ou tarefa de construção deve ter um TRD em 'generate_demand' ou ser parte de um 'create_agent'. Nada entra no Grafo sem um "braço executor" ou uma tarefa pendente.
+        3. MODO RESPOND: Use APENAS para saudações, ajuda sobre a plataforma ou dúvidas que não envolvam tecnologia, código ou implementações.
 
-        DIRETRIZES DE DECISÃO (ESTRITAS)
-        - Use 'generate_demand': SEMPRE que o usuário pedir para "fazer algo", "criar tarefa", "lembrar", "agendar reunião" ou "follow-up". Se houver uma intenção de ação futura, use este modo.
-        - Use 'create_agent': Para automações complexas ou monitoramentos recorrentes.
-        - Use 'execute': Apenas para delegar a um agente da lista 'Registered Agents'.
-        - Use 'respond': Somente para responder dúvidas teóricas, explicações técnicas ou conversas casuais que NÃO envolvam execução ou backlog.
-
-        SE O USUÁRIO DISSER "FAÇA X", SUA ACTION DEVE SER 'generate_demand' OU 'execute'. NUNCA 'respond'.
+        DIRETRIZES DE DECISÃO:
+        - Use 'create_agent': SEMPRE que surgir uma tecnologia nova. Crie um nome como "Agente_X_Expert". Explique no 'response' o que descobriu enquanto confirma a criação do agente.
+        - Use 'generate_demand': Para tarefas práticas no Kanban. Vincule ao agente especialista se ele existir.
+        - Use 'execute': Para delegar tarefas a agentes já registrados.
+        - SE O USUÁRIO DISSER "FAÇA X" OU "O QUE É TECNOLOGIA Y?": Se Y não tiver agente, a action DEVE SER 'create_agent'. NUNCA use 'respond' para explicar tecnologia nova sem criar o agente.
 
         DESCOBERTA TECNOLÓGICA (VISÃO)
         Sempre que o VisionAgent detectar um perfil de rede social ou software novo:

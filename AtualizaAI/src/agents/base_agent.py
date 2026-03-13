@@ -45,4 +45,22 @@ class BaseAgent:
             self.gcs_client.upload_json(registry, "agents/registry.json")
 
     def run(self, task):
-        raise NotImplementedError("Each agent must implement its own run method.")
+        """Executa uma tarefa usando a inteligência e personalidade deste agente."""
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return "Erro: GEMINI_API_KEY não configurada."
+            
+        try:
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            prompt = f"""
+            {self.system_prompt}
+            
+            SUA TAREFA ATUAL:
+            {task}
+            
+            Responda como o agente {self.name}. Forneça uma solução técnica, um relatório ou o resultado da execução.
+            """
+            response = model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            return f"Erro na execução do agente {self.name}: {str(e)}"
