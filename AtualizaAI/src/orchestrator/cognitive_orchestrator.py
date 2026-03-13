@@ -3,7 +3,7 @@ import json
 import os
 import time
 from PIL import Image
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Literal
 from src.agents.base_agent import BaseAgent
 from src.storage.vector_store import VectorStore
@@ -14,10 +14,18 @@ class FinOpsCheck(BaseModel):
     approved: bool = True
 
 class DemandInfo(BaseModel):
-    type: Literal["FollowUP", "reunião", "tarefa"]
+    type: str # Flexibilizado para validação interna
     title: str
     responsible: str = "Standard"
-    priority: Literal["Alta", "Média", "Baixa"] = "Média"
+    priority: str = "Média"
+
+    @field_validator('type')
+    @classmethod
+    def validate_type(cls, v: str) -> str:
+        v = v.lower()
+        if 'reun' in v: return 'reunião'
+        if 'follow' in v: return 'FollowUP'
+        return 'tarefa'
 
 class NewAgentConfig(BaseModel):
     agent_name: str
@@ -26,14 +34,25 @@ class NewAgentConfig(BaseModel):
     tools: List[str] = []
 
 class OrchestratorDecision(BaseModel):
-    action: Literal["respond", "create_agent", "execute", "generate_demand"]
+    action: str
     reasoning: str
     finops_check: FinOpsCheck
     agent_involved: Optional[str] = None
     knowledge_graph_update: List[str] = []
     demand_info: Optional[DemandInfo] = None
     new_agent_config: Optional[NewAgentConfig] = None
+    task_description: Optional[str] = None
     response: str
+
+    @field_validator('action')
+    @classmethod
+    def validate_action(cls, v: str) -> str:
+        v = v.lower()
+        if 'trd' in v or 'demand' in v: return 'generate_demand'
+        if 'agent' in v and 'create' in v: return 'create_agent'
+        if 'response' in v: return 'respond'
+        if 'exec' in v: return 'execute'
+        return v
 
 class CognitiveOrchestrator:
     def __init__(self, api_key=None, gcs_client=None, finops_manager=None):
@@ -103,11 +122,13 @@ class CognitiveOrchestrator:
         2. AGENTE ESPECIALIZADO: Nada entra no Grafo de Conhecimento "por mágica". É necessário que exista (ou seja criado) um agente que "manja" do assunto para validar esse nó.
         3. FLUXO: Detectar Conceito -> Gerar TRD (Backlog) / Criar Agente -> Atualizar Knowledge Graph.
 
-        DIRETRIZES DE DECISÃO
-        - Use 'create_agent' para automações recorrentes.
-        - Use 'generate_demand' para novos TRDs (tarefa, reunião, follow-up).
-        - Use 'execute' para agentes registrados.
-        - Use 'respond' para conhecimento técnico/geral.
+        DIRETRIZES DE DECISÃO (ESTRITAS)
+        - Use 'generate_demand': SEMPRE que o usuário pedir para "fazer algo", "criar tarefa", "lembrar", "agendar reunião" ou "follow-up". Se houver uma intenção de ação futura, use este modo.
+        - Use 'create_agent': Para automações complexas ou monitoramentos recorrentes.
+        - Use 'execute': Apenas para delegar a um agente da lista 'Registered Agents'.
+        - Use 'respond': Somente para responder dúvidas teóricas, explicações técnicas ou conversas casuais que NÃO envolvam execução ou backlog.
+
+        SE O USUÁRIO DISSER "FAÇA X", SUA ACTION DEVE SER 'generate_demand' OU 'execute'. NUNCA 'respond'.
 
         DESCOBERTA TECNOLÓGICA (VISÃO)
         Sempre que o VisionAgent detectar um perfil de rede social ou software novo:
@@ -245,7 +266,12 @@ class CognitiveOrchestrator:
         
         elif action == "generate_demand":
             demand = decision.get("demand_info") or {}
-            title = demand.get("title", "Nova Demanda")
+            title = demand.get("title")
+            if not title or title == "Sem título":
+                # Fallback: Extrai as 5 primeiras palavras do reasoning ou response
+                ref_text = decision.get("response") or decision.get("reasoning") or "Nova Tarefa"
+                title = " ".join(ref_text.split()[:5]) + "..."
+                
             dtype = demand.get("type", "tarefa")
             
             print(f"Generating demand: {title} ({dtype})")
