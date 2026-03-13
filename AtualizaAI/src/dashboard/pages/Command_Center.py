@@ -564,6 +564,22 @@ with tabs[7]:
                                     else:
                                         st.write("✅ **Aprovado**")
                             
+                            elif state == "Concluído":
+                                if st.button("🎁 Ver Entrega", key=f"res_{task['id']}", use_container_width=True):
+                                    res_id = task.get('result_id')
+                                    if res_id:
+                                        with st.expander("📦 Resultado da Execução", expanded=True):
+                                            res_data = st.session_state.gcs.read_json(f"logs/executions/{res_id}.json")
+                                            if res_data:
+                                                st.markdown(f"**Agente:** `{res_data.get('agent')}`")
+                                                st.markdown(f"**Data:** {res_data.get('timestamp')}")
+                                                st.divider()
+                                                st.markdown(res_data.get('result'))
+                                            else:
+                                                st.error("Log de execução não encontrado.")
+                                    else:
+                                        st.warning("Nenhum ID de resultado vinculado.")
+                            
         st.markdown("---")
         
         # --- 🧬 AGENT TASK RUNNER ---
