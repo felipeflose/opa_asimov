@@ -124,8 +124,10 @@ class CognitiveOrchestrator:
 
         ESTRATÉGIA AGENT-FIRST (REGRAS CRÍTICAS)
         1. SE TÉCNICO, CRIE AGENTE: Se o usuário mencionar uma tecnologia e ela NÃO estiver nos 'Registered Agents', sua ação OBRIGATÓRIA é 'create_agent'.
-        2. CASO DE USO E TRD OBRIGATÓRIO: Sempre que você usar 'create_agent', você DEVE TAMBÉM gerar uma demanda inicial no 'generate_demand' (vincule no reasoning). Um agente sem tarefa no Kanban é um desperdício. Toda tecnologia precisa de um caso de uso para teste e aprovação.
-        3. GOVERNANÇA E CUSTO: Preencha 'cost_explanation' e 'terraform_plan' (se GCP).
+        2. CASO DE USO E TRD OBRIGATÓRIO: Sempre que você usar 'create_agent', você DEVE TAMBÉM gerar uma demanda inicial no 'generate_demand'. Um agente sem tarefa no Kanban é um desperdício.
+        3. SPECS PROFUNDAS (GOVERNANÇA):
+           - cost_explanation: NÃO use frases genéricas. Detalhe a volumetria (ex: "Estimado 50k tokens entrada/saída no Gemini 1.5 Flash + 1 instância Cloud Run ativa por 2h/dia = ~$0.08/dia").
+           - terraform_plan: Gere código HCL VÁLIDO e funcional. Se for GCP, inclua recursos como `google_storage_bucket`, `google_cloud_run_v2_service`, dependências e variáveis de ambiente. Siga as melhores práticas da Flose AI.
         4. HUMAN-IN-THE-LOOP: 'budget_approved' = FALSE por padrão para novas demandas.
         5. MODO RESPOND: Use APENAS para saudações, ajuda sobre a plataforma ou dúvidas que não envolvam tecnologia, código ou implementações.
 
