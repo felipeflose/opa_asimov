@@ -1,27 +1,25 @@
-# Optimized Dockerfile for Flose AI Platform
+# Usar Python como base
+FROM python:3.11-slim
 
-FROM python:3.11
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# The full python:3.11 image already has build-essential
-# We only need Git if we are installing from git repos
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements and install
+# Instalar dependências Python (cache)
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copiar TODO o projeto (incluindo a pasta frontend/dist gerada localmente)
 COPY . .
 
-# Expose Streamlit port
-EXPOSE 8080
-
-# Environment variables for GCP
+# Variáveis de Ambiente
 ENV PORT=8080
-ENV PYTHONPATH=/app
-ENV STREAMLIT_SERVER_PORT=8080
-ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+ENV PYTHONUNBUFFERED=True
+
+EXPOSE 8080
 
 CMD ["python", "entrypoint.py"]

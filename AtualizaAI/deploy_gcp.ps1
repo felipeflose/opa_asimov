@@ -75,6 +75,9 @@ gcloud run deploy $IMAGE_NAME `
     --allow-unauthenticated `
     --project=$PROJECT_ID `
     --set-env-vars "GCP_PROJECT_ID=$PROJECT_ID" `
+    --cpu 2 `
+    --memory 2Gi `
+    --min-instances 0 `
     --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,MASTER_KEY=MASTER_KEY:latest"
 
 # 7. Configurar Webhook do Telegram

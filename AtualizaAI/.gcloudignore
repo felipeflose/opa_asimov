@@ -18,7 +18,7 @@ _agents/
 *.zip
 *.tgz
 *.gz
-dist/
+# dist/
 build/
 *.pyc
 *.pyo

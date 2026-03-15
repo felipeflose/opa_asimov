@@ -1,0 +1,84 @@
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nav-item {
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.nav-item:hover, .nav-item.active {
+  background: rgba(0, 242, 255, 0.1);
+  color: var(--primary);
+  transform: translateX(5px);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  background: var(--grad);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.logout-button {
+  background: rgba(255, 0, 122, 0.1);
+  border: 1px solid rgba(255, 0, 122, 0.3);
+  color: #ff007a;
+  padding: 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 800;
+  transition: all 0.3s;
+}
+
+.logout-button:hover {
+  background: #ff007a;
+  color: white;
+}
+
+.refresh-btn {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s;
+}
+
+.refresh-btn:hover {
+  border-color: var(--primary);
+  background: rgba(0, 242, 255, 0.1);
+}
+
+.system-time {
+  background: var(--glass);
+  padding: 10px 20px;
+  border-radius: 40px;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  font-weight: 700;
+}

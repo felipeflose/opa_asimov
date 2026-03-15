@@ -6,7 +6,7 @@ from datetime import datetime
 from PIL import Image
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Literal
-from src.agents.base_agent import BaseAgent
+from src.agents.base_agent import BaseAgent as AgentCore
 from src.storage.vector_store import VectorStore
 
 class FinOpsCheck(BaseModel):
@@ -40,21 +40,23 @@ class NewAgentConfig(BaseModel):
 
 class OrchestratorDecision(BaseModel):
     action: str
-    reasoning: str
-    finops_check: FinOpsCheck
+    reasoning: str = "Delegação inteligente."
+    finops_check: FinOpsCheck = Field(default_factory=FinOpsCheck)
     agent_involved: Optional[str] = None
     knowledge_graph_update: List[str] = []
     demand_info: Optional[DemandInfo] = None
     new_agent_config: Optional[NewAgentConfig] = None
     task_description: Optional[str] = None
-    response: str
+    response: str = "Processado com sucesso."
 
     @field_validator('action')
     @classmethod
     def validate_action(cls, v: str) -> str:
         v = v.lower()
         if 'trd' in v or 'demand' in v: return 'generate_demand'
-        if 'agent' in v and 'create' in v: return 'create_agent'
+        if 'agent' in v:
+            if 'edit' in v or 'update' in v or 'mudar' in v or 'alterar' in v: return 'update_agent'
+            if 'create' in v or 'criar' in v or 'novo' in v: return 'create_agent'
         if 'response' in v: return 'respond'
         if 'exec' in v: return 'execute'
         return v
@@ -83,74 +85,66 @@ class CognitiveOrchestrator:
         
         self.system_prompt = """
         IDENTIDADE E MISSÃO
-        Você é o CognitiveOrchestrator da Flose AI Platform, um sistema multi-agente rodando sobre Google Cloud Platform com Gemini 2.5 Flash. Sua missão não é apenas responder — é decidir, agir e evoluir.
-        Você opera em três modos distintos e deve escolher o correto para cada situação:
-        1. RESPOND → Resposta direta e inteligente ao usuário.
-        2. CREATE_AGENT → Criação de um novo agente especializado.
-        3. EXECUTE → Delegação de tarefa para um agente já existente.
-        * (Opcional) GENERATE_DEMAND → Registrar uma nova tarefa/demanda (TRD) se o usuário pedir algo a ser feito.
+        Você é o Cérebro Superior (CognitiveOrchestrator) da Flose AI Platform. Sua função primária não é apenas executar, mas **ORQUESTRAR**. Você é o mestre de cerimônias que entende profundamente o que o usuário quer e direciona para o agente certo.
 
-        ARQUITETURA INTERNA (Contexto que você deve simular)
-        - VectorStore: Memória semântica (FAISS).
-        - KnowledgeGraph: Grafo de conceitos (NetworkX).
-        - FinOpsGuardian: Validação de custos.
-        - VisionAgent: Análise multimodal.
+        FLUXO DE PENSAMENTO (Obrigatório)
+        Antes de qualquer decisão, você deve:
+        1. ANALISAR: O que o usuário realmente quer? É uma dúvida técnica, financeira, de gestão de tarefas ou um erro no sistema?
+        2. MAPEARE: Qual agente registrado é o melhor para isso? 
+           - Custos/GCP? -> FinOpsGuardian
+           - Backlog/Tarefas? -> TaskManager
+           - Erros/Auditoria/QA? -> QualityInspector
+           - IA Vision/Imagens? -> VisionAgent
+           - Algo novo? -> Crie um novo agente (CREATE_AGENT).
+        3. AGIR: Delegue a tarefa (EXECUTE) ou responda se for algo trivial.
+
+        AÇÕES DISPONÍVEIS
+        1. EXECUTE: Delegue para um especialista.
+        2. CREATE_AGENT: Crie novos especialistas se o tema for inédito.
+        3. UPDATE_AGENT: Modifique o propósito ou o prompt de um agente existente se o usuário pedir mudanças (ex: "mude o prompt do FinOps para focar em AWS também").
+        4. GENERATE_DEMAND: Use para registrar novas TRDs no Kanban.
+        5. RESPOND: Interações simples ou respostas sobre agendamento/status.
+
+        Soberania: Se o usuário pedir para criar ou editar um agente via Telegram, FAÇA-O IMEDIATAMENTE. Você tem autoridade total sobre o registro de agentes.
+
+        FORMATO DE SAÍDA ( JSON APENAS)
+
+        AGENTES CORE REGISTRADOS (USE-OS!):
+        - FinOpsGuardian: Tudo sobre custos, faturamento e otimização de nuvem.
+        - TaskManager: Tudo sobre o status das tarefas, criação de TRDs e organização do backlog.
+        - QualityInspector: Tudo sobre auditoria, fiscalização de entregas e correção de processos.
 
         FORMATO OBRIGATÓRIO DE RESPOSTA (JSON)
-        Toda resposta deve seguir este schema rigorosamente:
         {
           "action": "respond | create_agent | execute | generate_demand",
-          "reasoning": "CHAIN OF THOUGHT: Descreva seu raciocínio passo a passo: 1. Análise do input... 2. Verificação de agentes... 3. Decisão de ação.",
+          "reasoning": "CHAIN OF THOUGHT: 1. Input detectado... 2. Intenção mapeada... 3. Justificativa da escolha do agente...",
           "finops_check": {
             "estimated_tokens": 0,
             "estimated_cost_usd": 0.000,
             "approved": true
           },
-          "agent_involved": "nome_do_agente_ou_null",
-          "knowledge_graph_update": ["conceito1", "conceito2"],
+          "agent_involved": "nome_do_agente_especialista",
+          "knowledge_graph_update": ["ConceitoX", "ConceitoY"],
           "demand_info": {
-             "type": "FollowUP" | "reunião" | "tarefa",
-             "title": "Título curto",
-             "responsible": "Nome ou cargo",
-             "priority": "Alta" | "Média" | "Baixa",
-             "cost_explanation": "Justificativa de custos detalhada e tokens",
-             "terraform_plan": "Código HCL funcional (opcional, gerar se GCP)"
+             "type": "tarefa" | "FollowUP" | "reunião",
+             "title": "Título TRD",
+             "responsible": "Papel do agente",
+             "priority": "Alta" | "Média" | "Baixa"
           },
           "new_agent_config": {
-             "agent_name": "NomeDoAgente", 
-             "purpose": "Objetivo do agente",
-             "tools": ["ferramenta1"]
+             "agent_name": "NomeDoNovoAgente", 
+             "purpose": "O que ele faz melhor que os outros?",
+             "system_prompt": "Instruções específicas de personalidade"
           },
-          "response": "Resposta final ao usuário aqui"
+          "task_description": "Instrução CLARA e DIRETA para o agente que vai executar",
+          "response": "Mensagem educada ao usuário confirmando para quem a tarefa foi delegada."
         }
 
-        ESTRATÉGIA AGENT-FIRST (REGRAS CRÍTICAS)
-        1. SE TÉCNICO, CRIE AGENTE: Se o usuário mencionar uma tecnologia e ela NÃO estiver nos 'Registered Agents', sua ação OBRIGATÓRIA é 'create_agent'.
-        2. CASO DE USO E TRD OBRIGATÓRIO: Sempre que você usar 'create_agent', você DEVE TAMBÉM gerar uma demanda inicial no 'generate_demand'. Um agente sem tarefa no Kanban é um desperdício.
-        3. SPECS PROFUNDAS (GOVERNANÇA):
-           - cost_explanation: NÃO use frases genéricas. Detalhe a volumetria (ex: "Estimado 50k tokens entrada/saída no Gemini 1.5 Flash + 1 instância Cloud Run ativa por 2h/dia = ~$0.08/dia").
-           - terraform_plan: Gere código HCL VÁLIDO e funcional. Se for GCP, inclua recursos como `google_storage_bucket`, `google_cloud_run_v2_service`, dependências e variáveis de ambiente. Siga as melhores práticas da Flose AI.
-        4. HUMAN-IN-THE-LOOP: 'budget_approved' = FALSE por padrão para novas demandas.
-        5. MODO RESPOND: Use APENAS para saudações, ajuda sobre a plataforma ou dúvidas que não envolvam tecnologia, código ou implementações.
-
-        DIRETRIZES DE DECISÃO:
-        - Use 'create_agent': SEMPRE que surgir uma tecnologia nova. Crie um nome como "Agente_X_Expert". Explique no 'response' o que descobriu enquanto confirma a criação do agente.
-        - Use 'generate_demand': Para tarefas práticas no Kanban. Vincule ao agente especialista se ele existir.
-        - Use 'execute': Para delegar tarefas a agentes já registrados.
-        - SE O USUÁRIO DISSER "FAÇA X" OU "O QUE É TECNOLOGIA Y?": Se Y não tiver agente, a action DEVE SER 'create_agent'. NUNCA use 'respond' para explicar tecnologia nova sem criar o agente.
-
-        DESCOBERTA TECNOLÓGICA (VISÃO)
-        Sempre que o VisionAgent detectar um perfil de rede social ou software novo:
-        1. Identifique o Nome, Site e Proposta de Valor.
-        2. Procura Referência: Use seu conhecimento interno (World Knowledge) para expandir sobre o que essa ferramenta faz.
-        3. APLIQUE AS REGRAS DO CONHECIMENTO: Crie a demanda no backlog primeiro.
-
-        REGRAS DE FINOPS
-        Se finops_check.approved for false, a response deve ser:
-        "⛔ Operação bloqueada pelo FinOpsGuardian. Limite diário de $10.00 atingido. Tente novamente amanhã."
-
-        COMPORTAMENTO DO VISIONAGENT
-        Se houver imagem, ative-o mentalmente: [VisionAgent ativado] e use o 'visual_context' fornecido.
+        REGRAS DE OURO:
+        - NUNCA responda algo complexo você mesmo se puder delegar para um especialista.
+        - Se o usuário reclamar de um erro, o QualityInspector deve ser acionado.
+        - Se o usuário perguntar "quanto gastei", o FinOpsGuardian é o dono da resposta.
+        - Valorize a REUTILIZAÇÃO. Só crie novos agentes se realmente não houver um especialista adequado.
         """
 
     def process_command(self, user_command, image_path=None, visual_context="", chat_history=None):
@@ -275,7 +269,7 @@ class CognitiveOrchestrator:
                 return f"Erro na criação de agente: {decision.get('response')}"
                 
             print(f"Creating new agent: {agent_name}")
-            new_agent = BaseAgent(
+            new_agent = AgentCore(
                 name=agent_name,
                 purpose=config.get('purpose', 'General Purpose'),
                 system_prompt=config.get('system_prompt'),
@@ -285,6 +279,22 @@ class CognitiveOrchestrator:
             new_agent.save_to_registry()
             return decision.get("response") or f"Agente '{agent_name}' criado com sucesso."
         
+        elif action == "update_agent":
+            config = decision.get("new_agent_config") or {}
+            agent_name = config.get('agent_name')
+            if not agent_name: return "Erro: Nome do agente não fornecido para atualização."
+            
+            print(f"Updating agent via Orchestrator: {agent_name}")
+            if self.gcs_client:
+                registry = self.gcs_client.read_json("agents/registry.json")
+                for agent in registry.get("agents", []):
+                    if agent["agent_name"] == agent_name:
+                        if config.get("purpose"): agent["purpose"] = config["purpose"]
+                        if config.get("system_prompt"): agent["system_prompt"] = config["system_prompt"]
+                        break
+                self.gcs_client.upload_json(registry, "agents/registry.json")
+            return decision.get("response") or f"Agente '{agent_name}' atualizado conforme solicitado."
+
         elif action == "generate_demand":
             demand = decision.get("demand_info") or {}
             title = demand.get("title")
@@ -322,8 +332,32 @@ class CognitiveOrchestrator:
 
         elif action == "execute":
             agent_name = decision.get("agent_involved") or decision.get("agent_name", "Unknown")
-            task = decision.get("task_description") or decision.get("reasoning", "No task provided")
-            print(f"Executing task with agent: {agent_name}")
-            return decision.get("response") or f"Tarefa enviada para o agente '{agent_name}': {task}"
+            task_desc = decision.get("task_description") or decision.get("reasoning", "Executar tarefa.")
+            
+            print(f"Delegating to agent: {agent_name}")
+            
+            # Tenta carregar o agente do Registry
+            agent_data = None
+            if self.gcs_client:
+                registry = self.gcs_client.read_json("agents/registry.json")
+                if registry:
+                    agent_data = next((a for a in registry.get("agents", []) if a['agent_name'] == agent_name), None)
+
+            if agent_data:
+                # Instancia e executa autonomamente
+                agent_obj = AgentCore(
+                    name=agent_data['agent_name'],
+                    purpose=agent_data['purpose'],
+                    system_prompt=agent_data['system_prompt'],
+                    gcs_client=self.gcs_client
+                )
+                
+                # Execução Real do Especialista
+                execution_result = agent_obj.run(task_desc)
+                
+                # Resposta Composta
+                return f"🤖 **{agent_name} (Especialista)**:\n\n{execution_result}"
+            else:
+                return f"⚠️ Agente '{agent_name}' não encontrado no registro para execução."
         
         return decision.get("response", "Decisão não reconhecida.")

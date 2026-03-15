@@ -30,8 +30,31 @@ class TelegramAgent:
             filename = f"logs/telegram/msg_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.json"
             try:
                 self.gcs_client.upload_json(data, filename)
+                
+                # Atualizar sumário de atividades recentes
+                summary_path = "logs/telegram/latest_activity.json"
+                summary = self.gcs_client.read_json(summary_path) or []
+                new_entry = {
+                    "user": data.get("user"),
+                    "message": data.get("message"),
+                    "timestamp": data.get("timestamp")
+                }
+                summary = [new_entry] + summary
+                summary = summary[:10] # Manter apenas os 10 mais recentes
+                self.gcs_client.upload_json(summary, summary_path)
             except Exception as e:
                 print(f"Erro ao subir log para GCS: {e}")
+
+    async def safe_reply(self, update: Update, text: str, parse_mode=None):
+        """Evita o erro 'Message is too long' do Telegram (limite ~4096 chars)."""
+        if len(text) > 4000:
+            text = text[:3900] + "...\n\n⚠️ *Mensagem truncada por ser muito longa. Veja os detalhes completos no Command Center Dashboard!*"
+        
+        try:
+            await update.message.reply_text(text, parse_mode=parse_mode)
+        except Exception:
+            # Fallback se o parse_mode der erro (ex: markdown inválido vindo da IA)
+            await update.message.reply_text(text)
 
     async def start_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.effective_user.username or update.effective_user.first_name
@@ -94,17 +117,17 @@ class TelegramAgent:
             # Mostrar Reasoning Chain se solicitado (Transparência)
             reasoning_msg = f"🧠 AI Reasoning Chain:\n{reasoning}"
             self.log(f"Enviando reasoning para @{user}...")
-            await update.message.reply_text(reasoning_msg)
+            await self.safe_reply(update, reasoning_msg)
 
             if action == "respond":
                 response = decision.get("response", "Não consegui processar sua dúvida.")
                 self.log(f"Enviando resposta direta para @{user}")
-                await update.message.reply_text(f"💬 Flose AI\n\n{response}")
+                await self.safe_reply(update, f"💬 Flose AI\n\n{response}")
             
             elif action == "create_agent":
                 result = self.orchestrator.execute_decision(decision)
                 self.log(f"Enviando confirmação de criação de agente para @{user}")
-                await update.message.reply_text(f"🏗️ Processamento de Agente\n\n✅ {result}")
+                await self.safe_reply(update, f"🏗️ Processamento de Agente\n\n✅ {result}")
             
             elif action == "generate_demand":
                 result = self.orchestrator.execute_decision(decision)
@@ -112,12 +135,12 @@ class TelegramAgent:
                 title = demand.get("title", "Sem título")
                 dtype = demand.get("type", "tarefa")
                 self.log(f"Enviando confirmação de demanda para @{user}")
-                await update.message.reply_text(f"📝 Nova Demanda (TRD)\n\nTítulo: {title}\nTipo: {dtype}\n\n{result}")
+                await self.safe_reply(update, f"📝 Nova Demanda (TRD)\n\nTítulo: {title}\nTipo: {dtype}\n\n{result}")
     
             else: # execute
                 result = self.orchestrator.execute_decision(decision)
                 self.log(f"Enviando resultado de execução para @{user}")
-                await update.message.reply_text(f"⚙️ Execução Finalizada\n\nResultado: {result}")
+                await self.safe_reply(update, f"⚙️ Execução Finalizada\n\nResultado: {result}")
             
             # Sincroniza o log final (com a decisão) no GCS
             if self.gcs_client:
@@ -139,7 +162,7 @@ class TelegramAgent:
             error_msg = f"Erro no message_handler: {str(e)}"
             self.log(error_msg)
             try:
-                await update.message.reply_text(f"⚠️ *Opa! Tive um pequeno problema interno:* \n`{str(e)}`", parse_mode='Markdown')
+                await self.safe_reply(update, f"⚠️ *Opa! Tive um pequeno problema interno:* \n`{str(e)}`", parse_mode='Markdown')
             except:
                 pass
 

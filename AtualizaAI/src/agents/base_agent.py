@@ -14,6 +14,13 @@ class BaseAgent:
         self.memory_path = f"agents/memory/{self.name}/"
         
     def to_dict(self):
+        # Tenta carregar métricas existentes se houver
+        metrics = {"executions": 0, "total_tokens": 0}
+        if self.gcs_client:
+            agent_data = self.gcs_client.read_json(f"agents/{self.name}.json")
+            if agent_data and "metrics" in agent_data:
+                metrics = agent_data["metrics"]
+
         return {
             "agent_name": self.name,
             "purpose": self.purpose,
@@ -22,6 +29,7 @@ class BaseAgent:
             "tools": self.tools,
             "memory": self.memory_path,
             "token_cost_profile": "standard",
+            "metrics": metrics,
             "created_at": datetime.now().isoformat()
         }
 
@@ -61,6 +69,25 @@ class BaseAgent:
             Responda como o agente {self.name}. Forneça uma solução técnica, um relatório ou o resultado da execução.
             """
             response = model.generate_content(prompt)
+            
+            # Atualizar Métricas
+            if self.gcs_client:
+                agent_data = self.gcs_client.read_json(f"agents/{self.name}.json") or self.to_dict()
+                if "metrics" not in agent_data: agent_data["metrics"] = {"executions": 0, "total_tokens": 0}
+                agent_data["metrics"]["executions"] += 1
+                if hasattr(response, 'usage_metadata'):
+                    agent_data["metrics"]["total_tokens"] += response.usage_metadata.total_token_count
+                
+                self.gcs_client.upload_json(agent_data, f"agents/{self.name}.json")
+                # Sincroniza registry
+                registry = self.gcs_client.read_json("agents/registry.json")
+                if registry:
+                    for a in registry.get("agents", []):
+                        if a["agent_name"] == self.name:
+                            a["metrics"] = agent_data["metrics"]
+                            break
+                    self.gcs_client.upload_json(registry, "agents/registry.json")
+
             return response.text.strip()
         except Exception as e:
             return f"Erro na execução do agente {self.name}: {str(e)}"
