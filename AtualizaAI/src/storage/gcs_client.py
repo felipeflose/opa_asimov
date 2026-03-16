@@ -1,6 +1,7 @@
 import os
 from google.cloud import storage
 import json
+from datetime import datetime
 
 class GCSClient:
     def __init__(self, bucket_name, project_id=None, credentials_path=None):
@@ -17,15 +18,19 @@ class GCSClient:
             # Forçamos o project_id aqui para evitar OSError no Windows
             self.client = storage.Client(project=project_id)
         self.bucket = self.client.bucket(bucket_name)
+        self._cache = {}
 
     def upload_file(self, local_path, remote_path):
         blob = self.bucket.blob(remote_path)
         blob.upload_from_filename(local_path)
+        if remote_path in self._cache:
+            del self._cache[remote_path]
         print(f"Uploaded {local_path} to {remote_path}")
 
     def upload_json(self, data, remote_path):
         blob = self.bucket.blob(remote_path)
         blob.upload_from_string(json.dumps(data, indent=2), content_type='application/json')
+        self._cache[remote_path] = (data, datetime.now())
         print(f"Uploaded JSON to {remote_path}")
 
     def download_file(self, remote_path, local_path):
@@ -33,12 +38,20 @@ class GCSClient:
         blob.download_to_filename(local_path)
         print(f"Downloaded {remote_path} to {local_path}")
 
-    def read_json(self, remote_path):
+    def read_json(self, remote_path, ttl=30):
+        now = datetime.now()
+        if remote_path in self._cache:
+            cached_data, timestamp = self._cache[remote_path]
+            if (now - timestamp).seconds < ttl:
+                return cached_data
+
         blob = self.bucket.blob(remote_path)
         if not blob.exists():
             return None
         content = blob.download_as_text()
-        return json.loads(content)
+        data = json.loads(content)
+        self._cache[remote_path] = (data, now)
+        return data
 
     def list_files(self, prefix):
         blobs = self.client.list_blobs(self.bucket, prefix=prefix)

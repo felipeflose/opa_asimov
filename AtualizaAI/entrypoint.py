@@ -46,7 +46,9 @@ async def telegram_webhook(request: Request):
 async def verify_auth(request: Request):
     data = await request.json()
     client_key = data.get("key")
-    master_key = os.getenv("MASTER_KEY", "flosetec")
+    master_key = os.getenv("MASTER_KEY")
+    if not master_key:
+        return {"status": "error", "message": "Secret Manager configuration missing."}
     
     if client_key == master_key:
         return {"status": "authorized", "token": "flosetoken_secure_v2"}
@@ -79,7 +81,7 @@ async def get_stats(token: str = None):
     
     return {
         "tokens": f"{today_data['tokens']/1000:.1f}k" if today_data['tokens'] > 0 else "0k",
-        "cost": f"${today_data['cost']:.2f}",
+        "cost": f"${today_data.get('total_cost', today_data['cost']):.2f}",
         "tasks": tasks_count,
         "agents": agents_count,
         "calls": today_data["calls"]

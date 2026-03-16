@@ -8,10 +8,18 @@ from datetime import datetime
 # --- Logging Helper ---
 LOG_FILE = "setup.log"
 
+import hashlib
+
 def log_event(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(f"[{timestamp}] {message}\n")
+
+def secure_compare(input_str, secret_str):
+    """Compara o hash do input com o segredo."""
+    if not input_str or not secret_str:
+        return False
+    return hashlib.sha256(input_str.encode()).hexdigest() == hashlib.sha256(secret_str.encode()).hexdigest()
 
 # --- Persistence Logic ---
 def save_settings(project_id, region, api_key):
@@ -55,8 +63,8 @@ def setup_page():
     </style>
     """, unsafe_allow_html=True)
 
-    if 'authenticated' not in st.session_state:
-        st.session_state.authenticated = False
+    if 'login_attempts' not in st.session_state:
+        st.session_state.login_attempts = 0
 
     if not st.session_state.authenticated:
         st.markdown('<div class="login-card">', unsafe_allow_html=True)
@@ -68,15 +76,28 @@ def setup_page():
         password_input = st.text_input("Chave Mestra de Acesso", type="password")
         
         if st.button("🔐 DESBLOQUEAR PLATAFORMA"):
-            # Verificação de segurança sem fallback hardcoded
-            if email_input == "feelip.flose@gmail.com" and password_input == os.getenv("MASTER_KEY"):
+            # Rate limiting: Sleep increases with failed attempts
+            if st.session_state.login_attempts > 0:
+                time.sleep(min(st.session_state.login_attempts * 2, 10))
+
+            admin_email = os.getenv("ADMIN_EMAIL")
+            master_key = os.getenv("MASTER_KEY")
+            
+            if not admin_email or not master_key:
+                st.error("🔒 Configuração de segurança ausente no servidor (Secret Manager).")
+                st.stop()
+            
+            # Verificação de segurança via Hash
+            if secure_compare(email_input, admin_email) and secure_compare(password_input, master_key):
                 st.session_state.authenticated = True
                 st.session_state.user_email = email_input
+                st.session_state.login_attempts = 0 # Reset
                 st.success("Acesso Concedido! Iniciando sistemas...")
                 time.sleep(1)
                 st.rerun()
             else:
-                st.error("Credenciais inválidas. Apenas o administrador tem acesso.")
+                st.session_state.login_attempts += 1
+                st.error("Credenciais inválidas. Acesso monitorado.")
         
         st.markdown('</div>', unsafe_allow_html=True)
         st.stop()

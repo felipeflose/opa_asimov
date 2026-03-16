@@ -1,5 +1,6 @@
 from src.agents.base_agent import BaseAgent
 import json
+from datetime import datetime
 
 class FinOpsGuardian(BaseAgent):
     def __init__(self, gcs_client=None, token_limit=1000000, cost_limit=10.0):
@@ -43,7 +44,7 @@ class FinOpsGuardian(BaseAgent):
         approved, message = self.check_execution(tokens, infra_cost)
         
         log_entry = {
-            "timestamp": "now",
+            "timestamp": datetime.now().isoformat(),
             "agent": "FinOpsGuardian",
             "decision": message,
             "approved": approved

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function App() {
@@ -13,6 +13,8 @@ function App() {
     agents: 0
   });
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [activity, setActivity] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -42,7 +44,6 @@ function App() {
       if (!tasksD.error) setTasks(tasksD);
       if (!activityD.error) setActivity(activityD);
 
-      // Carregar agentes reais
       const agentsD = await agentsRes.json();
       if (!agentsD.error) setAgentList(agentsD);
     } catch (err) {
@@ -72,17 +73,6 @@ function App() {
     alert("Resultado:\n\n" + data.result);
   };
 
-  const handleUpdateAgent = async (agent) => {
-    const token = "flosetoken_secure_v2";
-    await fetch(`/api/agents/update?token=${token}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(agent)
-    });
-    alert("Agent Registry Updated!");
-    fetchData();
-  };
-
   const handleAgentQuery = async (query) => {
     const token = "flosetoken_secure_v2";
     const res = await fetch(`/api/agents/chat?token=${token}`, {
@@ -102,6 +92,174 @@ function App() {
       return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
+
+  // Hook de Física Simplificado (Inspirado no Ref)
+  const useForce = (nodes, links, width, height) => {
+    const [positions, setPositions] = useState({});
+    const simulationRef = useRef(null);
+
+    useEffect(() => {
+      if (!nodes.length) return;
+      
+      const pos = {};
+      const vel = {};
+      const cx = width / 2;
+      const cy = height / 2;
+
+      nodes.forEach((n, i) => {
+        const angle = (i / nodes.length) * Math.PI * 2;
+        const dist = n.type === 'core' ? 0 : (n.type === 'pilar' ? 120 : 220);
+        pos[n.id] = { x: cx + Math.cos(angle) * dist + (Math.random()-0.5)*50, y: cy + Math.sin(angle) * dist + (Math.random()-0.5)*50 };
+        vel[n.id] = { x: 0, y: 0 };
+      });
+
+      let iteration = 0;
+      const step = () => {
+        iteration++;
+        const alpha = Math.max(0.01, 0.4 * Math.exp(-iteration * 0.015));
+        
+        // Repulsão
+        nodes.forEach(n1 => {
+          nodes.forEach(n2 => {
+            if (n1.id === n2.id) return;
+            const dx = pos[n2.id].x - pos[n1.id].x;
+            const dy = pos[n2.id].y - pos[n1.id].y;
+            const d = Math.sqrt(dx * dx + dy * dy) || 1;
+            const force = (2500 / (d * d)) * alpha;
+            vel[n1.id].x -= (dx / d) * force;
+            vel[n1.id].y -= (dy / d) * force;
+          });
+        });
+
+        // Atração (Links)
+        links.forEach(l => {
+          const s = pos[l.source];
+          const t = pos[l.target];
+          if (!s || !t) return;
+          const dx = t.x - s.x;
+          const dy = t.y - s.y;
+          const d = Math.sqrt(dx * dx + dy * dy) || 1;
+          const ideal = l.type === 'concept_link' ? 80 : 150;
+          const force = (d - ideal) * 0.06 * alpha;
+          vel[l.source].x += (dx / d) * force;
+          vel[l.source].y += (dy / d) * force;
+          vel[l.target].x -= (dx / d) * force;
+          vel[l.target].y -= (dy / d) * force;
+        });
+
+        // Gravidade Central
+        nodes.forEach(n => {
+          vel[n.id].x += (cx - pos[n.id].x) * 0.005 * alpha;
+          vel[n.id].y += (cy - pos[n.id].y) * 0.005 * alpha;
+          
+          pos[n.id].x += vel[n.id].x;
+          pos[n.id].y += vel[n.id].y;
+          
+          vel[n.id].x *= 0.85;
+          vel[n.id].y *= 0.85;
+          
+          pos[n.id].x = Math.max(50, Math.min(width - 50, pos[n.id].x));
+          pos[n.id].y = Math.max(50, Math.min(height - 50, pos[n.id].y));
+        });
+
+        setPositions({...pos});
+        if (alpha > 0.01) simulationRef.current = requestAnimationFrame(step);
+      };
+
+      simulationRef.current = requestAnimationFrame(step);
+      return () => cancelAnimationFrame(simulationRef.current);
+    }, [nodes.length, links.length, width, height]);
+
+    return positions;
+  };
+
+  const CognitiveMap = ({ data }) => {
+    const pos = useForce(data.nodes || [], data.links || [], 1000, 600);
+    
+    return (
+      <div className="glass-card graph-container" style={{ height: '70vh', position: 'relative', overflow: 'hidden' }}>
+        <h2 className="title-grad" style={{ letterSpacing: '2px', fontSize: '1.2rem' }}>KNOWLEDGE_GRAPH_V3.0</h2>
+        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
+          <svg width="100%" height="100%" viewBox="0 0 1000 600">
+            <defs>
+              <filter id="glow-node">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+            </defs>
+
+            {/* Pillar Halos */}
+            {data.nodes.filter(n => n.type === 'pilar').map(pilar => {
+              const p = pos[pilar.id];
+              if (!p) return null;
+              return (
+                <circle key={`halo-${pilar.id}`} cx={p.x} cy={p.y} r="70" fill="var(--primary)" fillOpacity="0.04" stroke="var(--primary)" strokeOpacity="0.15" strokeDasharray="5 5" className="graph-halo" />
+              );
+            })}
+
+            {/* Links */}
+            {data.links.map((link, i) => {
+              const s = pos[link.source];
+              const t = pos[link.target];
+              if (!s || !t) return null;
+              const isHigh = hoveredNode && (hoveredNode.id === link.source || hoveredNode.id === link.target);
+              return (
+                <line key={i} x1={s.x} y1={s.y} x2={t.x} y2={t.y} stroke={isHigh ? 'var(--primary)' : 'var(--primary)'} strokeOpacity={isHigh ? 0.6 : 0.08} strokeWidth={isHigh ? 2 : 1} style={{ transition: 'stroke-opacity 0.3s' }} />
+              );
+            })}
+
+            {/* Nodes */}
+            {data.nodes.map(node => {
+              const p = pos[node.id];
+              if (!p) return null;
+              const isCore = node.type === 'core';
+              const isPilar = node.type === 'pilar';
+              const isSel = selectedNode && selectedNode.id === node.id;
+              const isHov = hoveredNode && hoveredNode.id === node.id;
+              
+              return (
+                <g key={node.id} transform={`translate(${p.x}, ${p.y})`} className="graph-node" onMouseEnter={() => setHoveredNode(node)} onMouseLeave={() => setHoveredNode(null)} onClick={(e) => { e.stopPropagation(); setSelectedNode(node); }}>
+                  {(isSel || isHov) && <circle r={isCore ? 35 : (isPilar ? 20 : 12)} fill="var(--primary)" fillOpacity="0.1" filter="url(#glow-node)" />}
+                  <circle r={isCore ? 25 : (isPilar ? 12 : 6)} fill={isCore ? 'var(--primary)' : (isPilar ? '#f59e0b' : '#34d399')} stroke={isSel ? 'white' : 'none'} strokeWidth="2" filter={isCore ? "url(#glow-node)" : ""} />
+                  <text dy={isCore ? 45 : 22} textAnchor="middle" fill="white" fontSize={isCore ? "14" : "10"} className="graph-label" style={{ fontWeight: (isSel || isHov) ? 700 : 400, opacity: (hoveredNode && !isHov) ? 0.3 : 0.8 }}>
+                    {node.id.toUpperCase()}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+          
+          {/* Side Info overlay */}
+          {selectedNode && (
+            <div className="glass-card" style={{ position: 'absolute', top: '20px', right: '20px', width: '280px', zIndex: 10, background: 'rgba(5,8,16,0.95)', border: '1px solid var(--primary)', fontFamily: 'inherit' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '1px' }}>DATA_ENTRY // {selectedNode.type.toUpperCase()}</span>
+                <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
+              </div>
+              <h3 style={{ color: 'white', fontSize: '1.2rem' }}>{selectedNode.id}</h3>
+              <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', borderLeft: '3px solid var(--primary)' }}>
+                <p style={{ fontSize: '0.8rem', color: '#e0e0e0', lineHeight: '1.5' }}>
+                  {selectedNode.type === 'core' ? 'Núcleo Central da Plataforma. Representa a Flose AI e o orquestrador cognitivo.' : 
+                   selectedNode.type === 'pilar' ? 'Pilar Tecnológico. Agrupa conceitos correlacionados identificados pelo sistema.' : 
+                   'Conceito Específico. Item de conhecimento granular capturado durante execuções autônomas.'}
+                </p>
+              </div>
+              <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+                <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '5px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--primary)' }}>1</div>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>LEVEL</div>
+                </div>
+                <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '5px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#f59e0b' }}>A+</div>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>RELATION</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const renderContent = () => {
     if (activeTab === 'Dashboard') {
@@ -171,30 +329,7 @@ function App() {
     }
 
     if (activeTab === 'Cognitive Map') {
-      return (
-        <div className="glass-card" style={{ height: '70vh' }}>
-          <h2 className="title-grad">Knowledge Graph</h2>
-          <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-            <svg width="100%" height="100%" viewBox="0 0 1000 600">
-              {graphData.links && graphData.links.map((link, i) => (
-                <line key={i} x1="500" y1="300" x2="500" y2="300" stroke="var(--border)" />
-              ))}
-              {graphData.nodes && graphData.nodes.map((node, i) => {
-                const angle = (i / graphData.nodes.length) * Math.PI * 2;
-                const r = node.type === 'core' ? 0 : 250;
-                const x = 500 + Math.cos(angle) * r;
-                const y = 300 + Math.sin(angle) * r;
-                return (
-                  <g key={node.id} transform={`translate(${x}, ${y})`}>
-                    <circle r={node.type === 'core' ? 20 : 10} fill={node.type === 'core' ? 'var(--primary)' : 'var(--secondary)'} />
-                    <text dy="25" textAnchor="middle" fill="white" fontSize="12">{node.id}</text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-        </div>
-      );
+      return <CognitiveMap data={graphData} />;
     }
 
     if (activeTab === 'Task Manager') {
@@ -275,48 +410,6 @@ function App() {
               </div>
             )}
           </div>
-
-          {/* Agent Info Modal */}
-          {viewingAgent && (
-            <div className="modal-overlay" onClick={() => setViewingAgent(null)}>
-              <div className="glass-card modal-content" onClick={e => e.stopPropagation()}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    <div className="avatar" style={{ width: '60px', height: '60px', fontSize: '1.5rem' }}>
-                      {viewingAgent.agent_name.substring(0,2).toUpperCase()}
-                    </div>
-                    <div>
-                      <h2 className="title-grad" style={{ fontSize: '1.8rem' }}>{viewingAgent.agent_name}</h2>
-                      <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>{viewingAgent.purpose}</p>
-                    </div>
-                  </div>
-                  <button onClick={() => setViewingAgent(null)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
-                </div>
-                
-                <h4 style={{ color: 'var(--text-muted)', marginBottom: '10px', fontSize: '0.8rem', letterSpacing: '1px' }}>SYSTEM PROMPT / BEHAVIOR</h4>
-                <div style={{ background: 'rgba(0,0,0,0.4)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)', maxHeight: '300px', overflowY: 'auto' }}>
-                  <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#e0e0e0', lineHeight: '1.6' }}>
-                    {viewingAgent.system_prompt}
-                  </pre>
-                </div>
-                
-                {viewingAgent.tools && viewingAgent.tools.length > 0 && (
-                  <>
-                    <h4 style={{ color: 'var(--text-muted)', margin: '20px 0 10px 0', fontSize: '0.8rem', letterSpacing: '1px' }}>AVAILABLE TOOLS</h4>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                      {viewingAgent.tools.map(tool => (
-                        <span key={tool} className="badge" style={{ background: 'var(--glass)', border: '1px solid var(--primary)', color: 'var(--primary)' }}>{tool}</span>
-                      ))}
-                    </div>
-                  </>
-                )}
-                
-                <div style={{ marginTop: '30px', textAlign: 'right' }}>
-                  <button className="login-button" style={{ width: 'auto', padding: '10px 30px' }} onClick={() => setViewingAgent(null)}>CLOSE</button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       );
     }
@@ -391,16 +484,16 @@ function App() {
           <h2 className="title-grad">Billing Dashboard</h2>
           <div style={{ marginTop: '30px' }}>
             <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
-              <span>Total Tokens (Today)</span>
+              <span>Total Estimated Cost (Cloud Run + Tokens)</span>
+              <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{stats.cost}</span>
+            </div>
+            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
+              <span>Tokens Used (Hoy)</span>
               <span style={{ color: 'var(--primary)' }}>{stats.tokens}</span>
             </div>
             <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
-              <span>Total Estimated Cost</span>
-              <span style={{ color: 'var(--primary)' }}>{stats.cost}</span>
-            </div>
-            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
-              <span>API Calls</span>
-              <span style={{ color: 'var(--primary)' }}>{stats.calls || 0}</span>
+              <span>API Request Volume</span>
+              <span style={{ color: 'var(--primary)' }}>{stats.calls || 0} calls</span>
             </div>
           </div>
         </div>
@@ -496,7 +589,7 @@ function App() {
       </div>
 
       <main className="main-content">
-        <header className="header">
+        <header className="header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2 style={{ fontSize: '1.8rem' }}>Welcome back, Director.</h2>
             <p style={{ color: 'var(--text-muted)' }}>The multi-agent system is operating within safe parameters.</p>
@@ -510,6 +603,48 @@ function App() {
         </header>
 
         {renderContent()}
+        
+        {/* Agent Info Modal (Global) */}
+        {viewingAgent && (
+          <div className="modal-overlay" onClick={() => setViewingAgent(null)}>
+            <div className="glass-card modal-content" onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                  <div className="avatar" style={{ width: '60px', height: '60px', fontSize: '1.5rem' }}>
+                    {viewingAgent.agent_name.substring(0,2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="title-grad" style={{ fontSize: '1.8rem' }}>{viewingAgent.agent_name}</h2>
+                    <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>{viewingAgent.purpose}</p>
+                  </div>
+                </div>
+                <button onClick={() => setViewingAgent(null)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+              </div>
+              
+              <h4 style={{ color: 'var(--text-muted)', marginBottom: '10px', fontSize: '0.8rem', letterSpacing: '1px' }}>SYSTEM PROMPT / BEHAVIOR</h4>
+              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)', maxHeight: '300px', overflowY: 'auto' }}>
+                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem', color: '#e0e0e0', lineHeight: '1.6' }}>
+                  {viewingAgent.system_prompt}
+                </pre>
+              </div>
+              
+              {viewingAgent.tools && viewingAgent.tools.length > 0 && (
+                <>
+                  <h4 style={{ color: 'var(--text-muted)', margin: '20px 0 10px 0', fontSize: '0.8rem', letterSpacing: '1px' }}>AVAILABLE TOOLS</h4>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {viewingAgent.tools.map(tool => (
+                      <span key={tool} className="badge" style={{ background: 'var(--glass)', border: '1px solid var(--primary)', color: 'var(--primary)' }}>{tool}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+              
+              <div style={{ marginTop: '30px', textAlign: 'right' }}>
+                <button className="login-button" style={{ width: 'auto', padding: '10px 30px' }} onClick={() => setViewingAgent(null)}>CLOSE</button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

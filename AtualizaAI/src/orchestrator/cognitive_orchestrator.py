@@ -277,7 +277,27 @@ class CognitiveOrchestrator:
                 gcs_client=self.gcs_client
             )
             new_agent.save_to_registry()
-            return decision.get("response") or f"Agente '{agent_name}' criado com sucesso."
+            
+            # --- Auto-generate a Task for the new agent ---
+            demand_data = {
+                "id": f"TRD_AGENT_{os.urandom(2).hex()}",
+                "title": f"Initialization: {agent_name}",
+                "type": "tarefa",
+                "responsible": agent_name,
+                "priority": "Alta",
+                "status": "Concluído",
+                "budget_approved": True,
+                "cost_explanation": f"Recrutamento e ativação do especialista {agent_name}.",
+                "terraform_plan": "",
+                "evidence_path": f"agents/{agent_name}.json",
+                "created_at": datetime.now().isoformat()
+            }
+            if self.gcs_client:
+                registry = self.gcs_client.read_json("demands/registry.json") or {"demands": []}
+                registry['demands'].append(demand_data)
+                self.gcs_client.upload_json(registry, "demands/registry.json")
+
+            return decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
         
         elif action == "update_agent":
             config = decision.get("new_agent_config") or {}

@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import google.generativeai as genai
 import os
+import threading
 from sklearn.decomposition import PCA
 
 class VectorStore:
@@ -58,7 +59,8 @@ class VectorStore:
             'type': types if types else ['interaction'] * len(texts)
         })
         self.metadata = pd.concat([self.metadata, new_metadata], ignore_index=True)
-        self.save()
+        # Background save to avoid blocking the chat thread
+        threading.Thread(target=self.save).start()
 
     def search(self, query, top_k=5):
         if self.index is None or self.index.ntotal == 0:

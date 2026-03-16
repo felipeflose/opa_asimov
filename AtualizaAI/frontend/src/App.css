@@ -82,3 +82,32 @@
   border: 1px solid var(--primary);
   font-weight: 700;
 }
+
+/* Graph Styles */
+.graph-container {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  overflow: hidden;
+  user-select: none;
+}
+
+.graph-node {
+  cursor: grab;
+}
+
+.graph-node:active {
+  cursor: grabbing;
+}
+
+.graph-label {
+  pointer-events: none;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.graph-link {
+  pointer-events: none;
+}
+
+.graph-halo {
+  pointer-events: none;
+}

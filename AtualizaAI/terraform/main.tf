@@ -40,7 +40,12 @@ resource "google_cloud_run_v2_service" "flose_platform" {
       }
       env {
         name  = "GEMINI_API_KEY"
-        value = "TO_BE_SET" # Injest via Secret Manager for better security
+        value_source {
+          secret_key_ref {
+            secret  = "GEMINI_API_KEY"
+            version = "latest"
+          }
+        }
       }
     }
   }
@@ -54,7 +59,43 @@ resource "google_artifact_registry_repository" "repo" {
   format        = "DOCKER"
 }
 
-# 3. IAM - Allow public access to the dashboard (optional, or restrict to your IP)
+# 3. Secret Manager (Managed for stability)
+resource "google_secret_manager_secret" "gemini_key" {
+  secret_id = "GEMINI_API_KEY"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "tg_token" {
+  secret_id = "TELEGRAM_BOT_TOKEN"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "master_key" {
+  secret_id = "MASTER_KEY"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "admin_email" {
+  secret_id = "ADMIN_EMAIL"
+  replication {
+    auto {}
+  }
+}
+
+# 4. IAM - Permissions for the service account
+resource "google_project_iam_member" "secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_cloud_run_v2_service.flose_platform.template[0].service_account}"
+}
+
+# 5. IAM - Allow public access to the dashboard (optional, or restrict to your IP)
 resource "google_cloud_run_v2_service_iam_member" "public_access" {
   location = google_cloud_run_v2_service.flose_platform.location
   name     = google_cloud_run_v2_service.flose_platform.name

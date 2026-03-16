@@ -1,6 +1,7 @@
 import networkx as nx
 import json
 import os
+import google.generativeai as genai
 from datetime import datetime
 
 class KnowledgeGraphManager:
@@ -46,18 +47,40 @@ class KnowledgeGraphManager:
         if "Flose" not in self.graph:
             self.graph.add_node("Flose", type="core")
 
-    def add_interaction(self, agent_name, task_name, outcome):
-        """
-        Sincroniza e adiciona apenas conceitos técnicos, conectando-os
-        diretamente aos pilares de conhecimento com limpeza proativa.
-        """
+    def deep_clean(self):
+        """Lógica canônica de limpeza profunda e reestruturação do grafo."""
         self.load()
-        self._sanitize() # Limpeza proativa
+        # 1. Identifica nós para deletar
+        nodes_to_remove = [
+            node for node in self.graph.nodes() 
+            if str(node).startswith("Interação") 
+            or str(node).startswith("Command") 
+            or str(node).startswith("TG:")
+            or self.graph.nodes[node].get('type') == 'task'
+            or str(node) in ["Orchestrator", "Generated_MVP", "Learnings", "Potential_MVP"]
+        ]
         
-        learned_concepts = outcome.get("learned_concepts", [])
-        if not learned_concepts:
-            self.save() # Salva a limpeza mesmo sem novos conceitos
-            return
+        for node in nodes_to_remove:
+            self.graph.remove_node(node)
+            
+        # 2. Garante raiz
+        if "Flose" not in self.graph:
+            self.graph.add_node("Flose", type="core")
+            
+        # 3. Re-clusteriza tudo via IA ou mapa estático se falhar
+        for node in list(self.graph.nodes()):
+            if node != "Flose" and self.graph.nodes[node].get('type') != "pilar":
+                category = self._get_ai_cluster(node)
+                
+                if category not in self.graph:
+                    self.graph.add_node(category, type="pilar")
+                    self.graph.add_edge("Flose", category)
+                
+                if not self.graph.has_edge(category, node):
+                    self.graph.add_edge(category, node)
+        
+        self.save()
+        print("✅ Deep Clean executado com sucesso.")
 
     def _get_ai_cluster(self, concept):
         """Usa a inteligência do Gemini para decidir o melhor pilar de clusterização para um conceito."""

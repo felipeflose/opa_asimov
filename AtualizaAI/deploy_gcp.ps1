@@ -12,6 +12,7 @@ $PROJECT_ID = (($env_lines | Select-String "GCP_PROJECT_ID=").ToString().Split("
 $GEMINI_KEY = (($env_lines | Select-String "GEMINI_API_KEY=").ToString().Split("=")[1]).Trim()
 $TG_TOKEN = (($env_lines | Select-String "TELEGRAM_BOT_TOKEN=").ToString().Split("=")[1]).Trim()
 $MASTER_KEY = (($env_lines | Select-String "MASTER_KEY=").ToString().Split("=")[1]).Trim()
+$ADMIN_EMAIL = (($env_lines | Select-String "ADMIN_EMAIL=").ToString().Split("=")[1]).Trim()
 
 $REGION = "us-central1"
 $REPO_NAME = "flose-repo"
@@ -51,6 +52,7 @@ function Set-GCP-Secret-v2($Name, $Value) {
 Set-GCP-Secret-v2 "GEMINI_API_KEY" $GEMINI_KEY
 Set-GCP-Secret-v2 "TELEGRAM_BOT_TOKEN" $TG_TOKEN
 Set-GCP-Secret-v2 "MASTER_KEY" $MASTER_KEY
+Set-GCP-Secret-v2 "ADMIN_EMAIL" $ADMIN_EMAIL
 
 # 4. Build
 Write-Host "Enviando Build (Ignore configurado)..."
@@ -65,6 +67,7 @@ $SERVICE_ACCOUNT = "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 gcloud secrets add-iam-policy-binding GEMINI_API_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 gcloud secrets add-iam-policy-binding TELEGRAM_BOT_TOKEN --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 gcloud secrets add-iam-policy-binding MASTER_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
+gcloud secrets add-iam-policy-binding ADMIN_EMAIL --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 
 # 6. Cloud Run Deploy
 Write-Host "Deploying to Cloud Run (On-Demand / Eco Mode)..."
@@ -78,7 +81,7 @@ gcloud run deploy $IMAGE_NAME `
     --cpu 2 `
     --memory 2Gi `
     --min-instances 0 `
-    --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,MASTER_KEY=MASTER_KEY:latest"
+    --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,MASTER_KEY=MASTER_KEY:latest,ADMIN_EMAIL=ADMIN_EMAIL:latest"
 
 # 7. Configurar Webhook do Telegram
 Write-Host "Configurando Webhook do Telegram..."
