@@ -21,6 +21,10 @@ function App() {
   const [agentList, setAgentList] = useState([]);
   const [executingAgent, setExecutingAgent] = useState('');
   const [viewingAgent, setViewingAgent] = useState(null);
+  const [pipeline, setPipeline] = useState([]);
+  const [pipelineResults, setPipelineResults] = useState([]);
+  const [isRunningPipeline, setIsRunningPipeline] = useState(false);
+  const [marketTemplates, setMarketTemplates] = useState([]);
 
   // Buscar dados reais da API
   const fetchData = async () => {
@@ -46,6 +50,10 @@ function App() {
 
       const agentsD = await agentsRes.json();
       if (!agentsD.error) setAgentList(agentsD);
+
+      const marketRes = await fetch(`/api/marketplace?token=${token}`);
+      const marketD = await marketRes.json();
+      if (!marketD.error) setMarketTemplates(marketD);
     } catch (err) {
       console.error("Fetch error", err);
     }
@@ -85,6 +93,26 @@ function App() {
     fetchData();
   };
 
+  const handleExport = async (name) => {
+    const token = "flosetoken_secure_v2";
+    const res = await fetch(`/api/marketplace/export/${name}?token=${token}`, { method: 'POST' });
+    const data = await res.json();
+    alert(data.status === 'success' ? "Agente exportado como template!" : "Erro ao exportar");
+    fetchData();
+  };
+
+  const handleImport = async (templateName) => {
+    const token = "flosetoken_secure_v2";
+    const res = await fetch(`/api/marketplace/import?token=${token}`, { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ template_name: templateName })
+    });
+    const data = await res.json();
+    alert(data.status === 'success' ? "Template importado com sucesso!" : "Erro ao importar");
+    fetchData();
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchData();
@@ -93,73 +121,135 @@ function App() {
     }
   }, [isAuthenticated]);
 
-  // Hook de Física Simplificado (Inspirado no Ref)
+  // Hook de Física Avançado v4
+  const NapkinVisual = ({ visualId }) => {
+    const [imgUrl, setImgUrl] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const fetchVisual = async () => {
+        if (!visualId) return;
+        try {
+          const token = "flosetoken_secure_v2";
+          const res = await fetch(`/api/marketplace/visual/${visualId}?token=${token}`);
+          const data = await res.json();
+          // Based on exploration, Napkin returns something like { "files": [ { "url": "..." } ] }
+          if (data && data.files && data.files.length > 0) {
+            setImgUrl(data.files[0].url);
+          }
+        } catch (e) {
+          console.error("Napkin fetch error", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchVisual();
+    }, [visualId]);
+
+    if (!visualId) return null;
+    if (loading) return <div style={{ fontSize: '0.6rem', opacity: 0.5 }}>🎨 Generating visual...</div>;
+    if (!imgUrl) return <div style={{ fontSize: '0.6rem', opacity: 0.3 }}>No visual available</div>;
+
+    return (
+      <div style={{ marginTop: '15px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+        <img src={imgUrl} alt="Agent logic diagram" style={{ width: '100%', display: 'block' }} />
+      </div>
+    );
+  };
+
   const useForce = (nodes, links, width, height) => {
     const [positions, setPositions] = useState({});
     const simulationRef = useRef(null);
 
     useEffect(() => {
-      if (!nodes.length) return;
+      const safeNodes = nodes || [];
+      const safeLinks = links || [];
+      if (!safeNodes.length) return;
       
       const pos = {};
       const vel = {};
       const cx = width / 2;
       const cy = height / 2;
 
-      nodes.forEach((n, i) => {
-        const angle = (i / nodes.length) * Math.PI * 2;
-        const dist = n.type === 'core' ? 0 : (n.type === 'pilar' ? 120 : 220);
-        pos[n.id] = { x: cx + Math.cos(angle) * dist + (Math.random()-0.5)*50, y: cy + Math.sin(angle) * dist + (Math.random()-0.5)*50 };
+      // Inicialização inteligente baseada em hierarquia
+      safeNodes.forEach((n, i) => {
+        if (n.type === 'core') {
+          pos[n.id] = { x: cx, y: cy };
+        } else if (n.type === 'pilar') {
+          const angle = (i / 10) * Math.PI * 2;
+          pos[n.id] = { x: cx + Math.cos(angle) * 180, y: cy + Math.sin(angle) * 180 };
+        } else {
+          const angle = Math.random() * Math.PI * 2;
+          pos[n.id] = { x: cx + Math.cos(angle) * 350, y: cy + Math.sin(angle) * 350 };
+        }
         vel[n.id] = { x: 0, y: 0 };
       });
 
       let iteration = 0;
       const step = () => {
         iteration++;
-        const alpha = Math.max(0.01, 0.4 * Math.exp(-iteration * 0.015));
+        const alpha = Math.max(0.01, 1.0 * Math.exp(-iteration * 0.012));
         
-        // Repulsão
-        nodes.forEach(n1 => {
-          nodes.forEach(n2 => {
+        // 1. Repulsão Global (Muito maior para evitar overlap)
+        safeNodes.forEach(n1 => {
+          safeNodes.forEach(n2 => {
             if (n1.id === n2.id) return;
             const dx = pos[n2.id].x - pos[n1.id].x;
             const dy = pos[n2.id].y - pos[n1.id].y;
-            const d = Math.sqrt(dx * dx + dy * dy) || 1;
-            const force = (2500 / (d * d)) * alpha;
-            vel[n1.id].x -= (dx / d) * force;
-            vel[n1.id].y -= (dy / d) * force;
+            const distSq = dx * dx + dy * dy || 1;
+            const dist = Math.sqrt(distSq);
+            
+            // Repulsão variável: Pilares se repelem mais
+            const charge = (n1.type === 'pilar' || n2.type === 'pilar') ? 15000 : 5000;
+            if (dist < 450) {
+              const force = (charge / distSq) * alpha;
+              vel[n1.id].x -= (dx / dist) * force;
+              vel[n1.id].y -= (dy / dist) * force;
+            }
           });
         });
 
-        // Atração (Links)
-        links.forEach(l => {
-          const s = pos[l.source];
-          const t = pos[l.target];
+        // 2. Atração de Links
+        safeLinks.forEach(l => {
+          const sId = typeof l.source === 'object' ? l.source.id : l.source;
+          const tId = typeof l.target === 'object' ? l.target.id : l.target;
+          const s = pos[sId];
+          const t = pos[tId];
           if (!s || !t) return;
+          
           const dx = t.x - s.x;
           const dy = t.y - s.y;
-          const d = Math.sqrt(dx * dx + dy * dy) || 1;
-          const ideal = l.type === 'concept_link' ? 80 : 150;
-          const force = (d - ideal) * 0.06 * alpha;
-          vel[l.source].x += (dx / d) * force;
-          vel[l.source].y += (dy / d) * force;
-          vel[l.target].x -= (dx / d) * force;
-          vel[l.target].y -= (dy / d) * force;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          
+          // Distância ideal por tipo de relação
+          let ideal = 140;
+          if (l.relation === 'defined_by') ideal = 200;
+          if (l.relation === 'groups') ideal = 100;
+
+          const strength = (l.relation === 'groups' ? 0.2 : 0.1) * alpha;
+          const force = (dist - ideal) * strength;
+          
+          vel[sId].x += (dx / dist) * force;
+          vel[sId].y += (dy / dist) * force;
+          vel[tId].x -= (dx / dist) * force;
+          vel[tId].y -= (dy / dist) * force;
         });
 
-        // Gravidade Central
-        nodes.forEach(n => {
-          vel[n.id].x += (cx - pos[n.id].x) * 0.005 * alpha;
-          vel[n.id].y += (cy - pos[n.id].y) * 0.005 * alpha;
+        // 3. Gravidade e Centralização
+        safeNodes.forEach(n => {
+          if (n.type === 'core') {
+            vel[n.id].x += (cx - pos[n.id].x) * 0.25 * alpha;
+            vel[n.id].y += (cy - pos[n.id].y) * 0.25 * alpha;
+          } else {
+            vel[n.id].x += (cx - pos[n.id].x) * 0.015 * alpha;
+            vel[n.id].y += (cy - pos[n.id].y) * 0.015 * alpha;
+          }
           
           pos[n.id].x += vel[n.id].x;
           pos[n.id].y += vel[n.id].y;
           
-          vel[n.id].x *= 0.85;
-          vel[n.id].y *= 0.85;
-          
-          pos[n.id].x = Math.max(50, Math.min(width - 50, pos[n.id].x));
-          pos[n.id].y = Math.max(50, Math.min(height - 50, pos[n.id].y));
+          vel[n.id].x *= 0.75;
+          vel[n.id].y *= 0.75;
         });
 
         setPositions({...pos});
@@ -174,85 +264,158 @@ function App() {
   };
 
   const CognitiveMap = ({ data }) => {
-    const pos = useForce(data.nodes || [], data.links || [], 1000, 600);
+    const nodes = data?.nodes || [];
+    const links = data?.links || [];
+    const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: 1200, h: 800 });
+    const pos = useForce(nodes, links, 1200, 800);
     
+    if (!nodes.length) {
+      return (
+        <div className="glass-card" style={{ height: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="loading-spinner"></div>
+          <p style={{ marginLeft: '15px', color: 'var(--primary)', letterSpacing: '2px' }}>LOADING COGNITIVE NEURONS...</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="glass-card graph-container" style={{ height: '70vh', position: 'relative', overflow: 'hidden' }}>
-        <h2 className="title-grad" style={{ letterSpacing: '2px', fontSize: '1.2rem' }}>KNOWLEDGE_GRAPH_V3.0</h2>
-        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-          <svg width="100%" height="100%" viewBox="0 0 1000 600">
+      <div className="glass-card graph-container" style={{ height: '75vh', position: 'relative', overflow: 'hidden', padding: 0, border: '1px solid rgba(0, 242, 255, 0.2)' }}>
+        {/* Top Header Overlay */}
+        <div style={{ position: 'absolute', top: '25px', left: '30px', zIndex: 10, pointerEvents: 'none' }}>
+          <h2 className="title-grad" style={{ letterSpacing: '4px', fontSize: '1.2rem', marginBottom: '8px', textShadow: '0 0 20px rgba(0,242,255,0.4)' }}>COGNITIVE_NEXUS_v4.5</h2>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.65rem', color: '#00ff80', fontWeight: 'bold' }}>● SYSTEM_ONLINE</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{nodes.length} KNOWLEDGE_NODES</span>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{ position: 'absolute', bottom: '25px', right: '30px', zIndex: 10, display: 'flex', gap: '20px', background: 'rgba(0,0,0,0.5)', padding: '10px 25px', borderRadius: '40px', border: '1px solid var(--border)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 10px var(--primary)' }}></div>
+            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)' }}>Core Intelligence</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 10px #f59e0b' }}></div>
+            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)' }}>Pillar Cluster</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399' }}></div>
+            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)' }}>Deep Concept</span>
+          </div>
+        </div>
+
+        <div style={{ height: '100%', width: '100%' }}>
+          <svg width="100%" height="100%" viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`} style={{ background: 'radial-gradient(circle at center, #0a0e1a 0%, #02040a 100%)' }}>
             <defs>
-              <filter id="glow-node">
+              <filter id="neon-glow" x="-100%" y="-100%" width="300%" height="300%">
                 <feGaussianBlur stdDeviation="4" result="blur" />
-                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
             </defs>
 
-            {/* Pillar Halos */}
-            {data.nodes.filter(n => n.type === 'pilar').map(pilar => {
-              const p = pos[pilar.id];
-              if (!p) return null;
-              return (
-                <circle key={`halo-${pilar.id}`} cx={p.x} cy={p.y} r="70" fill="var(--primary)" fillOpacity="0.04" stroke="var(--primary)" strokeOpacity="0.15" strokeDasharray="5 5" className="graph-halo" />
-              );
-            })}
+            {/* Radiant Circles */}
+            <circle cx="600" cy="400" r="180" fill="none" stroke="rgba(0,242,255,0.04)" strokeWidth="1" strokeDasharray="10 20" />
+            <circle cx="600" cy="400" r="350" fill="none" stroke="rgba(0,242,255,0.02)" strokeWidth="1" strokeDasharray="5 15" />
 
-            {/* Links */}
-            {data.links.map((link, i) => {
-              const s = pos[link.source];
-              const t = pos[link.target];
+            {/* Links - Highly Visible Neon */}
+            {links.map((link, i) => {
+              const sId = typeof link.source === 'object' ? link.source.id : link.source;
+              const tId = typeof link.target === 'object' ? link.target.id : link.target;
+              const s = pos[sId];
+              const t = pos[tId];
               if (!s || !t) return null;
-              const isHigh = hoveredNode && (hoveredNode.id === link.source || hoveredNode.id === link.target);
+              
+              const isHigh = hoveredNode && (hoveredNode.id === sId || hoveredNode.id === tId);
+              
               return (
-                <line key={i} x1={s.x} y1={s.y} x2={t.x} y2={t.y} stroke={isHigh ? 'var(--primary)' : 'var(--primary)'} strokeOpacity={isHigh ? 0.6 : 0.08} strokeWidth={isHigh ? 2 : 1} style={{ transition: 'stroke-opacity 0.3s' }} />
+                <g key={`l-grp-${i}`}>
+                   <line 
+                    x1={s.x} y1={s.y} x2={t.x} y2={t.y} 
+                    stroke="var(--primary)" 
+                    strokeOpacity={isHigh ? 0.7 : 0.08} 
+                    strokeWidth={isHigh ? 3 : 1.5} 
+                    filter={isHigh ? "url(#neon-glow)" : ""}
+                    style={{ transition: 'all 0.4s ease' }}
+                  />
+                </g>
               );
             })}
 
             {/* Nodes */}
-            {data.nodes.map(node => {
+            {nodes.map(node => {
               const p = pos[node.id];
               if (!p) return null;
+              
               const isCore = node.type === 'core';
               const isPilar = node.type === 'pilar';
               const isSel = selectedNode && selectedNode.id === node.id;
               const isHov = hoveredNode && hoveredNode.id === node.id;
               
+              // CRITICAL FIX: Only show labels for Core & Pillars by default to avoid mess
+              const showLabel = isCore || isPilar || isHov || isSel;
+
               return (
-                <g key={node.id} transform={`translate(${p.x}, ${p.y})`} className="graph-node" onMouseEnter={() => setHoveredNode(node)} onMouseLeave={() => setHoveredNode(null)} onClick={(e) => { e.stopPropagation(); setSelectedNode(node); }}>
-                  {(isSel || isHov) && <circle r={isCore ? 35 : (isPilar ? 20 : 12)} fill="var(--primary)" fillOpacity="0.1" filter="url(#glow-node)" />}
-                  <circle r={isCore ? 25 : (isPilar ? 12 : 6)} fill={isCore ? 'var(--primary)' : (isPilar ? '#f59e0b' : '#34d399')} stroke={isSel ? 'white' : 'none'} strokeWidth="2" filter={isCore ? "url(#glow-node)" : ""} />
-                  <text dy={isCore ? 45 : 22} textAnchor="middle" fill="white" fontSize={isCore ? "14" : "10"} className="graph-label" style={{ fontWeight: (isSel || isHov) ? 700 : 400, opacity: (hoveredNode && !isHov) ? 0.3 : 0.8 }}>
-                    {node.id.toUpperCase()}
-                  </text>
+                <g 
+                  key={node.id} 
+                  transform={`translate(${p.x}, ${p.y})`} 
+                  className={`graph-node ${isCore ? 'core' : ''}`}
+                  onMouseEnter={() => setHoveredNode(node)} 
+                  onMouseLeave={() => setHoveredNode(null)} 
+                  onClick={() => setSelectedNode(node)}
+                >
+                  {/* Node Body with Glow */}
+                  <circle 
+                    r={isCore ? 30 : (isPilar ? 15 : 7)} 
+                    fill={isCore ? 'var(--primary)' : (isPilar ? '#f59e0b' : '#34d399')}
+                    fillOpacity={isHov || isSel ? 1 : 0.8}
+                    stroke={isSel ? '#fff' : (isHov ? 'var(--primary)' : 'rgba(255,255,255,0.05)')}
+                    strokeWidth={isSel || isHov ? 3 : 1}
+                    filter={isCore || isHov || isSel ? "url(#neon-glow)" : ""}
+                    style={{ transition: 'all 0.3s' }}
+                  />
+
+                  {/* Hierarchical Label Rendering */}
+                  {showLabel && (
+                    <g transform={`translate(0, ${isCore ? 50 : 30})`}>
+                      <text 
+                        textAnchor="middle" 
+                        fill={isCore ? 'var(--primary)' : (isPilar ? '#f59e0b' : '#fff')} 
+                        fontSize={isCore ? "16" : (isPilar ? "12" : "10")} 
+                        style={{ 
+                          fontWeight: isCore ? 900 : 700, 
+                          pointerEvents: 'none',
+                          textShadow: '0 0 10px rgba(0,0,0,0.9)',
+                          letterSpacing: isCore ? '2px' : '1px'
+                        }}
+                      >
+                        {node.id.toUpperCase()}
+                      </text>
+                    </g>
+                  )}
                 </g>
               );
             })}
           </svg>
           
-          {/* Side Info overlay */}
+          {/* Detail Overlay */}
           {selectedNode && (
-            <div className="glass-card" style={{ position: 'absolute', top: '20px', right: '20px', width: '280px', zIndex: 10, background: 'rgba(5,8,16,0.95)', border: '1px solid var(--primary)', fontFamily: 'inherit' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '1px' }}>DATA_ENTRY // {selectedNode.type.toUpperCase()}</span>
-                <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
+            <div className="glass-card" style={{ position: 'absolute', bottom: '30px', left: '30px', width: '380px', zIndex: 20, background: 'rgba(5, 8, 18, 0.98)', border: '1px solid var(--primary)', padding: '30px', boxShadow: '0 0 50px rgba(0,242,255,0.2)', animation: 'slideUp 0.3s' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '3px' }}>NEURAL_NODE_DATA</span>
+                <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
               </div>
-              <h3 style={{ color: 'white', fontSize: '1.2rem' }}>{selectedNode.id}</h3>
-              <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', borderLeft: '3px solid var(--primary)' }}>
-                <p style={{ fontSize: '0.8rem', color: '#e0e0e0', lineHeight: '1.5' }}>
-                  {selectedNode.type === 'core' ? 'Núcleo Central da Plataforma. Representa a Flose AI e o orquestrador cognitivo.' : 
-                   selectedNode.type === 'pilar' ? 'Pilar Tecnológico. Agrupa conceitos correlacionados identificados pelo sistema.' : 
-                   'Conceito Específico. Item de conhecimento granular capturado durante execuções autônomas.'}
+              <h3 style={{ color: 'white', fontSize: '1.6rem', marginBottom: '15px' }}>{selectedNode.id}</h3>
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '20px', borderRadius: '15px', marginBottom: '25px', borderLeft: '4px solid var(--primary)' }}>
+                <p style={{ color: '#eee', fontSize: '0.9rem', lineHeight: '1.7' }}>
+                  {selectedNode.type === 'core' ? 'Primary Nexus. Managing all cognitive orchestration and decentralized agent coordination.' : 
+                   selectedNode.type === 'pilar' ? 'Thematic Cluster. Higher order organization of related technical concepts and logic vectors.' : 
+                   'Knowledge Concept. Atomic intelligence unit validated through recursive system interactions.'}
                 </p>
               </div>
-              <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '5px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--primary)' }}>1</div>
-                  <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>LEVEL</div>
-                </div>
-                <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '5px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#f59e0b' }}>A+</div>
-                  <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>RELATION</div>
-                </div>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <span className="badge" style={{ background: 'rgba(0,255,128,0.1)', color: '#00ff80', border: '1px solid rgba(0,255,128,0.3)', padding: '5px 15px' }}>HEALTH: ACTIVE</span>
+                <span className="badge" style={{ background: 'rgba(0,242,255,0.1)', color: 'var(--primary)', border: '1px solid rgba(0,242,255,0.3)', padding: '5px 15px' }}>TYPE: {selectedNode.type.toUpperCase()}</span>
               </div>
             </div>
           )}
@@ -290,22 +453,40 @@ function App() {
           </section>
 
           <section className="content-area" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px' }}>
-            <div className="glass-card" style={{ height: '400px', position: 'relative' }}>
-              <h4 style={{ marginBottom: '20px' }}>Quick Insight: Cognitive Map</h4>
-              <div style={{ height: '80%', overflow: 'hidden' }}>
+            <div className="glass-card" style={{ height: '400px', position: 'relative', padding: 0, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '20px', left: '25px', zIndex: 5 }}>
+                <h4 style={{ marginBottom: '5px', fontSize: '0.9rem' }}>Neural Activity: Cognitive Map</h4>
+                <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>LIVE_FEED_002 / REALTIME</p>
+              </div>
+              <div style={{ height: '100%', width: '100%', background: 'radial-gradient(circle at center, #0a0e1a 0%, #050505 100%)' }}>
                 <svg width="100%" height="100%" viewBox="0 0 800 400">
                   {graphData.links && graphData.links.map((link, i) => {
-                    const source = graphData.nodes.find(n => n.id === link.source);
-                    const target = graphData.nodes.find(n => n.id === link.target);
-                    if (!source || !target) return null;
-                    return <line key={i} x1={400 + (Math.random()*100)} y1={200 + (Math.random()*100)} x2={400} y2={200} stroke="rgba(255,255,255,0.1)" />
+                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                    const s = graphData.nodes.find(n => n.id === sourceId);
+                    const t = graphData.nodes.find(n => n.id === targetId);
+                    if (!s || !t) return null;
+                    
+                    // Layout simplificado para preview (circular)
+                    const sIdx = graphData.nodes.indexOf(s);
+                    const tIdx = graphData.nodes.indexOf(t);
+                    const sx = s.type === 'core' ? 400 : 400 + Math.cos(sIdx) * 120;
+                    const sy = s.type === 'core' ? 200 : 200 + Math.sin(sIdx) * 100;
+                    const tx = t.type === 'core' ? 400 : 400 + Math.cos(tIdx) * 120;
+                    const ty = t.type === 'core' ? 200 : 200 + Math.sin(tIdx) * 100;
+
+                    return <line key={i} x1={sx} y1={sy} x2={tx} y2={ty} stroke="var(--primary)" strokeOpacity="0.15" />;
                   })}
-                  {graphData.nodes && graphData.nodes.slice(0, 15).map((node, i) => (
-                    <g key={node.id} transform={`translate(${400 + Math.cos(i)*150}, ${200 + Math.sin(i)*120})`}>
-                      <circle r="6" fill={node.type === 'core' ? 'var(--primary)' : 'var(--secondary)'} />
-                      <text dy="15" textAnchor="middle" fill="white" fontSize="8">{node.id}</text>
-                    </g>
-                  ))}
+                  {graphData.nodes && graphData.nodes.slice(0, 20).map((node, i) => {
+                    const x = node.type === 'core' ? 400 : 400 + Math.cos(i) * 120;
+                    const y = node.type === 'core' ? 200 : 200 + Math.sin(i) * 100;
+                    return (
+                      <g key={node.id} transform={`translate(${x}, ${y})`}>
+                        <circle r={node.type === 'core' ? 8 : 4} fill={node.type === 'core' ? 'var(--primary)' : (node.type === 'pilar' ? '#f59e0b' : '#34d399')} filter={node.type === 'core' ? "blur(2px)" : ""} />
+                        <text dy="15" textAnchor="middle" fill="white" fontSize="6" style={{ opacity: 0.5 }}>{node.id.substring(0, 10)}</text>
+                      </g>
+                    );
+                  })}
                 </svg>
               </div>
             </div>
@@ -478,6 +659,145 @@ function App() {
       );
     }
 
+    if (activeTab === 'Pipeline') {
+      return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '40px' }}>
+          <div className="glass-card">
+            <h3>🏗️ Pipeline Builder</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>
+              Select agents to build a sequential sequence of execution.
+            </p>
+            
+            <div className="pipeline-area" style={{ minHeight: '400px', border: '2px dashed var(--border)', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {pipeline.length === 0 && <p style={{ textAlign: 'center', marginTop: '150px', opacity: 0.3 }}>Pipeline is empty. Add agents from the sidebar.</p>}
+              {pipeline.map((step, idx) => (
+                <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid var(--primary)', animation: 'slideUp 0.3s' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div className="avatar" style={{ scale: '0.7', background: 'var(--primary)', color: 'black' }}>{idx + 1}</div>
+                    <div>
+                      <h4 style={{ color: 'var(--primary)' }}>{step.agent_name}</h4>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{step.task || 'Generic processing...'}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setPipeline(pipeline.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: '20px', display: 'flex', gap: '15px' }}>
+              <button 
+                className="login-button" 
+                style={{ background: 'var(--primary)', color: 'black', flex: 1 }}
+                disabled={pipeline.length === 0 || isRunningPipeline}
+                onClick={async () => {
+                  setIsRunningPipeline(true);
+                  const results = [];
+                  for(const step of pipeline) {
+                    const token = "flosetoken_secure_v2";
+                    const res = await fetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}&token=${token}`, { 
+                      method: 'POST' 
+                    });
+                    const d = await res.json();
+                    results.push({ agent: step.agent_name, output: d.result });
+                  }
+                  setPipelineResults(results);
+                  setIsRunningPipeline(false);
+                }}
+              >
+                {isRunningPipeline ? '⏳ EXECUTING SEQUENTIAL OPS...' : '🚀 RUN PIPELINE'}
+              </button>
+              <button className="refresh-btn" style={{ padding: '0 20px' }} onClick={() => {setPipeline([]); setPipelineResults([]);}}>CLEAR</button>
+            </div>
+          </div>
+
+          <div className="glass-card">
+            <h3 style={{ marginBottom: '20px' }}>Agent Repository</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
+              {agentList.map(a => (
+                <div key={a.agent_name} className="glass-card" style={{ padding: '15px', cursor: 'pointer', border: '1px solid transparent', transition: 'all 0.2s' }} 
+                     onClick={() => {
+                       const t = prompt(`Instruction for ${a.agent_name}:`, "Refine the previous output or perform specific analysis.");
+                       if (t) setPipeline([...pipeline, { ...a, task: t }]);
+                     }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="avatar" style={{ width: '30px', height: '30px', fontSize: '0.6rem' }}>{a.agent_name.substring(0,2)}</div>
+                    <div>
+                      <p style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{a.agent_name}</p>
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{a.purpose.substring(0, 40)}...</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {pipelineResults.length > 0 && (
+              <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(0,242,255,0.03)', borderRadius: '15px', border: '1px solid var(--border)' }}>
+                <h4 style={{ color: 'var(--primary)', marginBottom: '15px', fontSize: '0.9rem' }}>EXECUTION LOG:</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {pipelineResults.map((r, i) => (
+                    <details key={i} style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '10px' }}>
+                      <summary style={{ cursor: 'pointer', color: 'white', fontSize: '0.8rem', fontWeight: 'bold' }}>Step {i+1}: {r.agent}</summary>
+                      <pre style={{ padding: '10px', opacity: 0.8, fontSize: '0.75rem', whiteSpace: 'pre-wrap', marginTop: '10px', borderTop: '1px solid var(--border)' }}>{r.output}</pre>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'Marketplace') {
+      return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
+          <div className="glass-card">
+            <h2 className="title-grad" style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Global Agent Marketplace</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '30px' }}>Community-driven templates to scale your infrastructure.</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+              {marketTemplates.length > 0 ? marketTemplates.map(tpl => (
+                <div key={tpl.name} className="glass-card agent-card-edit" style={{ border: '1px solid rgba(0,255,128,0.2)' }}>
+                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                    <div className="avatar" style={{ background: '#34d399', color: 'black' }}>{tpl.name[0]}</div>
+                    <h4 style={{ color: '#34d399' }}>{tpl.name}</h4>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minHeight: '40px' }}>{tpl.purpose}</p>
+                  
+                  <NapkinVisual visualId={tpl.napkin_visual_id} />
+
+                  <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>By {tpl.author}</span>
+                    <button className="nav-item badge-online" style={{ padding: '5px 15px', fontSize: '0.6rem' }} onClick={() => handleImport(tpl.name)}>📥 IMPORT</button>
+                  </div>
+                </div>
+              )) : (
+                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px', opacity: 0.3 }}>
+                  <p>No community templates found. Be the first to export!</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="glass-card">
+            <h3 style={{ marginBottom: '20px' }}>My Exportable Agents</h3>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Turn your local agents into shareable templates.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {agentList.map(a => (
+                <div key={a.agent_name} className="glass-card" style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="avatar" style={{ width: '32px', height: '32px', fontSize: '0.7rem' }}>{a.agent_name.substring(0,2)}</div>
+                    <span style={{ fontSize: '0.85rem' }}>{a.agent_name}</span>
+                  </div>
+                  <button className="refresh-btn" style={{ padding: '5px 10px', fontSize: '0.6rem' }} onClick={() => handleExport(a.agent_name)}>📤 EXPORT</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (activeTab === 'FinOps Guardian') {
       return (
         <div className="glass-card">
@@ -565,7 +885,7 @@ function App() {
         </div>
         
         <nav className="nav-menu">
-          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'FinOps Guardian', 'Settings'].map(tab => (
+          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'FinOps Guardian', 'Settings'].map(tab => (
             <div 
               key={tab}
               className={`nav-item ${activeTab === tab ? 'active' : ''}`}

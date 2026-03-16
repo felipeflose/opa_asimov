@@ -42,6 +42,38 @@ async def telegram_webhook(request: Request):
     print("✅ Processamento concluído. Retornando 200 OK.")
     return {"status": "ok"}
 
+@app.post("/daily_briefing")
+async def daily_briefing():
+    agent = await get_tg_agent()
+    from src.agents.briefing_agent import BriefingAgent
+    b = BriefingAgent(agent.orchestrator, agent.gcs_client)
+    await b.send()
+    return {"status": "ok"}
+
+@app.post("/weekly_alerts")
+async def weekly_alerts():
+    agent = await get_tg_agent()
+    from src.agents.proactive_alert import ProactiveAlertAgent
+    pa = ProactiveAlertAgent(agent.kg_manager, agent.gcs_client, agent.orchestrator)
+    await pa.notify()
+    return {"status": "ok"}
+
+@app.post("/evolution_job")
+async def evolution_job():
+    agent = await get_tg_agent()
+    from src.agents.evolution_job import EvolutionJob
+    job = EvolutionJob(agent.gcs_client, agent.orchestrator)
+    job.run()
+    return {"status": "ok"}
+
+@app.post("/weekly_report")
+async def weekly_report():
+    agent = await get_tg_agent()
+    from src.agents.report_agent import ReportAgent
+    r = ReportAgent(agent.gcs_client, agent.orchestrator)
+    await r.send_to_telegram()
+    return {"status": "ok"}
+
 @app.post("/api/auth")
 async def verify_auth(request: Request):
     data = await request.json()
@@ -180,7 +212,7 @@ async def execute_task(task_id: str, agent_name: str, token: str = None):
     )
     
     task_input = f"Tarefa: {task['title']}\nPrioridade: {task['priority']}\nContexto: {task.get('description', 'N/A')}"
-    result = agent_obj.run(task_input)
+    result, evaluation = agent_obj.run(task_input)
     
     # 4. Salvar Resultado
     import os as pyos
@@ -274,8 +306,10 @@ async def chat_agents(request: Request, token: str = None):
     
     return {"response": response}
 
-@app.get("/api/activity")
-async def get_activity(token: str = None):
+    return logs
+
+@app.get("/api/marketplace")
+async def get_marketplace(token: str = None):
     if token != "flosetoken_secure_v2":
         return {"error": "Unauthorized"}
     
@@ -283,17 +317,66 @@ async def get_activity(token: str = None):
     bucket_name = f"flose-ai-platform-{project_id}"
     gcs = GCSClient(bucket_name, project_id=project_id)
     
-    # Listar últimos logs de telegram (prefixo logs/telegram/)
-    # Como não temos um list_files eficiente aqui, vamos tentar ler os últimos 5 logs 
-    # se tivéssemos uma forma de listar. O GCSClient precisa de um list_files.
+    from src.agents.marketplace import AgentMarketplace
+    market = AgentMarketplace(gcs)
+    return market.list_templates()
+
+@app.post("/api/marketplace/export/{agent_name}")
+async def export_to_marketplace(agent_name: str, token: str = None):
+    if token != "flosetoken_secure_v2":
+        return {"error": "Unauthorized"}
     
-    # Por enquanto, vamos retornar uma mensagem amigável ou tentar implementar um mini-list no gcs
-    logs = gcs.read_json("logs/telegram/latest_activity.json")
-    if not logs:
-        # Se não houver o sumário, retornamos um vazio
-        return []
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
     
-    return logs
+    from src.agents.marketplace import AgentMarketplace
+    market = AgentMarketplace(gcs)
+    res = await market.export_agent(agent_name)
+    if res:
+        return {"status": "success", "message": f"Agent {agent_name} exported to marketplace."}
+    return {"error": "Failed to export agent"}
+
+@app.post("/api/marketplace/import")
+async def import_from_marketplace(request: Request, token: str = None):
+    if token != "flosetoken_secure_v2":
+        return {"error": "Unauthorized"}
+    
+    data = await request.json()
+    template_name = data.get("template_name")
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    # Busca o template no GCS
+    template_path = f"marketplace/templates/{template_name.lower()}_template.json"
+    template_data = gcs.read_json(template_path)
+    
+    if not template_data:
+        return {"error": "Template not found"}
+
+    # Cria novo agente a partir do template
+    from src.agents.base_agent import BaseAgent
+    new_agent = BaseAgent(
+        name=template_data["name"],
+        purpose=template_data["purpose"],
+        system_prompt=template_data["system_prompt"],
+        gcs_client=gcs
+    )
+    new_agent.save_to_registry()
+    
+    return {"status": "success", "message": f"Agent {template_data['name']} imported from marketplace."}
+
+@app.get("/api/marketplace/visual/{visual_id}")
+async def get_napkin_visual(visual_id: str, token: str = None):
+    if token != "flosetoken_secure_v2":
+        return {"error": "Unauthorized"}
+    
+    from src.utils.napkin_client import NapkinClient
+    napkin = NapkinClient(api_key=os.getenv("NAPKIN_API_KEY"))
+    res = await napkin.get_visual_status(visual_id)
+    return res or {"error": "Visual not found"}
 
 # --- 4. Servir Frontend React ---
 # Montamos a pasta dist gerada pelo build do Vite

@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Literal
 from src.agents.base_agent import BaseAgent as AgentCore
 from src.storage.vector_store import VectorStore
+from src.storage.episodic_memory import EpisodicMemory
 
 class FinOpsCheck(BaseModel):
     estimated_tokens: int = 0
@@ -70,18 +71,22 @@ class CognitiveOrchestrator:
         self.vector_store = VectorStore(gcs_client=gcs_client)
         self.vector_store.load() # Tenta carregar do GCS
         
+        # Inicialização da Memória Episódica (Temporal)
+        self.episodic_memory = EpisodicMemory(gcs_client=gcs_client)
+        
         # Usar apenas o SDK do Google Generative AI (AI Studio)
         # Nunca Vertex AI por ordem expressa do usuário
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
         
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
-            print("🚀 Orchestrator iniciado com Gemini 2.5 Flash.")
+            self.model = genai.GenerativeModel(self.model_name)
+            print(f"🚀 Orchestrator iniciado com {self.model_name}.")
         else:
             # Fallback para credenciais do sistema se a chave não existir
             print("⚠️ Chave API não encontrada. Tentando usar credenciais do sistema...")
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.model = genai.GenerativeModel(self.model_name)
         
         self.system_prompt = """
         IDENTIDADE E MISSÃO
@@ -171,6 +176,15 @@ class CognitiveOrchestrator:
                 semantic_context += f"- [{doc['source']}]: {doc['text']}\n"
             semantic_context += "------------------------------------\n"
 
+        # Memória Episódica (Contexto Temporal)
+        episodes = self.episodic_memory.recall(user_command, top_k=3)
+        episodic_context = ""
+        if episodes:
+            episodic_context = "\n--- MEMÓRIA EPISÓDICA ---\n"
+            for ep in episodes:
+                episodic_context += f"- [{ep['ts'][:10]}] {ep['agent']}: {ep['content'][:150]}\n"
+            episodic_context += "-------------------------\n"
+
         # Histórico de Chat (Memória de Curto Prazo)
         history_context = ""
         if chat_history:
@@ -197,6 +211,7 @@ class CognitiveOrchestrator:
             
             {history_context}
             {semantic_context}
+            {episodic_context}
             
             {"[VISION AGENT OUTPUT]: " + visual_context if visual_context else ""}
             
@@ -231,7 +246,9 @@ class CognitiveOrchestrator:
                 
                 # Validação Pydantic
                 decision_obj = OrchestratorDecision.model_validate_json(json_match)
-                return decision_obj.model_dump()
+                d = decision_obj.model_dump()
+                d["user_command"] = user_command
+                return d
 
             except Exception as e:
                 retry_count += 1
@@ -242,13 +259,38 @@ class CognitiveOrchestrator:
                 time.sleep(1) # Pequena pausa antes do retry
 
     def execute_decision(self, decision):
+        # --- Ideia 8: BigQuery Interaction Logger ---
+        try:
+            from src.storage.bigquery_logger import BigQueryLogger
+            bq = BigQueryLogger()
+        except Exception:
+            bq = None
+
+        # --- Ideia 3: Debate Agent para Decisões Críticas ---
+        action = decision.get("action")
+        infra_cost = decision.get("finops_check", {}).get("estimated_cost_usd", 0)
+        
+        if action in ["execute", "generate_demand"] and infra_cost > 1.0:
+            try:
+                from src.agents.debate_agent import DebateAgent
+                debate_sys = DebateAgent()
+                result = debate_sys.debate(
+                    question=decision.get("task_description") or decision.get("response"),
+                    context=decision.get("reasoning", "")
+                )
+                if result["verdict"].get("decision") == "abort":
+                    return f"⚖️ **Debate Agent bloqueou a ação.**\n\nMotivo: {result['verdict']['reasoning']}"
+            except Exception as e:
+                print(f"Erro no debate: {e}")
+
         # Primeiro, verificamos se o FinOps aprovou na simulação do LLM
         finops = decision.get("finops_check", {})
         if not finops.get("approved", True):
             return decision.get("response", "⛔ Operação bloqueada pelo FinOpsGuardian.")
 
         action = decision.get("action")
-        
+        final_result = ""
+
         # Salva na memória semântica se houver uma resposta útil
         final_response = decision.get("response", "")
         if final_response and action == "respond":
@@ -259,61 +301,62 @@ class CognitiveOrchestrator:
             )
 
         if action == "respond":
-            return decision.get("response", "Não consegui formular uma resposta.")
+            final_result = decision.get("response", "Não consegui formular uma resposta.")
 
         elif action == "create_agent":
             config = decision.get("new_agent_config") or {}
             agent_name = config.get('agent_name')
             
             if not agent_name or agent_name == "None":
-                return f"Erro na criação de agente: {decision.get('response')}"
+                final_result = f"Erro na criação de agente: {decision.get('response')}"
+            else:
+                print(f"Creating new agent: {agent_name}")
+                new_agent = AgentCore(
+                    name=agent_name,
+                    purpose=config.get('purpose', 'General Purpose'),
+                    system_prompt=config.get('system_prompt'),
+                    tools=config.get('tools', []),
+                    gcs_client=self.gcs_client
+                )
+                new_agent.save_to_registry()
                 
-            print(f"Creating new agent: {agent_name}")
-            new_agent = AgentCore(
-                name=agent_name,
-                purpose=config.get('purpose', 'General Purpose'),
-                system_prompt=config.get('system_prompt'),
-                tools=config.get('tools', []),
-                gcs_client=self.gcs_client
-            )
-            new_agent.save_to_registry()
-            
-            # --- Auto-generate a Task for the new agent ---
-            demand_data = {
-                "id": f"TRD_AGENT_{os.urandom(2).hex()}",
-                "title": f"Initialization: {agent_name}",
-                "type": "tarefa",
-                "responsible": agent_name,
-                "priority": "Alta",
-                "status": "Concluído",
-                "budget_approved": True,
-                "cost_explanation": f"Recrutamento e ativação do especialista {agent_name}.",
-                "terraform_plan": "",
-                "evidence_path": f"agents/{agent_name}.json",
-                "created_at": datetime.now().isoformat()
-            }
-            if self.gcs_client:
-                registry = self.gcs_client.read_json("demands/registry.json") or {"demands": []}
-                registry['demands'].append(demand_data)
-                self.gcs_client.upload_json(registry, "demands/registry.json")
+                # --- Auto-generate a Task for the new agent ---
+                demand_data = {
+                    "id": f"TRD_AGENT_{os.urandom(2).hex()}",
+                    "title": f"Initialization: {agent_name}",
+                    "type": "tarefa",
+                    "responsible": agent_name,
+                    "priority": "Alta",
+                    "status": "Concluído",
+                    "budget_approved": True,
+                    "cost_explanation": f"Recrutamento e ativação do especialista {agent_name}.",
+                    "terraform_plan": "",
+                    "evidence_path": f"agents/{agent_name}.json",
+                    "created_at": datetime.now().isoformat()
+                }
+                if self.gcs_client:
+                    registry = self.gcs_client.read_json("demands/registry.json") or {"demands": []}
+                    registry['demands'].append(demand_data)
+                    self.gcs_client.upload_json(registry, "demands/registry.json")
 
-            return decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
+                final_result = decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
         
         elif action == "update_agent":
             config = decision.get("new_agent_config") or {}
             agent_name = config.get('agent_name')
-            if not agent_name: return "Erro: Nome do agente não fornecido para atualização."
-            
-            print(f"Updating agent via Orchestrator: {agent_name}")
-            if self.gcs_client:
-                registry = self.gcs_client.read_json("agents/registry.json")
-                for agent in registry.get("agents", []):
-                    if agent["agent_name"] == agent_name:
-                        if config.get("purpose"): agent["purpose"] = config["purpose"]
-                        if config.get("system_prompt"): agent["system_prompt"] = config["system_prompt"]
-                        break
-                self.gcs_client.upload_json(registry, "agents/registry.json")
-            return decision.get("response") or f"Agente '{agent_name}' atualizado conforme solicitado."
+            if not agent_name: 
+                final_result = "Erro: Nome do agente não fornecido para atualização."
+            else:
+                print(f"Updating agent via Orchestrator: {agent_name}")
+                if self.gcs_client:
+                    registry = self.gcs_client.read_json("agents/registry.json")
+                    for agent in registry.get("agents", []):
+                        if agent["agent_name"] == agent_name:
+                            if config.get("purpose"): agent["purpose"] = config["purpose"]
+                            if config.get("system_prompt"): agent["system_prompt"] = config["system_prompt"]
+                            break
+                    self.gcs_client.upload_json(registry, "agents/registry.json")
+                final_result = decision.get("response") or f"Agente '{agent_name}' atualizado conforme solicitado."
 
         elif action == "generate_demand":
             demand = decision.get("demand_info") or {}
@@ -348,7 +391,7 @@ class CognitiveOrchestrator:
                 registry['demands'].append(demand_data)
                 self.gcs_client.upload_json(registry, "demands/registry.json")
                 
-            return decision.get("response") or f"Demanda TRD '{title}' ({dtype}) registrada com sucesso."
+            final_result = decision.get("response") or f"Demanda TRD '{title}' ({dtype}) registrada com sucesso."
 
         elif action == "execute":
             agent_name = decision.get("agent_involved") or decision.get("agent_name", "Unknown")
@@ -376,8 +419,27 @@ class CognitiveOrchestrator:
                 execution_result = agent_obj.run(task_desc)
                 
                 # Resposta Composta
-                return f"🤖 **{agent_name} (Especialista)**:\n\n{execution_result}"
+                final_result = f"🤖 **{agent_name} (Especialista)**:\n\n{execution_result}"
             else:
-                return f"⚠️ Agente '{agent_name}' não encontrado no registro para execução."
+                final_result = f"⚠️ Agente '{agent_name}' não encontrado no registro para execução."
+        else:
+            final_result = decision.get("response", "Decisão não reconhecida.")
+
+        # Persistindo episódio na memória
+        user_command = decision.get("user_command", "Unknown")
+        self.episodic_memory.add(
+            content=f"Usuário: {user_command[:200]} | Ação: {action} | Resultado: {final_result[:150]}",
+            agent=decision.get("agent_involved") or "Orchestrator",
+            tags=decision.get("knowledge_graph_update", [])
+        )
         
-        return decision.get("response", "Decisão não reconhecida.")
+        # Ideia 8: BQ Logging
+        if bq:
+            bq.log_interaction(
+                agent=decision.get("agent_involved") or "Orchestrator",
+                task=user_command,
+                result=final_result,
+                cost=decision.get("finops_check", {}).get("estimated_cost_usd", 0)
+            )
+
+        return final_result

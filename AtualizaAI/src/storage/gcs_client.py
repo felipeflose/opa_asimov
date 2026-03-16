@@ -4,9 +4,10 @@ import json
 from datetime import datetime
 
 class GCSClient:
-    def __init__(self, bucket_name, project_id=None, credentials_path=None):
+    def __init__(self, bucket_name, project_id=None, credentials_path=None, user_id="fflose"):
         # Proteção extra para o project_id
         project_id = project_id or os.getenv("GCP_PROJECT_ID")
+        self.user_id = user_id
         
         # Defesa contra troca de ordem de parâmetros:
         if credentials_path and not str(credentials_path).endswith(".json"):
@@ -15,48 +16,53 @@ class GCSClient:
         if credentials_path:
             self.client = storage.Client.from_service_account_json(credentials_path)
         else:
-            # Forçamos o project_id aqui para evitar OSError no Windows
             self.client = storage.Client(project=project_id)
         self.bucket = self.client.bucket(bucket_name)
         self._cache = {}
 
+    def _full_path(self, path):
+        # Ideia 9: Namespace por usuário
+        return f"users/{self.user_id}/{path}"
+
     def upload_file(self, local_path, remote_path):
-        blob = self.bucket.blob(remote_path)
+        path = self._full_path(remote_path)
+        blob = self.bucket.blob(path)
         blob.upload_from_filename(local_path)
-        if remote_path in self._cache:
-            del self._cache[remote_path]
-        print(f"Uploaded {local_path} to {remote_path}")
+        if path in self._cache:
+            del self._cache[path]
+        print(f"Uploaded {local_path} to {path}")
 
     def upload_json(self, data, remote_path):
-        blob = self.bucket.blob(remote_path)
+        path = self._full_path(remote_path)
+        blob = self.bucket.blob(path)
         blob.upload_from_string(json.dumps(data, indent=2), content_type='application/json')
-        self._cache[remote_path] = (data, datetime.now())
-        print(f"Uploaded JSON to {remote_path}")
+        self._cache[path] = (data, datetime.now())
+        print(f"Uploaded JSON to {path}")
 
     def download_file(self, remote_path, local_path):
-        blob = self.bucket.blob(remote_path)
+        blob = self.bucket.blob(self._full_path(remote_path))
         blob.download_to_filename(local_path)
-        print(f"Downloaded {remote_path} to {local_path}")
 
     def read_json(self, remote_path, ttl=30):
+        path = self._full_path(remote_path)
         now = datetime.now()
-        if remote_path in self._cache:
-            cached_data, timestamp = self._cache[remote_path]
+        if path in self._cache:
+            cached_data, timestamp = self._cache[path]
             if (now - timestamp).seconds < ttl:
                 return cached_data
 
-        blob = self.bucket.blob(remote_path)
+        blob = self.bucket.blob(path)
         if not blob.exists():
             return None
         content = blob.download_as_text()
         data = json.loads(content)
-        self._cache[remote_path] = (data, now)
+        self._cache[path] = (data, now)
         return data
 
     def list_files(self, prefix):
-        blobs = self.client.list_blobs(self.bucket, prefix=prefix)
+        blobs = self.client.list_blobs(self.bucket, prefix=self._full_path(prefix))
         return [blob.name for blob in blobs]
 
     def exists(self, path):
-        blob = self.bucket.blob(path)
+        blob = self.bucket.blob(self._full_path(path))
         return blob.exists()

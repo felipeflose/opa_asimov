@@ -11,6 +11,9 @@ $env_lines = Get-Content $env_file
 $PROJECT_ID = (($env_lines | Select-String "GCP_PROJECT_ID=").ToString().Split("=")[1]).Trim()
 $GEMINI_KEY = (($env_lines | Select-String "GEMINI_API_KEY=").ToString().Split("=")[1]).Trim()
 $TG_TOKEN = (($env_lines | Select-String "TELEGRAM_BOT_TOKEN=").ToString().Split("=")[1]).Trim()
+$GEMINI_MODEL = (($env_lines | Select-String "GEMINI_MODEL=").ToString().Split("=")[1]).Trim()
+$TG_CHAT_ID = (($env_lines | Select-String "TELEGRAM_CHAT_ID=").ToString().Split("=")[1]).Trim()
+$NAPKIN_KEY = (($env_lines | Select-String "NAPKIN_API_KEY=").ToString().Split("=")[1]).Trim()
 $MASTER_KEY = (($env_lines | Select-String "MASTER_KEY=").ToString().Split("=")[1]).Trim()
 $ADMIN_EMAIL = (($env_lines | Select-String "ADMIN_EMAIL=").ToString().Split("=")[1]).Trim()
 
@@ -51,6 +54,9 @@ function Set-GCP-Secret-v2($Name, $Value) {
 
 Set-GCP-Secret-v2 "GEMINI_API_KEY" $GEMINI_KEY
 Set-GCP-Secret-v2 "TELEGRAM_BOT_TOKEN" $TG_TOKEN
+Set-GCP-Secret-v2 "GEMINI_MODEL" $GEMINI_MODEL
+Set-GCP-Secret-v2 "TELEGRAM_CHAT_ID" $TG_CHAT_ID
+Set-GCP-Secret-v2 "NAPKIN_API_KEY" $NAPKIN_KEY
 Set-GCP-Secret-v2 "MASTER_KEY" $MASTER_KEY
 Set-GCP-Secret-v2 "ADMIN_EMAIL" $ADMIN_EMAIL
 
@@ -66,6 +72,9 @@ $SERVICE_ACCOUNT = "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
 gcloud secrets add-iam-policy-binding GEMINI_API_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 gcloud secrets add-iam-policy-binding TELEGRAM_BOT_TOKEN --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
+gcloud secrets add-iam-policy-binding GEMINI_MODEL --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
+gcloud secrets add-iam-policy-binding TELEGRAM_CHAT_ID --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
+gcloud secrets add-iam-policy-binding NAPKIN_API_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 gcloud secrets add-iam-policy-binding MASTER_KEY --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 gcloud secrets add-iam-policy-binding ADMIN_EMAIL --member="serviceAccount:$SERVICE_ACCOUNT" --role="roles/secretmanager.secretAccessor" --project=$PROJECT_ID --quiet
 
@@ -81,7 +90,7 @@ gcloud run deploy $IMAGE_NAME `
     --cpu 2 `
     --memory 2Gi `
     --min-instances 0 `
-    --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,MASTER_KEY=MASTER_KEY:latest,ADMIN_EMAIL=ADMIN_EMAIL:latest"
+    --set-secrets "GEMINI_API_KEY=GEMINI_API_KEY:latest,GEMINI_MODEL=GEMINI_MODEL:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest,NAPKIN_API_KEY=NAPKIN_API_KEY:latest,MASTER_KEY=MASTER_KEY:latest,ADMIN_EMAIL=ADMIN_EMAIL:latest"
 
 # 7. Configurar Webhook do Telegram
 Write-Host "Configurando Webhook do Telegram..."

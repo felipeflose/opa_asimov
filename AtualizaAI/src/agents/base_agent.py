@@ -35,20 +35,28 @@ class BaseAgent:
 
     def save_to_registry(self):
         if self.gcs_client:
-            self.gcs_client.upload_json(self.to_dict(), f"agents/{self.name}.json")
-            # Also update registry.json
-            registry = self.gcs_client.read_json("agents/registry.json") or {"agents": []}
+            # Ideia 6: Versionamento de Prompts
+            version_id = datetime.now().strftime("%Y%m%d_%H%M")
+            agent_snapshot = self.to_dict()
+            agent_snapshot["version"] = version_id
             
-            # Update or Append
+            # 1. Salva snapshot histórico
+            self.gcs_client.upload_json(agent_snapshot, f"agents/versions/{self.name}/{version_id}.json")
+            
+            # 2. Salva estado atual
+            self.gcs_client.upload_json(agent_snapshot, f"agents/{self.name}.json")
+
+            # 3. Sincroniza registry global
+            registry = self.gcs_client.read_json("agents/registry.json") or {"agents": []}
             found = False
             for i, a in enumerate(registry['agents']):
                 if a['agent_name'] == self.name:
-                    registry['agents'][i] = self.to_dict()
+                    registry['agents'][i] = agent_snapshot
                     found = True
                     break
             
             if not found:
-                registry['agents'].append(self.to_dict())
+                registry['agents'].append(agent_snapshot)
                 
             self.gcs_client.upload_json(registry, "agents/registry.json")
 
@@ -56,10 +64,11 @@ class BaseAgent:
         """Executa uma tarefa usando a inteligência e personalidade deste agente."""
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            return "Erro: GEMINI_API_KEY não configurada."
+            return "Erro: GEMINI_API_KEY não configurada.", {}
             
         try:
-            model = genai.GenerativeModel('gemini-2.5-flash')
+            model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+            model = genai.GenerativeModel(model_name)
             prompt = f"""
             {self.system_prompt}
             
@@ -69,9 +78,29 @@ class BaseAgent:
             Responda como o agente {self.name}. Forneça uma solução técnica, um relatório ou o resultado da execução.
             """
             response = model.generate_content(prompt)
+            result = response.text.strip()
             
-            # Atualizar Métricas
+            # Auto-avaliação (Ideia 2)
+            eval_prompt = f"""
+            Tarefa executada: "{task[:300]}"
+            Resultado produzido: "{result[:500]}"
+            Responda APENAS com JSON válido:
+            {{"confidence": 0.0_to_1.0, "quality": "high|medium|low", "learned": ["conceito1"], "improvement": "dica"}}
+            """
+            eval_resp = model.generate_content(eval_prompt)
+            import re, json as _json
+            raw = eval_resp.text.strip()
+            
+            # Limpeza de JSON robusta
+            if "```json" in raw: raw = raw.split("```json")[1].split("```")[0].strip()
+            elif "```" in raw: raw = raw.split("```")[1].split("```")[0].strip()
+            
+            match = re.search(r'\{.*\}', raw, re.DOTALL)
+            evaluation = _json.loads(match.group()) if match else {"confidence": 0.5, "quality": "medium"}
+
+            # Atualizar Métricas e Performance no GCS
             if self.gcs_client:
+                # 1. Métricas Acumuladas
                 agent_data = self.gcs_client.read_json(f"agents/{self.name}.json") or self.to_dict()
                 if "metrics" not in agent_data: agent_data["metrics"] = {"executions": 0, "total_tokens": 0}
                 agent_data["metrics"]["executions"] += 1
@@ -79,7 +108,20 @@ class BaseAgent:
                     agent_data["metrics"]["total_tokens"] += response.usage_metadata.total_token_count
                 
                 self.gcs_client.upload_json(agent_data, f"agents/{self.name}.json")
-                # Sincroniza registry
+                
+                # 2. Log de Performance Histórico
+                perf_log = {
+                    "ts": datetime.now().isoformat(),
+                    "task": task[:200],
+                    "confidence": evaluation.get("confidence", 0.5),
+                    "quality": evaluation.get("quality", "medium"),
+                    "learned": evaluation.get("learned", [])
+                }
+                history = self.gcs_client.read_json(f"agents/performance/{self.name}.json") or {"history": []}
+                history["history"].append(perf_log)
+                self.gcs_client.upload_json(history, f"agents/performance/{self.name}.json")
+
+                # Sincroniza registry global
                 registry = self.gcs_client.read_json("agents/registry.json")
                 if registry:
                     for a in registry.get("agents", []):
@@ -88,6 +130,6 @@ class BaseAgent:
                             break
                     self.gcs_client.upload_json(registry, "agents/registry.json")
 
-            return response.text.strip()
+            return result, evaluation
         except Exception as e:
-            return f"Erro na execução do agente {self.name}: {str(e)}"
+            return f"Erro na execução do agente {self.name}: {str(e)}", {}
