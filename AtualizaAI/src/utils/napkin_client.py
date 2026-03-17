@@ -19,7 +19,7 @@ class NapkinClient:
         
         if gemini_key:
             genai.configure(api_key=gemini_key)
-            model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+            model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
             self.gemini = genai.GenerativeModel(model_name)
         else:
             self.gemini = None
@@ -59,7 +59,7 @@ class NapkinClient:
         payload = {
             "content": content,
             "visual_query": formato,
-            "format": "svg",
+            "format": "png",
             "number_of_visuals": 1
         }
 
@@ -108,7 +108,7 @@ class NapkinClient:
         # Baixa o SVG (diagrama)
         headers = {
             "Authorization": f"Bearer {self.napkin_token}",
-            "Accept": "image/svg+xml"
+            "Accept": "image/png"
         }
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(url, headers=headers)
@@ -125,7 +125,7 @@ class NapkinClient:
             full_remote_path = gcs_client._full_path(gcs_path)
             
             blob = gcs_client.bucket.blob(full_remote_path)
-            blob.upload_from_string(svg_bytes, content_type="image/svg+xml")
+            blob.upload_from_string(png_bytes, content_type="image/png")
             
             # Retorna URL pública persistente
             final_url = f"https://storage.googleapis.com/{gcs_client.bucket_name}/{full_remote_path}"

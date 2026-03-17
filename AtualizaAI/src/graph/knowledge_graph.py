@@ -90,7 +90,7 @@ class KnowledgeGraphManager:
             return "General Technology"
             
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             prompt = f"""
             Classifique o conceito técnico '{concept}' em exatamente UM dos seguintes pilares de clusters:
             - AI Models (LLMs, Diffusion, etc)

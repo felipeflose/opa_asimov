@@ -67,7 +67,7 @@ class BaseAgent:
             return "Erro: GEMINI_API_KEY não configurada.", {}
             
         try:
-            model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+            model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
             model = genai.GenerativeModel(model_name)
             prompt = f"""
             {self.system_prompt}

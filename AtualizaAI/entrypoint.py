@@ -17,6 +17,7 @@ from src.storage.gcs_client import GCSClient
 from src.storage.finops_manager import FinOpsManager
 from src.graph.knowledge_graph import KnowledgeGraphManager
 from src.agents.vision_agent import VisionAgent
+from src.agents.audio_agent import AudioAgent
 
 app = FastAPI()
 API_TOKEN = os.getenv("MASTER_KEY", "fallback_token_change_immediately")
@@ -32,7 +33,8 @@ async def get_tg_agent():
         orchestrator = CognitiveOrchestrator(gcs_client=gcs)
         kg = KnowledgeGraphManager(gcs_client=gcs)
         vision = VisionAgent(gcs_client=gcs)
-        tg_agent = TelegramAgent(orchestrator, gcs_client=gcs, kg_manager=kg, vision_agent=vision)
+        audio = AudioAgent(gcs_client=gcs)
+        tg_agent = TelegramAgent(orchestrator, gcs_client=gcs, kg_manager=kg, vision_agent=vision, audio_agent=audio)
         await tg_agent.setup()
     return tg_agent
 

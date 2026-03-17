@@ -86,7 +86,7 @@ class CognitiveOrchestrator:
         # Usar apenas o SDK do Google Generative AI (AI Studio)
         # Nunca Vertex AI por ordem expressa do usuário
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
         
         if self.api_key:
             genai.configure(api_key=self.api_key)
@@ -117,6 +117,7 @@ class CognitiveOrchestrator:
            - Backlog/Tarefas? -> TaskManager
            - Erros/Auditoria/QA? -> QualityInspector
            - IA Vision/Imagens? -> VisionAgent
+           - Voz/Áudio/Transcrição? -> AudioAgent
            - Algo novo? -> Crie um novo agente (CREATE_AGENT).
         3. AGIR: Delegue a tarefa (EXECUTE) ou responda se for algo trivial.
 

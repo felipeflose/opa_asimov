@@ -8,12 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class TelegramAgent:
-    def __init__(self, orchestrator, gcs_client=None, kg_manager=None, vision_agent=None):
+    def __init__(self, orchestrator, gcs_client=None, kg_manager=None, vision_agent=None, audio_agent=None):
         self.token = os.getenv("TELEGRAM_BOT_TOKEN")
         self.orchestrator = orchestrator
         self.gcs_client = gcs_client
         self.kg_manager = kg_manager
         self.vision_agent = vision_agent
+        self.audio_agent = audio_agent
         self.application = None
         self.is_running = False
         self.log_file = "telegram_bot.log"
@@ -67,25 +68,22 @@ class TelegramAgent:
             user_text = update.message.text or update.message.caption or ""
             
             has_photo = bool(update.message.photo)
+            has_audio = bool(update.message.voice or update.message.audio)
             
             log_data = {
                 "platform": "telegram",
                 "user": user,
                 "message": user_text,
                 "has_photo": has_photo,
+                "has_audio": has_audio,
                 "timestamp": datetime.now().isoformat()
             }
             
-            self.log(f"Mensagem de @{user}: {user_text} (Foto: {has_photo})", data=log_data)
+            self.log(f"Mensagem de @{user}: {user_text} (Foto: {has_photo}, Audio: {has_audio})", data=log_data)
             
             await update.message.reply_chat_action(action="typing")
             
-            # --- Detecta comando de diagrama Napkin ---
-            lower_text = user_text.lower()
-            napkin_triggers = ["diagrama", "desenho", "visual", "mapa", "flowchart", "mindmap", "esquema", "arquitetura"]
-            if any(t in lower_text for t in napkin_triggers):
-                await self._handle_napkin_request(update, user_text)
-                return
+            # (Check de gatilhos movido para baixo para suportar áudio)
 
             image_path = None
             visual_context = ""
@@ -107,9 +105,43 @@ class TelegramAgent:
                     self.log(f"Análise de Visão completa: {visual_context[:50]}...")
                 else:
                     visual_context = "[Imagem recebida, mas Vision Agent offline]"
-    
+            
+            audio_context = ""
+            if has_audio:
+                audio_obj = update.message.voice or update.message.audio
+                audio_file = await audio_obj.get_file()
+                
+                # Extensão correta
+                ext = "ogg" if update.message.voice else (audio_obj.file_name.split('.')[-1] if hasattr(audio_obj, 'file_name') else "mp3")
+                audio_path = f"tmp_tg_audio_{datetime.now().strftime('%H%M%S')}.{ext}"
+                
+                await audio_file.download_to_drive(audio_path)
+                self.log(f"Áudio baixado em: {audio_path}")
+                
+                if self.audio_agent:
+                    try:
+                        await update.message.reply_text("🎧 *Audio Agent processando sua voz...*", parse_mode='Markdown')
+                    except:
+                        await update.message.reply_text("🎧 Audio Agent processando sua voz...")
+                    audio_context = self.audio_agent.analyze_audio(audio_path)
+                    self.log(f"Análise de Áudio completa: {audio_context[:50]}...")
+                else:
+                    audio_context = "[Áudio recebido, mas Audio Agent offline]"
+                
+                if os.path.exists(audio_path):
+                    os.remove(audio_path)
+
+            # --- Detecta comando de diagrama Napkin (Texto ou Áudio) ---
+            combined_input = (user_text + " " + audio_context).lower()
+            napkin_triggers = ["diagrama", "desenho", "visual", "mapa", "flowchart", "mindmap", "esquema", "arquitetura"]
+            if any(t in combined_input for t in napkin_triggers):
+                # Se for áudio, usa a transcrição como prompt para o Napkin
+                napkin_prompt = audio_context if (has_audio and not user_text) else user_text
+                await self._handle_napkin_request(update, napkin_prompt)
+                return
+
             # Process via Orchestrator
-            full_command = f"Contexto Visual: {visual_context}\n\nComando do Usuário: {user_text}"
+            full_command = f"Contexto Visual: {visual_context}\nContexto de Áudio: {audio_context}\n\nComando do Usuário: {user_text}"
             decision = self.orchestrator.process_command(full_command, image_path=image_path)
             
             # Limpeza da imagem após processar
@@ -147,6 +179,18 @@ class TelegramAgent:
             else: # execute
                 result = self.orchestrator.execute_decision(decision)
                 await self.safe_reply(update, f"⚙️ {result}")
+            
+            # --- NOVO: Auto-Renderização de Diagramas ---
+            # Se a resposta contiver Mermaid, gera a imagem visual automaticamente
+            if "```mermaid" in result:
+                import re
+                mermaid_match = re.search(r"```mermaid\s*(.*?)\s*```", result, re.DOTALL)
+                if mermaid_match:
+                    mermaid_content = mermaid_match.group(1).strip()
+                    self.log(f"Diagrama Mermaid detectado na resposta. Acionando Napkin...")
+                    # Pequeno delay para a mensagem de texto chegar primeiro
+                    await asyncio.sleep(1)
+                    await self._handle_napkin_request(update, mermaid_content)
             
             # Sincroniza o log final (com a decisão) no GCS
             if self.gcs_client:
@@ -190,23 +234,22 @@ class TelegramAgent:
                         "Accept": "image/svg+xml"
                     })
                     if svg_resp.status_code == 200:
-                        svg_bytes = svg_resp.content
+                        png_bytes = svg_resp.content
                         
                         # 1. Persistência no GCS (Não perder nada)
                         gcs_url = None
                         if self.gcs_client:
                             ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-                            gcs_path = f"visuals/diagrams/diagram_{ts}.svg"
+                            gcs_path = f"visuals/diagrams/diagram_{ts}.png"
                             blob = self.gcs_client.bucket.blob(self.gcs_client._full_path(gcs_path))
-                            blob.upload_from_string(svg_bytes, content_type="image/svg+xml")
+                            blob.upload_from_string(png_bytes, content_type="image/png")
                             gcs_url = f"https://storage.googleapis.com/{self.gcs_client.bucket_name}/{self.gcs_client._full_path(gcs_path)}"
                             self.log(f"Diagrama persistido: {gcs_path}")
 
-                        # 2. Enviar para Telegram
-                        await update.message.reply_document(
-                            document=svg_bytes,
-                            filename="flose_diagram.svg",
-                            caption=f"📊 Diagrama persistido na Flose AI."
+                        # 2. Enviar para Telegram (Como Foto!)
+                        await update.message.reply_photo(
+                            photo=png_bytes,
+                            caption=f"📸 Diagrama gerado na Flose AI."
                         )
 
                         # 3. Registrar no Log de Atividades para aparecer no Dashboard
@@ -246,7 +289,7 @@ class TelegramAgent:
             .build()
         )
         self.application.add_handler(CommandHandler("start", self.start_handler))
-        self.application.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.Document.IMAGE, self.message_handler))
+        self.application.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.Document.IMAGE | filters.VOICE | filters.AUDIO, self.message_handler))
         self.application.add_error_handler(self.error_handler)
         
         await self.application.initialize()
