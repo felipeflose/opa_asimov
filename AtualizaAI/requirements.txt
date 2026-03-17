@@ -22,3 +22,5 @@ fastapi
 uvicorn
 httpx
 fastapi-proxy-lib
+google-cloud-billing
+tenacity

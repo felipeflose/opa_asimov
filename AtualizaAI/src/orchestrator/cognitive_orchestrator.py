@@ -7,6 +7,7 @@ from PIL import Image
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Literal
 from src.agents.base_agent import BaseAgent as AgentCore
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from src.storage.vector_store import VectorStore
 from src.storage.episodic_memory import EpisodicMemory
 
@@ -60,7 +61,15 @@ class OrchestratorDecision(BaseModel):
             if 'create' in v or 'criar' in v or 'novo' in v: return 'create_agent'
         if 'response' in v or 'responder' in v or 'respond' in v: return 'respond'
         if 'exec' in v: return 'execute'
+        if 'update' in v: return 'update_agent'
         return v
+
+    @field_validator('reasoning', 'response')
+    @classmethod
+    def sanitize_text(cls, v: str) -> str:
+        # Evitar injeção de scripts básicos ou caracteres de controle
+        return v.replace('<script>', '').replace('</script>', '').strip()
+
 
 class CognitiveOrchestrator:
     def __init__(self, api_key=None, gcs_client=None, finops_manager=None):
@@ -151,7 +160,32 @@ class CognitiveOrchestrator:
         - ⚠️ PROIBIÇÃO ABSOLUTA: Jamais invente ou use nomes de pessoas (ex: João, Sophia, Ana, Bia, Carlos). Os agentes da Flose AI NÃO SÃO PESSOAS, são ESPECIALISTAS TÉCNICOS. Use APENAS os nomes que estão no json de 'Registered Agents' ou no json de 'Active Demands'. Se um agente se chamar 'FinOpsGuardian', chame-o de 'FinOpsGuardian'. Se inventar nomes humanos, você estará violando o protocolo de segurança.
         """
 
+    def _sanitize_input(self, text: str) -> str:
+        """Proteção contra prompt injection e excesso de carga."""
+        if not text: return ""
+        # Limite de tamanho para evitar ataques de estouro de contexto
+        text = text[:4000]
+        # Sanitização básica de tokens que podem confundir o papel do LLM
+        forbidden_tokens = ["SYSTEM_PROMPT:", "IGNORE ALL PREVIOUS", "YOU ARE NOW", "ORCHESTRATOR_DNA"]
+        for token in forbidden_tokens:
+            text = text.replace(token, "[REDACTED]")
+        return text.strip()
+
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(3),
+        retry=retry_if_exception_type(Exception),
+        reraise=True
+    )
+    def _call_gemini(self, content):
+        """Wrapper com retry para chamadas à API Gemini."""
+        response = self.model.generate_content(content)
+        return response
+
     def process_command(self, user_command, image_path=None, visual_context="", chat_history=None):
+        # Sanitização de Entrada
+        user_command = self._sanitize_input(user_command)
+
         # Fetch current state for real-time context
         project_id = os.getenv("GCP_PROJECT_ID", "Não configurado")
         region = os.getenv("GCP_REGION", "us-central1")
@@ -234,7 +268,7 @@ class CognitiveOrchestrator:
                 content.append(img)
                 
             try:
-                response = self.model.generate_content(content)
+                response = self._call_gemini(content)
                 
                 # Tracking Real de Custos (FinOps)
                 if self.finops and hasattr(response, 'usage_metadata'):
@@ -249,8 +283,22 @@ class CognitiveOrchestrator:
                 elif "```" in raw_text:
                     json_match = raw_text.split("```")[1].split("```")[0].strip()
                 
-                # Validação Pydantic
-                decision_obj = OrchestratorDecision.model_validate_json(json_match)
+                # Validação Pydantic Estrita
+                try:
+                    decision_obj = OrchestratorDecision.model_validate_json(json_match)
+                except Exception as ve:
+                    print(f"⚠️ Erro de Schema JSON: {ve}")
+                    # Se falhar o schema, tenta extrair o campo 'response' pelo menos
+                    try:
+                        temp_data = json.loads(json_match)
+                        return {
+                            "action": "respond",
+                            "response": temp_data.get("response", "Erro na estrutura da resposta."),
+                            "reasoning": "Fallback por falha de validação de schema."
+                        }
+                    except:
+                        raise ve
+
                 d = decision_obj.model_dump()
                 d["user_command"] = user_command
                 return d
@@ -258,10 +306,15 @@ class CognitiveOrchestrator:
             except Exception as e:
                 retry_count += 1
                 last_error = str(e)
-                print(f"[!] Tentativa {retry_count} falhou: {last_error}")
+                print(f"[!] Erro no process_command (Tentativa {retry_count}): {last_error}")
                 if retry_count > max_retries:
-                    return {"error": "Invalid response format after retries", "raw": last_error}
-                time.sleep(1) # Pequena pausa antes do retry
+                    return {
+                        "action": "respond",
+                        "response": "Desculpe, tive um problema técnico ao processar sua solicitação no momento.",
+                        "error": str(last_error)
+                    }
+                time.sleep(2) # Pausa maior entre falhas de lógica/schema
+
 
     def execute_decision(self, decision):
         # --- Ideia 8: BigQuery Interaction Logger ---
