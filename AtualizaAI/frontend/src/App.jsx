@@ -18,7 +18,7 @@ function App() {
   const [hoveredNode, setHoveredNode] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [activity, setActivity] = useState([]);
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [agentList, setAgentList] = useState([]);
   const [executingAgent, setExecutingAgent] = useState('');
   const [viewingAgent, setViewingAgent] = useState(null);
@@ -28,7 +28,50 @@ function App() {
   const [marketTemplates, setMarketTemplates] = useState([]);
   const [isFixing, setIsFixing] = useState(false);
   const [viewingDelivery, setViewingDelivery] = useState(null);
-  
+
+  // Helper to ensure we never try to render an object directly in JSX (prevents Error #31)
+  const safeRender = (val, fallback = '') => {
+    if (val === null || val === undefined) return fallback;
+    if (typeof val === 'object') {
+      try { return JSON.stringify(val); } catch(e) { return '[Object]'; }
+    }
+    return String(val);
+  };
+
+  const SlantButton = ({ children, onClick, active, color }) => (
+    <button 
+      onClick={onClick}
+      style={{
+        padding: '8px 18px',
+        background: active ? (color || 'var(--primary)') : 'rgba(255,255,255,0.03)',
+        color: active ? '#000' : '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        fontSize: '0.65rem',
+        fontWeight: '900',
+        cursor: 'pointer',
+        clipPath: 'polygon(10% 0, 100% 0, 90% 100%, 0% 100%)',
+        transition: 'all 0.3s ease'
+      }}
+    >
+      {children}
+    </button>
+  );
+
+  const NapkinVisual = ({ visualUrl }) => {
+    if (!visualUrl) return null;
+    const proxied = `/api/marketplace/visual-proxy?url=${encodeURIComponent(visualUrl)}`;
+    return (
+      <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
+        <img 
+          src={proxied} 
+          style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }}
+          alt="Architectural Visual"
+        />
+      </div>
+    );
+  };
+
   // QA Report State
   const [qaReport, setQaReport] = useState(null);
   const [qaLoading, setQaLoading] = useState(false);
@@ -244,56 +287,6 @@ function App() {
       setEnrichingAgent(null);
     }
   };
-
-  // Hook de Física Avançado v4
-  // NapkinVisual: exibe diagrama via proxy autenticado (Napkin requer Bearer token)
-  const NapkinVisual = ({ visualUrl }) => {
-    if (!visualUrl) return null;
-    const proxied = `/api/marketplace/visual-proxy?url=${encodeURIComponent(visualUrl)}`;
-    return (
-      <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
-        <img 
-          src={proxied} 
-          style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }}
-          alt="Diagram"
-          onError={(e) => { e.target.style.display = 'none'; }}
-          onLoad={(e) => {
-            // Se for SVG via Proxy, precisamos injetar o token no src se não estiver pegando do global (mas img src não manda header auth customizado fácil)
-            // Para imagens, mantemos query param por enquanto OU usamos fetch + blob URL
-          }}
-          // Melhorei a visão para ser via fetch e blob para suportar header auth
-        />
-      </div>
-    );
-  };
-
-  const SlantButton = ({ children, active, onClick, color = '#00f2ff' }) => (
-    <button
-      onClick={onClick}
-      style={{
-        padding: "8px 22px",
-        fontSize: "11px",
-        fontWeight: "800",
-        cursor: "pointer",
-        border: "none",
-        background: active ? color : "rgba(255,255,255,0.03)",
-        color: active ? "#000" : "rgba(255,255,255,0.6)",
-        transform: "skew(-15deg)",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        boxShadow: active ? `0 0 20px ${color}66` : "none",
-        marginRight: "10px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minWidth: "100px",
-        textTransform: "uppercase",
-        letterSpacing: "1px",
-        border: active ? "none" : "1px solid rgba(255,255,255,0.1)"
-      }}
-    >
-      <span style={{ transform: "skew(15deg)" }}>{children}</span>
-    </button>
-  );
 
   const useForce = (nodes, links, width, height) => {
     const pos = useRef({});
@@ -662,13 +655,14 @@ function App() {
               <div style={{ height: '100%', width: '100%', background: 'radial-gradient(circle at center, #0a0e1a 0%, #050505 100%)' }}>
                 <svg width="100%" height="100%" viewBox="0 0 800 400">
                   {graphData.links && graphData.links.map((link, i) => {
-                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-                    const s = graphData.nodes.find(n => n.id === sourceId);
-                    const t = graphData.nodes.find(n => n.id === targetId);
+                    const sId = (link.source && typeof link.source === 'object') ? link.source.id : link.source;
+                    const tId = (link.target && typeof link.target === 'object') ? link.target.id : link.target;
+                    if (!sId || !tId) return null;
+
+                    const s = graphData.nodes.find(n => n.id === sId);
+                    const t = graphData.nodes.find(n => n.id === tId);
                     if (!s || !t) return null;
                     
-                    // Layout simplificado para preview (circular)
                     const sIdx = graphData.nodes.indexOf(s);
                     const tIdx = graphData.nodes.indexOf(t);
                     const sx = s.type === 'core' ? 400 : 400 + Math.cos(sIdx) * 120;
@@ -676,7 +670,7 @@ function App() {
                     const tx = t.type === 'core' ? 400 : 400 + Math.cos(tIdx) * 120;
                     const ty = t.type === 'core' ? 200 : 200 + Math.sin(tIdx) * 100;
 
-                    return <line key={i} x1={sx} y1={sy} x2={tx} y2={ty} stroke="var(--primary)" strokeOpacity="0.15" />;
+                    return <line key={`l-${i}`} x1={sx} y1={sy} x2={tx} y2={ty} stroke="var(--primary)" strokeOpacity="0.15" />;
                   })}
                   {graphData.nodes && graphData.nodes.slice(0, 20).map((node, i) => {
                     const x = node.type === 'core' ? 400 : 400 + Math.cos(i) * 120;
@@ -696,9 +690,9 @@ function App() {
               <div className="audit-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {activity.length > 0 ? activity.map((act, i) => (
                   <div key={i} className="audit-item" style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>@{act.user}</p>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{act.message ? act.message.substring(0, 40) + '...' : '[Image/No Text]'}</p>
-                    <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{new Date(act.timestamp).toLocaleTimeString()}</span>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>@{act.user || 'system'}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#e0e0e0' }}>{safeRender(act.message, '[Signal received]')}</p>
+                    <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{act.timestamp ? new Date(act.timestamp).toLocaleTimeString() : '---'}</span>
                   </div>
                 )) : (
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Waiting for incoming signals...</p>
@@ -774,12 +768,12 @@ function App() {
                     key={task.id} 
                     draggable 
                     onDragStart={(e) => onDragStart(e, task.id)}
-                    onClick={() => setSelectedTask(task)}
-                    className={`glass-card ${selectedTask?.id === task.id ? 'active' : ''}`}
+                    onClick={() => setSelectedTaskId(selectedTaskId === task.id ? null : task.id)}
+                    className={`glass-card ${selectedTaskId === task.id ? 'active' : ''}`}
                     style={{ 
                       padding: '18px', 
                       cursor: 'grab', 
-                      border: selectedTask?.id === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
+                      border: selectedTaskId === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
                       position: 'relative',
                       animation: 'fadeIn 0.4s ease'
                     }}
@@ -792,7 +786,7 @@ function App() {
                     <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
                     
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '15px', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {task.objective || 'Objetivo não detalhado...'}
+                      {safeRender(task.objective, 'Objetivo não detalhado...')}
                     </p>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
@@ -808,10 +802,10 @@ function App() {
                     </div>
 
                     {/* Mostra governança se selecionado */}
-                    {selectedTask?.id === task.id && (
-                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}`, animation: 'slideDown 0.3s ease' }}>
+                    {selectedTaskId === task.id && (
+                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}` }}>
                         <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '5px' }}>🛡️ GOVERNANÇA FINOPS</p>
-                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{task.governance_finops || 'Aguardando auditoria FinOps...'}</p>
+                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{safeRender(task.governance_finops, 'Aguardando auditoria FinOps...')}</p>
                         
                         {(task.governance_finops === 'Aguardando auditoria FinOps...' || !task.objective || task.objective === 'Geração pendente...') && (
                           <button 
@@ -825,16 +819,17 @@ function App() {
 
                         <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
                           {!task.budget_approved && col.id === 'Aberto' && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={() => handleApprove(task.id)}>👍 APROVAR</button>
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={(e) => { e.stopPropagation(); handleApprove(task.id); }}>👍 APROVAR</button>
                           )}
                           {task.status === 'Em Progresso' && task.budget_approved && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={() => {
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={(e) => {
+                              e.stopPropagation();
                               setExecutingAgent(task.responsible);
                               handleExecute(task.id);
                             }}>🚀 EXECUTAR</button>
                           )}
                           {task.status === 'Concluído' && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981' }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER ENTREGA</button>
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981' }} onClick={(e) => { e.stopPropagation(); handleViewDelivery(task.result_id); }}>📦 VER ENTREGA</button>
                           )}
                         </div>
                       </div>
@@ -929,7 +924,7 @@ function App() {
                     <div className="avatar" style={{ scale: '0.7', background: 'var(--primary)', color: 'black' }}>{idx + 1}</div>
                     <div>
                       <h4 style={{ color: 'var(--primary)' }}>{step.agent_name}</h4>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{step.task || 'Generic processing...'}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{safeRender(step.task, 'Generic processing...')}</p>
                     </div>
                   </div>
                   <button onClick={() => setPipeline(pipeline.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
@@ -1278,8 +1273,8 @@ function App() {
                                   <span style={{ fontSize: '0.65rem', fontWeight: '800', color: inter.type === 'execution' ? 'var(--primary)' : '#34d399' }}>{inter.type === 'execution' ? '⚡ Execução' : '📱 Telegram'}{inter.task_id ? ` • ${inter.task_id}` : ''}{inter.action ? ` • ${inter.action}` : ''}</span>
                                   <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{inter.timestamp ? new Date(inter.timestamp).toLocaleString() : '—'}</span>
                                 </div>
-                                {inter.input && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>📝 {inter.input.substring(0, 150)}{inter.input.length > 150 ? '...' : ''}</p>}
-                                <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: '1.4' }}>{(inter.result || '').substring(0, 300)}{(inter.result || '').length > 300 ? '...' : ''}</p>
+                                {inter.input && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>📝 {safeRender(inter.input).substring(0, 150)}</p>}
+                                <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: '1.4' }}>{safeRender(inter.result).substring(0, 300)}</p>
                               </div>
                             ))}
                           </div>
