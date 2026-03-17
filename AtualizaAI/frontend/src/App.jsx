@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('flose_auth') === 'true');
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('flose_token'));
+  const [token, setToken] = useState(localStorage.getItem('flose_token') || '');
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [key, setKey] = useState('');
   const [error, setError] = useState(false);
@@ -29,8 +30,8 @@ function App() {
 
   // Buscar dados reais da API
   const fetchData = async () => {
+    if (!token) return;
     try {
-      const token = "flosetoken_secure_v2";
       const [statsRes, graphRes, tasksRes, activityRes, agentsRes] = await Promise.all([
         fetch(`/api/stats?token=${token}`),
         fetch(`/api/graph?token=${token}`),
@@ -61,14 +62,12 @@ function App() {
   };
 
   const handleApprove = async (taskId) => {
-    const token = "flosetoken_secure_v2";
     await fetch(`/api/tasks/approve?task_id=${taskId}&token=${token}`, { method: 'POST' });
     fetchData();
   };
 
   const handleExecute = async (taskId) => {
     if (!executingAgent) return alert("Selecione um agente!");
-    const token = "flosetoken_secure_v2";
     const res = await fetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${executingAgent}&token=${token}`, { method: 'POST' });
     const data = await res.json();
     alert(data.status === 'success' ? "Tarefa executada com sucesso!" : "Erro: " + data.error);
@@ -76,14 +75,12 @@ function App() {
   };
 
   const handleViewDelivery = async (resultId) => {
-    const token = "flosetoken_secure_v2";
     const res = await fetch(`/api/tasks/delivery/${resultId}?token=${token}`);
     const data = await res.json();
     alert("Resultado:\n\n" + data.result);
   };
 
   const handleAgentQuery = async (query) => {
-    const token = "flosetoken_secure_v2";
     const res = await fetch(`/api/agents/chat?token=${token}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -95,7 +92,6 @@ function App() {
   };
 
   const handleExport = async (name) => {
-    const token = "flosetoken_secure_v2";
     const res = await fetch(`/api/marketplace/export/${name}?token=${token}`, { method: 'POST' });
     const data = await res.json();
     alert(data.status === 'success' ? "Agente exportado como template!" : "Erro ao exportar");
@@ -103,7 +99,6 @@ function App() {
   };
 
   const handleImport = async (templateName) => {
-    const token = "flosetoken_secure_v2";
     const res = await fetch(`/api/marketplace/import?token=${token}`, { 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -117,7 +112,7 @@ function App() {
   const handleQAAutoFix = async () => {
     setIsFixing(true);
     try {
-      const resp = await fetch(`/api/qa/auto-fix?token=flosetoken_secure_v2`, { method: 'POST' });
+      const resp = await fetch(`/api/qa/auto-fix?token=${token}`, { method: 'POST' });
       const data = await resp.json();
       alert(`Correction Result: ${data.result}`);
       fetchData();
@@ -140,7 +135,6 @@ function App() {
   // NapkinVisual: exibe diagrama via proxy autenticado (Napkin requer Bearer token)
   const NapkinVisual = ({ visualUrl }) => {
     if (!visualUrl) return null;
-    const token = "flosetoken_secure_v2";
     const proxied = `/api/marketplace/visual-proxy?token=${token}&url=${encodeURIComponent(visualUrl)}`;
     return (
       <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
@@ -781,7 +775,6 @@ function App() {
                   setIsRunningPipeline(true);
                   const results = [];
                   for(const step of pipeline) {
-                    const token = "flosetoken_secure_v2";
                     const res = await fetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}&token=${token}`, { 
                       method: 'POST' 
                     });
@@ -994,7 +987,8 @@ function App() {
       });
       const data = await response.json();
       if (data.status === 'authorized') {
-        localStorage.setItem('flose_auth', 'true');
+        localStorage.setItem('flose_token', data.token);
+        setToken(data.token);
         setIsAuthenticated(true);
       } else {
         setError(true);
@@ -1006,7 +1000,8 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('flose_auth');
+    localStorage.removeItem('flose_token');
+    setToken('');
     setIsAuthenticated(false);
   };
 

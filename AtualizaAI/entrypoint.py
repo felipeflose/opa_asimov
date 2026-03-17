@@ -14,6 +14,7 @@ from src.graph.knowledge_graph import KnowledgeGraphManager
 from src.agents.vision_agent import VisionAgent
 
 app = FastAPI()
+API_TOKEN = os.getenv("MASTER_KEY", "fallback_token_change_immediately")
 
 tg_agent = None
 
@@ -83,13 +84,13 @@ async def verify_auth(request: Request):
         return {"status": "error", "message": "Secret Manager configuration missing."}
     
     if client_key == master_key:
-        return {"status": "authorized", "token": "flosetoken_secure_v2"}
+        return {"status": "authorized", "token": API_TOKEN}
     return {"status": "unauthorized"}
 
 @app.get("/api/stats")
 async def get_stats(token: str = None):
     # Proteção simples via token
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
         
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -121,7 +122,7 @@ async def get_stats(token: str = None):
 
 @app.get("/api/graph")
 async def get_graph(token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -139,7 +140,7 @@ async def get_graph(token: str = None):
 
 @app.get("/api/tasks")
 async def get_tasks(token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -163,7 +164,7 @@ async def get_tasks(token: str = None):
 
 @app.get("/api/activity")
 async def get_activity(token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -210,7 +211,7 @@ async def get_activity(token: str = None):
 
 @app.post("/api/qa/auto-fix")
 async def qa_auto_fix(token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
         
     # Lazy load dependencies
@@ -258,7 +259,7 @@ async def qa_auto_fix(token: str = None):
 
 @app.post("/api/tasks/approve")
 async def approve_task(task_id: str, token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -277,7 +278,7 @@ async def approve_task(task_id: str, token: str = None):
 
 @app.post("/api/tasks/execute")
 async def execute_task(task_id: str, agent_name: str, token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
         
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -347,7 +348,7 @@ async def execute_task(task_id: str, agent_name: str, token: str = None):
 
 @app.get("/api/tasks/delivery/{result_id}")
 async def get_delivery(result_id: str, token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -359,7 +360,7 @@ async def get_delivery(result_id: str, token: str = None):
 
 @app.get("/api/agents")
 async def get_agents(token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -371,7 +372,7 @@ async def get_agents(token: str = None):
 
 @app.post("/api/agents/update")
 async def update_agent(agent_data: dict, token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -399,7 +400,7 @@ async def update_agent(agent_data: dict, token: str = None):
 
 @app.post("/api/agents/chat")
 async def chat_agents(request: Request, token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     data = await request.json()
@@ -420,7 +421,7 @@ async def chat_agents(request: Request, token: str = None):
 
 @app.get("/api/marketplace")
 async def get_marketplace(token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -433,7 +434,7 @@ async def get_marketplace(token: str = None):
 
 @app.post("/api/marketplace/export/{agent_name}")
 async def export_to_marketplace(agent_name: str, token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -449,7 +450,7 @@ async def export_to_marketplace(agent_name: str, token: str = None):
 
 @app.post("/api/marketplace/import")
 async def import_from_marketplace(request: Request, token: str = None):
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return {"error": "Unauthorized"}
     
     data = await request.json()
@@ -486,7 +487,7 @@ async def napkin_visual_proxy(url: str = None, token: str = None):
     Este endpoint baixa e re-serve o SVG com os headers corretos.
     """
     from fastapi.responses import Response
-    if token != "flosetoken_secure_v2":
+    if token != API_TOKEN:
         return Response(content="Unauthorized", status_code=401)
     if not url:
         return Response(content="Missing url param", status_code=400)
