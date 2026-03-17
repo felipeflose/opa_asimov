@@ -28,6 +28,12 @@ function App() {
   const [marketTemplates, setMarketTemplates] = useState([]);
   const [isFixing, setIsFixing] = useState(false);
   const [viewingDelivery, setViewingDelivery] = useState(null);
+  
+  // QA Report State
+  const [qaReport, setQaReport] = useState(null);
+  const [qaLoading, setQaLoading] = useState(false);
+  const [expandedAgent, setExpandedAgent] = useState(null);
+  const [enrichingAgent, setEnrichingAgent] = useState(null);
 
   // Buscar dados reais da API
   const fetchData = async () => {
@@ -160,6 +166,77 @@ function App() {
       return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
+
+  const handleUpdateStatus = async (taskId, newStatus) => {
+    try {
+      const res = await fetch(`/api/tasks/update-status?task_id=${taskId}&new_status=${newStatus}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status === 'success') fetchData();
+    } catch (err) {
+      console.error("Update status error", err);
+    }
+  };
+
+  const handleAuditFinOps = async (taskId) => {
+    try {
+      const res = await fetch(`/api/tasks/audit-finops?task_id=${taskId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status === 'success') fetchData();
+    } catch (err) {
+      console.error("Audit error", err);
+    }
+  };
+
+  const fetchQAReport = async () => {
+    if (!token) return;
+    setQaLoading(true);
+    try {
+      const res = await fetch('/api/qa/report', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.error) setQaReport(data);
+    } catch (err) {
+      console.error("QA Report fetch error", err);
+    } finally {
+      setQaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'Quality Inspector') {
+      fetchQAReport();
+    }
+  }, [activeTab]);
+
+  const handleEnrichAgent = async (agentName) => {
+    setEnrichingAgent(agentName);
+    try {
+      const resp = await fetch(`/api/qa/enrich-agent?agent_name=${encodeURIComponent(agentName)}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await resp.json();
+      if (data.status === 'success') {
+        alert(data.message);
+        fetchQAReport();
+        fetchData(); 
+      } else {
+        alert("Erro: " + (data.error || "Falha desconhecida"));
+      }
+    } catch (err) {
+      console.error("Enrich error", err);
+      alert("Erro de conexão ou no servidor. Verifique o console.");
+    } finally {
+      setEnrichingAgent(null);
+    }
+  };
 
   // Hook de Física Avançado v4
   // NapkinVisual: exibe diagrama via proxy autenticado (Napkin requer Bearer token)
@@ -631,83 +708,135 @@ function App() {
     }
 
     if (activeTab === 'Task Manager') {
+      const columns = [
+        { id: 'Aberto', title: '📋 BACKLOG', color: '#f59e0b' },
+        { id: 'Em Progresso', title: '⚡ EM EXECUÇÃO', color: 'var(--primary)' },
+        { id: 'Concluído', title: '✅ ENTREGUES', color: '#10b981' }
+      ];
+
+      const getTasksByStatus = (status) => {
+        // Normalização de status para suportar variações legadas
+        const map = {
+          'Aberto': ['Aberto', 'OPEN', 'backlog'],
+          'Em Progresso': ['Em Progresso', 'IN_PROGRESS', 'doing'],
+          'Concluído': ['Concluído', 'COMPLETED', 'done']
+        };
+        const targets = map[status] || [status];
+        return tasks.filter(t => targets.includes(t.status));
+      };
+
+      const onDragStart = (e, taskId) => {
+        e.dataTransfer.setData('taskId', taskId);
+      };
+
+      const onDragOver = (e) => {
+        e.preventDefault();
+      };
+
+      const onDrop = (e, newStatus) => {
+        const taskId = e.dataTransfer.getData('taskId');
+        handleUpdateStatus(taskId, newStatus);
+      };
+
       return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
-          <div className="task-grid">
-            {tasks.map(task => (
-              <div key={task.id} className={`glass-card task-card ${selectedTask?.id === task.id ? 'active' : ''}`} onClick={() => setSelectedTask(task)}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                  <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{task.id}</span>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '1rem' }}>{task.budget_approved ? '✅' : '⏳'}</span>
-                    <span className={`badge ${
-                      task.status === 'Concluído' ? 'badge-online' : 
-                      task.status === 'Aberto' ? 'badge-pending' : 'badge-progress'
-                    }`} style={{ fontSize: '0.6rem' }}>{task.status}</span>
-                  </div>
-                </div>
-                <h4>{task.title}</h4>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px' }}>
-                  <span className="badge" style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.1)' }}>{task.priority || 'Média'}</span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>👤 {task.responsible || 'IA'}</span>
-                </div>
-                {task.terraform_plan && <div style={{ marginTop: '10px', color: 'var(--primary)', fontSize: '0.6rem' }}>🏗️ Terraform Ready</div>}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', height: 'calc(100vh - 250px)', minHeight: '600px' }}>
+          {columns.map(col => (
+            <div 
+              key={col.id} 
+              onDragOver={onDragOver}
+              onDrop={(e) => onDrop(e, col.id)}
+              style={{ 
+                background: 'rgba(255,255,255,0.02)', 
+                borderRadius: '20px', 
+                border: '1px solid var(--border)', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                overflow: 'hidden' 
+              }}
+            >
+              <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', background: `${col.color}08`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ fontSize: '0.85rem', letterSpacing: '2px', color: col.color, fontWeight: '900' }}>{col.title}</h3>
+                <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '20px', color: 'var(--text-muted)' }}>
+                  {getTasksByStatus(col.id).length}
+                </span>
               </div>
-            ))}
-          </div>
-
-          <div className="glass-card detail-panel">
-            {selectedTask ? (
-              <>
-                <h3>Task Details</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '5px' }}>ID: {selectedTask.id}</p>
-                <hr style={{ margin: '20px 0', borderColor: 'var(--border)' }} />
-                
-                <h4 style={{ color: 'var(--primary)' }}>Objective</h4>
-                <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>{selectedTask.title}</p>
-                
-                <h4 style={{ color: 'var(--primary)', marginTop: '20px' }}>Governance (FinOps)</h4>
-                <p style={{ fontSize: '0.8rem', marginTop: '5px' }}>{selectedTask.cost_explanation || 'Aguardando especificações técnicas...'}</p>
-                
-                {selectedTask.terraform_plan && (
-                  <>
-                    <h4 style={{ color: 'var(--primary)', marginTop: '20px' }}>Infrastructure (Tf)</h4>
-                    <pre style={{ fontSize: '0.7rem', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px', marginTop: '10px', overflowX: 'auto' }}>
-                      {selectedTask.terraform_plan}
-                    </pre>
-                  </>
-                )}
-
-                <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {!selectedTask.budget_approved && (
-                    <button className="login-button" onClick={() => handleApprove(selectedTask.id)}>👍 APPROVE BUDGET</button>
-                  )}
-                  
-                  {selectedTask.status === 'Aberto' && selectedTask.budget_approved && (
-                    <div style={{ background: 'rgba(0,242,255,0.05)', padding: '15px', borderRadius: '12px', border: '1px solid var(--primary)' }}>
-                      <p style={{ fontSize: '0.8rem', marginBottom: '10px', fontWeight: 'bold' }}>Delegated Specialist:</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                        <div className="avatar" style={{ scale: '0.8' }}>{selectedTask.responsible?.substring(0,2).toUpperCase()}</div>
-                        <span style={{ color: 'white' }}>{selectedTask.responsible}</span>
-                      </div>
-                      <button className="login-button" style={{ background: 'var(--primary)', color: 'black' }} onClick={() => {
-                        setExecutingAgent(selectedTask.responsible);
-                        handleExecute(selectedTask.id);
-                      }}>🚀 RUN AS {selectedTask.responsible?.toUpperCase()}</button>
+              
+              <div style={{ flex: 1, padding: '15px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {getTasksByStatus(col.id).map(task => (
+                  <div 
+                    key={task.id} 
+                    draggable 
+                    onDragStart={(e) => onDragStart(e, task.id)}
+                    onClick={() => setSelectedTask(task)}
+                    className={`glass-card ${selectedTask?.id === task.id ? 'active' : ''}`}
+                    style={{ 
+                      padding: '18px', 
+                      cursor: 'grab', 
+                      border: selectedTask?.id === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
+                      position: 'relative',
+                      animation: 'fadeIn 0.4s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '0.65rem', color: col.color, fontWeight: '900' }}>{task.id}</span>
+                      <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
                     </div>
-                  )}
+                    
+                    <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
+                    
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '15px', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {task.objective || 'Objetivo não detalhado...'}
+                    </p>
 
-                  {selectedTask.status === 'Concluído' && (
-                    <button className="login-button" style={{ background: '#28a745' }} onClick={() => handleViewDelivery(selectedTask.result_id)}>📦 VIEW DELIVERY</button>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', color: 'var(--text-muted)', paddingTop: '50px' }}>
-                <p>Select a TRD card to view details and governance actions.</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="avatar" style={{ width: '24px', height: '24px', fontSize: '0.5rem', background: 'var(--primary)', color: '#000' }}>
+                          {task.responsible?.substring(0,2).toUpperCase() || 'IA'}
+                        </div>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{task.responsible || 'IA'}</span>
+                      </div>
+                      <span style={{ fontSize: '0.55rem', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: '4px' }}>
+                        {task.priority || 'Normal'}
+                      </span>
+                    </div>
+
+                    {/* Mostra governança se selecionado */}
+                    {selectedTask?.id === task.id && (
+                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}`, animation: 'slideDown 0.3s ease' }}>
+                        <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '5px' }}>🛡️ GOVERNANÇA FINOPS</p>
+                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{task.governance_finops || 'Aguardando auditoria FinOps...'}</p>
+                        
+                        {(task.governance_finops === 'Aguardando auditoria FinOps...' || !task.objective || task.objective === 'Geração pendente...') && (
+                          <button 
+                            className="login-button" 
+                            style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', marginTop: '10px' }} 
+                            onClick={(e) => { e.stopPropagation(); handleAuditFinOps(task.id); }}
+                          >
+                            🔍 AUDITAR AGORA
+                          </button>
+                        )}
+
+                        <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+                          {!task.budget_approved && col.id === 'Aberto' && (
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={() => handleApprove(task.id)}>👍 APROVAR</button>
+                          )}
+                          {task.status === 'Em Progresso' && task.budget_approved && (
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={() => {
+                              setExecutingAgent(task.responsible);
+                              handleExecute(task.id);
+                            }}>🚀 EXECUTAR</button>
+                          )}
+                          {task.status === 'Concluído' && (
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981' }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER ENTREGA</button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          ))}
         </div>
       );
     }
@@ -938,69 +1067,257 @@ function App() {
     }
 
     if (activeTab === 'Quality Inspector') {
-      const qaLogs = activity.filter(a => a.agent === 'QualityInspector' || (a.message && a.message.includes('QualityInspector')));
-      
-      return (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px' }}>
-          <div className="glass-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-              <div>
-                <h2 className="title-grad" style={{ fontSize: '1.8rem' }}>QA & Audit Logs</h2>
-                <p style={{ color: 'var(--text-muted)' }}>Watch the QualityInspector enforce rules and debate with other agents.</p>
-              </div>
-              <button 
-                onClick={handleQAAutoFix} 
-                disabled={isFixing}
-                className="login-button" 
-                style={{ width: 'auto', padding: '10px 25px', background: 'var(--primary)', boxShadow: '0 0 15px var(--primary-glow)' }}
-              >
-                {isFixing ? '🌀 ANALYZING...' : '⚡ AUTO-FIX BACKLOG'}
-              </button>
+
+
+      const AccuracyBar = ({ value }) => {
+        const color = value >= 80 ? '#00ff80' : value >= 50 ? '#f59e0b' : '#ff4d4d';
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '140px' }}>
+            <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: '4px', transition: 'width 0.6s ease', boxShadow: `0 0 10px ${color}66` }} />
             </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-              {qaLogs.length > 0 ? qaLogs.map((log, idx) => (
-                <div key={idx} style={{ background: 'rgba(255,0,0,0.05)', padding: '20px', borderRadius: '12px', borderLeft: '4px solid #ff4d4d' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ fontWeight: 'bold', color: '#ff4d4d' }}>🚨 QualityInspector Request</span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{new Date(log.timestamp).toLocaleString()}</span>
-                  </div>
-                  <p style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>{log.message}</p>
-                </div>
-              )) : (
-                <div style={{ textAlign: 'center', padding: '50px', opacity: 0.5 }}>
-                  <h3>No Quality Inspector Interventions Yet</h3>
-                  <p style={{ fontSize: '0.8rem', marginTop: '10px' }}>The system is currently operating within expected parameters.</p>
-                </div>
-              )}
+            <span style={{ fontSize: '0.85rem', fontWeight: '900', color, minWidth: '40px', textAlign: 'right' }}>{value}%</span>
+          </div>
+        );
+      };
+
+      const StatusBadge = ({ status }) => {
+        const map = {
+          'Concluído': { bg: 'rgba(0,255,128,0.15)', color: '#00ff80', label: '✅ Concluído' },
+          'COMPLETED': { bg: 'rgba(0,255,128,0.15)', color: '#00ff80', label: '✅ Completed' },
+          'done': { bg: 'rgba(0,255,128,0.15)', color: '#00ff80', label: '✅ Done' },
+          'Aberto': { bg: 'rgba(245,158,11,0.15)', color: '#f59e0b', label: '⏳ Aberto' },
+          'OPEN': { bg: 'rgba(245,158,11,0.15)', color: '#f59e0b', label: '⏳ Open' },
+          'Em Progresso': { bg: 'rgba(0,242,255,0.15)', color: 'var(--primary)', label: '🔄 Em Progresso' },
+          'IN_PROGRESS': { bg: 'rgba(0,242,255,0.15)', color: 'var(--primary)', label: '🔄 In Progress' },
+        };
+        const s = map[status] || { bg: 'rgba(255,255,255,0.08)', color: 'var(--text-muted)', label: status || '❓' };
+        return <span style={{ padding: '3px 10px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '800', background: s.bg, color: s.color }}>{s.label}</span>;
+      };
+
+      if (qaLoading || !qaReport) {
+        return (
+          <div className="glass-card" style={{ textAlign: 'center', padding: '80px' }}>
+            <h2 className="title-grad" style={{ marginBottom: '15px' }}>🔍 Quality Inspector</h2>
+            <p style={{ color: 'var(--text-muted)' }}>Carregando relatório completo de agentes, tarefas e interações...</p>
+            <div style={{ marginTop: '30px', fontSize: '2rem' }}>⏳</div>
+          </div>
+        );
+      }
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+          {/* Header com KPIs */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '800', marginBottom: '8px' }}>TOTAL AGENTS</p>
+              <p style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--primary)' }}>{qaReport.summary.total_agents}</p>
+            </div>
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '800', marginBottom: '8px' }}>TOTAL TASKS</p>
+              <p style={{ fontSize: '2.2rem', fontWeight: '900', color: '#f59e0b' }}>{qaReport.summary.total_tasks}</p>
+            </div>
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '800', marginBottom: '8px' }}>INTERACTIONS</p>
+              <p style={{ fontSize: '2.2rem', fontWeight: '900', color: '#34d399' }}>{qaReport.total_interactions}</p>
+            </div>
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '800', marginBottom: '8px' }}>AVG ACCURACY</p>
+              <p style={{ fontSize: '2.2rem', fontWeight: '900', color: qaReport.summary.avg_accuracy >= 70 ? '#00ff80' : '#ff4d4d' }}>{qaReport.summary.avg_accuracy}%</p>
             </div>
           </div>
 
-          <div className="glass-card">
-            <h3 style={{ marginBottom: '20px' }}>System Health</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-              <div style={{ padding: '15px', background: 'var(--glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>REJECTIONS</p>
-                <p style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#ff4d4d' }}>{qaLogs.length}</p>
+          {/* Header da lista + botões */}
+          <div className="glass-card" style={{ padding: '20px 30px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 className="title-grad" style={{ fontSize: '1.6rem', marginBottom: '5px' }}>Quality Inspector Report</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Análise completa de cada agente: tarefas, acertividade e interações.</p>
               </div>
-              <div style={{ padding: '15px', background: 'var(--glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>PASS RATE</p>
-                <p style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#00ff80' }}>
-                  {qaLogs.length === 0 ? '100%' : `${Math.max(10, 100 - qaLogs.length * 5)}%`}
-                </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={fetchQAReport} className="refresh-btn" style={{ padding: '8px 20px' }}>🔄 Atualizar</button>
+                <button 
+                  onClick={handleQAAutoFix} 
+                  disabled={isFixing}
+                  className="login-button" 
+                  style={{ width: 'auto', padding: '8px 25px', background: 'var(--primary)', fontSize: '0.75rem' }}
+                >
+                  {isFixing ? '🌀 ANALYZING...' : '⚡ AUTO-FIX'}
+                </button>
               </div>
-            </div>
-            
-            <div style={{ marginTop: '30px' }}>
-              <h4 style={{ marginBottom: '15px', color: 'var(--primary)', fontSize: '0.9rem' }}>Current Directives:</h4>
-              <ul style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <li>✔️ Prevent agents from closing empty tasks</li>
-                <li>✔️ Force Terraform plan verification</li>
-                <li>✔️ Ensure cost explanations in FinOps</li>
-                <li>✔️ Debate unnecessary allocations</li>
-              </ul>
             </div>
           </div>
+
+          {/* Lista de Agentes */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {qaReport.agents.map((agent, idx) => {
+              const isExpanded = expandedAgent === agent.agent_name;
+              return (
+                <div key={agent.agent_name} className="glass-card" style={{ padding: 0, overflow: 'hidden', border: isExpanded ? '1px solid var(--primary)' : '1px solid var(--border)', transition: 'all 0.3s' }}>
+                  {/* Row principal do agente */}
+                  <div 
+                    onClick={() => setExpandedAgent(isExpanded ? null : agent.agent_name)}
+                    style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: '50px 1fr 180px 140px 100px 40px', 
+                      alignItems: 'center', 
+                      padding: '18px 25px', 
+                      cursor: 'pointer',
+                      transition: 'background 0.2s',
+                      background: isExpanded ? 'rgba(0,242,255,0.03)' : 'transparent'
+                    }}
+                  >
+                    <div className="avatar" style={{ width: '38px', height: '38px', fontSize: '0.7rem', background: agent.accuracy >= 80 ? 'rgba(0,255,128,0.2)' : agent.accuracy >= 50 ? 'rgba(245,158,11,0.2)' : 'rgba(255,77,77,0.2)', color: agent.accuracy >= 80 ? '#00ff80' : agent.accuracy >= 50 ? '#f59e0b' : '#ff4d4d' }}>
+                      {agent.agent_name.substring(0,2).toUpperCase()}
+                    </div>
+
+                    <div>
+                      <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: '700', marginBottom: '3px' }}>{agent.agent_name}</h4>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{agent.purpose.substring(0, 80)}{agent.purpose.length > 80 ? '...' : ''}</p>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                      <span>📋 {agent.task_summary.total} tasks</span>
+                      <span>💬 {agent.total_interactions} interactions</span>
+                    </div>
+
+                    <AccuracyBar value={agent.accuracy} />
+
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleEnrichAgent(agent.agent_name); }}
+                      disabled={enrichingAgent === agent.agent_name}
+                      style={{
+                        background: 'rgba(0,242,255,0.1)',
+                        border: '1px solid var(--primary)',
+                        color: 'var(--primary)',
+                        borderRadius: '6px',
+                        padding: '6px 12px',
+                        fontSize: '0.65rem',
+                        fontWeight: '900',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        zIndex: 10
+                      }}
+                    >
+                      {enrichingAgent === agent.agent_name ? '🌀' : '⚡ AJUSTAR'}
+                    </button>
+
+                    <div style={{ textAlign: 'right', fontSize: '1.2rem', transition: 'transform 0.3s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</div>
+                  </div>
+
+                  {/* Painel expandido */}
+                  {isExpanded && (
+                    <div style={{ borderTop: '1px solid var(--border)', padding: '25px', background: 'rgba(0,0,0,0.2)' }}>
+                      {/* Config do agente */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
+                        <div style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                          <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: '800', marginBottom: '8px', letterSpacing: '1px' }}>CONFIGURAÇÃO</p>
+                          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                            <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '700', background: agent.has_prompt ? 'rgba(0,255,128,0.1)' : 'rgba(255,77,77,0.1)', color: agent.has_prompt ? '#00ff80' : '#ff4d4d' }}>{agent.has_prompt ? '✅ Prompt OK' : '❌ Sem Prompt'}</span>
+                            <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: '700', background: agent.has_tools ? 'rgba(0,255,128,0.1)' : 'rgba(255,255,255,0.05)', color: agent.has_tools ? '#00ff80' : 'var(--text-muted)' }}>{agent.has_tools ? `🛠️ ${agent.tools.length} Tools` : '⚪ Sem Tools'}</span>
+                          </div>
+                          {agent.tools.length > 0 && (
+                            <div style={{ marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              {agent.tools.map(t => (
+                                <span key={t} style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.6rem', background: 'rgba(0,242,255,0.08)', color: 'var(--primary)', border: '1px solid rgba(0,242,255,0.2)' }}>{t}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                          <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: '800', marginBottom: '8px', letterSpacing: '1px' }}>TASK BREAKDOWN</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                            <div style={{ textAlign: 'center' }}>
+                              <p style={{ fontSize: '1.3rem', fontWeight: '900', color: '#00ff80' }}>{agent.task_summary.completed}</p>
+                              <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Concluídas</p>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                              <p style={{ fontSize: '1.3rem', fontWeight: '900', color: 'var(--primary)' }}>{agent.task_summary.in_progress}</p>
+                              <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Em Progresso</p>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                              <p style={{ fontSize: '1.3rem', fontWeight: '900', color: '#f59e0b' }}>{agent.task_summary.open}</p>
+                              <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Abertas</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tarefas do agente */}
+                      {agent.tasks.length > 0 && (
+                        <div style={{ marginBottom: '25px' }}>
+                          <p style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: '900', marginBottom: '10px', letterSpacing: '2px' }}>📋 TAREFAS ATRIBUÍDAS</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {agent.tasks.map((task, ti) => (
+                              <div key={ti} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 120px 100px', alignItems: 'center', padding: '10px 15px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: '700' }}>{task.id}</span>
+                                <span style={{ fontSize: '0.8rem', color: '#e2e8f0' }}>{task.title}</span>
+                                <StatusBadge status={task.status} />
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'right' }}>{task.priority || '—'}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Interações do agente */}
+                      {agent.interactions.length > 0 && (
+                        <div>
+                          <p style={{ fontSize: '0.7rem', color: '#34d399', fontWeight: '900', marginBottom: '10px', letterSpacing: '2px' }}>💬 ÚLTIMAS INTERAÇÕES ({agent.total_interactions} total)</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '300px', overflowY: 'auto' }}>
+                            {agent.interactions.map((inter, ii) => (
+                              <div key={ii} style={{ padding: '12px 15px', background: inter.type === 'execution' ? 'rgba(0,242,255,0.03)' : 'rgba(52,211,153,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', borderLeft: `3px solid ${inter.type === 'execution' ? 'var(--primary)' : '#34d399'}` }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                  <span style={{ fontSize: '0.65rem', fontWeight: '800', color: inter.type === 'execution' ? 'var(--primary)' : '#34d399' }}>{inter.type === 'execution' ? '⚡ Execução' : '📱 Telegram'}{inter.task_id ? ` • ${inter.task_id}` : ''}{inter.action ? ` • ${inter.action}` : ''}</span>
+                                  <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{inter.timestamp ? new Date(inter.timestamp).toLocaleString() : '—'}</span>
+                                </div>
+                                {inter.input && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>📝 {inter.input.substring(0, 150)}{inter.input.length > 150 ? '...' : ''}</p>}
+                                <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: '1.4' }}>{(inter.result || '').substring(0, 300)}{(inter.result || '').length > 300 ? '...' : ''}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {agent.tasks.length === 0 && agent.interactions.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '30px', opacity: 0.5 }}>
+                          <p>⚠️ Agente sem tarefas e sem interações registradas.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Alertas: Tarefas sem agente e agentes órfãos */}
+          {(qaReport.unassigned_tasks.length > 0 || qaReport.orphan_agents.length > 0) && (
+            <div className="glass-card" style={{ borderLeft: '4px solid #ff4d4d' }}>
+              <h3 style={{ color: '#ff4d4d', marginBottom: '15px', fontSize: '1rem' }}>⚠️ Alertas do Quality Inspector</h3>
+              {qaReport.unassigned_tasks.length > 0 && (
+                <div style={{ marginBottom: '15px' }}>
+                  <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#f59e0b', marginBottom: '8px' }}>Tarefas sem agente atribuído:</p>
+                  {qaReport.unassigned_tasks.map((t, i) => (
+                    <div key={i} style={{ padding: '8px 12px', background: 'rgba(245,158,11,0.05)', borderRadius: '6px', marginBottom: '4px', fontSize: '0.8rem', color: '#e2e8f0' }}>
+                      <span style={{ color: 'var(--primary)', fontFamily: 'monospace', marginRight: '10px' }}>{t.id}</span>
+                      {t.title}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {qaReport.orphan_agents.length > 0 && (
+                <div>
+                  <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ff4d4d', marginBottom: '8px' }}>Agentes com atividade mas não registrados:</p>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {qaReport.orphan_agents.map((name, i) => (
+                      <span key={i} style={{ padding: '5px 12px', borderRadius: '8px', fontSize: '0.75rem', background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.3)' }}>{name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
     }

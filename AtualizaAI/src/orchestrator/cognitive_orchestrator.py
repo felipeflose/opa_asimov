@@ -189,6 +189,17 @@ class CognitiveOrchestrator:
         response = self.model.generate_content(content)
         return response
 
+    def call_gemini(self, prompt: str) -> str:
+        """Chamada pública direta retornando apenas o texto."""
+        try:
+            res = self._call_gemini(prompt)
+            if res and hasattr(res, 'text'):
+                return res.text
+            return str(res)
+        except Exception as e:
+            print(f"Error in call_gemini: {e}")
+            return f"Error: {str(e)}"
+
     def process_command(self, user_command, image_path=None, visual_context="", chat_history=None):
         # Sanitização de Entrada
         user_command = self._sanitize_input(user_command)

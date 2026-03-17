@@ -1,4 +1,5 @@
-import os
+import os, json, random
+from datetime import datetime
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request
 
@@ -162,15 +163,112 @@ async def get_tasks(request: Request, token: str = None):
         # Gerar alguns dados iniciais se estiver vazio
         initial_tasks = {
             "demands": [
-                {"id": "TRD-001", "title": "Deploy Initial Core", "status": "COMPLETED", "priority": "Alta"},
-                {"id": "TRD-002", "title": "Setup React Dashboard", "status": "IN_PROGRESS", "priority": "Alta"},
-                {"id": "TRD-003", "title": "Integrate Vision Agent", "status": "Aberto", "priority": "Média"}
+                {
+                    "id": "TRD-001", 
+                    "title": "Deploy Initial Core", 
+                    "status": "COMPLETED", 
+                    "priority": "Alta",
+                    "objective": "Estabelecer a base sólida da plataforma Flose AI no Google Cloud Run.",
+                    "governance_finops": "Custo mensal estimado em $12.00 via Cloud Run scale-to-zero.",
+                    "responsible": "SystemAgent"
+                },
+                {
+                    "id": "TRD-002", 
+                    "title": "Setup React Dashboard", 
+                    "status": "IN_PROGRESS", 
+                    "priority": "Alta",
+                    "objective": "Criar centro de comando visual para orquestração de agentes.",
+                    "governance_finops": "Tráfego de saída (Egress) estimado em 20GB/mês.",
+                    "responsible": "FrontendAgent"
+                },
+                {
+                    "id": "TRD-003", 
+                    "title": "Integrate Vision Agent", 
+                    "status": "Aberto", 
+                    "priority": "Média",
+                    "objective": "Permitir que a plataforma processe e entenda imagens complexas via Gemini Vision.",
+                    "governance_finops": "Custo por imagem estimado em $0.0025.",
+                    "responsible": "VisionAgent"
+                }
             ]
         }
         gcs.upload_json(initial_tasks, "demands/registry.json")
         return initial_tasks["demands"]
     
     return registry.get("demands", [])
+
+@app.post("/api/tasks/update-status")
+async def update_task_status(request: Request, task_id: str, new_status: str, token: str = None):
+    """Atualiza o status de uma tarefa e aprova o orçamento se movido para 'Em Progresso'."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    registry = gcs.read_json("demands/registry.json")
+    if not registry or "demands" not in registry:
+        return {"error": "Registry empty"}
+        
+    found = False
+    for task in registry["demands"]:
+        if task["id"] == task_id:
+            task["status"] = new_status
+            # Lógica solicitada pelo usuário: Arrastar para a próxima raia = aprovado
+            if new_status in ["Em Progresso", "IN_PROGRESS"]:
+                task["budget_approved"] = True
+            found = True
+            break
+            
+    if found:
+        gcs.upload_json(registry, "demands/registry.json")
+        return {"status": "success", "message": f"Task {task_id} updated to {new_status}"}
+    
+    return {"error": "Task not found"}
+
+@app.post("/api/tasks/audit-finops")
+async def audit_finops(task_id: str, request: Request, token: str = None):
+    """Usa o LLM para preencher Objective e FinOps de uma tarefa existente que está vazia."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    orchestrator = CognitiveOrchestrator(gcs_client=gcs)
+    
+    registry = gcs.read_json("demands/registry.json")
+    task = next((t for t in registry.get("demands", []) if t["id"] == task_id), None)
+    if not task: return {"error": "Task not found"}
+    
+    prompt = f"""
+    Como FinOps Guardian e Auditor de Qualidade, analise esta tarefa:
+    Título: {task['title']}
+    Responsável: {task.get('responsible')}
+    
+    Gere:
+    1. Um 'objective' detalhado e técnico.
+    2. Uma diretriz de 'governance_finops' (custo estimado, infra necessária, regras de economia).
+    
+    Responda em JSON:
+    {{
+      "objective": "...",
+      "governance_finops": "..."
+    }}
+    """
+    
+    res = orchestrator.call_gemini(prompt)
+    if "```json" in res: res = res.split("```json")[1].split("```")[0].strip()
+    
+    try:
+        audit_data = json.loads(res)
+        task["objective"] = audit_data.get("objective", task.get("objective"))
+        task["governance_finops"] = audit_data.get("governance_finops", task.get("governance_finops"))
+        gcs.upload_json(registry, "demands/registry.json")
+        return {"status": "success", "task": task}
+    except:
+        return {"error": "Erro no processamento da auditoria IA"}
 
 @app.get("/api/activity")
 async def get_activity(request: Request, token: str = None):
@@ -218,6 +316,229 @@ async def get_activity(request: Request, token: str = None):
             
     activity_list.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
     return activity_list
+
+@app.get("/api/qa/report")
+async def qa_report(request: Request, token: str = None):
+    """Quality Inspector: relatório completo de agentes, tarefas e interações."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    # Carregar dados
+    agents_registry = gcs.read_json("agents/registry.json") or {"agents": []}
+    task_registry = gcs.read_json("demands/registry.json") or {"demands": []}
+    agents = agents_registry.get("agents", [])
+    tasks = task_registry.get("demands", [])
+    
+    # Carregar todas as interações (executions + telegram)
+    all_interactions = []
+    try:
+        prefix_exec = f"users/{gcs.user_id}/logs/executions/"
+        blobs_exec = list(gcs.bucket.list_blobs(prefix=prefix_exec))
+        blobs_exec.sort(key=lambda x: x.updated, reverse=True)
+        for blob in blobs_exec[:30]:
+            data = gcs.read_json(blob.name.replace(f"users/{gcs.user_id}/", ""))
+            if data:
+                all_interactions.append({
+                    "type": "execution",
+                    "agent": data.get("agent", "Unknown"),
+                    "task_id": data.get("task_id"),
+                    "result": data.get("result", ""),
+                    "timestamp": data.get("timestamp"),
+                    "status": data.get("status", "completed")
+                })
+        
+        prefix_tg = f"users/{gcs.user_id}/logs/telegram/"
+        blobs_tg = list(gcs.bucket.list_blobs(prefix=prefix_tg))
+        blobs_tg.sort(key=lambda x: x.updated, reverse=True)
+        for blob in blobs_tg[:30]:
+            data = gcs.read_json(blob.name.replace(f"users/{gcs.user_id}/", ""))
+            if data:
+                decision = data.get("decision", {})
+                agent_name = decision.get("agent_involved") or "Orchestrator"
+                all_interactions.append({
+                    "type": "telegram",
+                    "agent": agent_name,
+                    "task_id": decision.get("task_id"),
+                    "input": data.get("user_text", ""),
+                    "result": data.get("response", ""),
+                    "timestamp": data.get("timestamp"),
+                    "action": decision.get("action")
+                })
+    except Exception as e:
+        print(f"Error loading QA interactions: {e}")
+    
+    # Montar relatório por agente
+    report = []
+    for agent in agents:
+        agent_name = agent.get("agent_name", "Unknown")
+        
+        # Tarefas desse agente
+        agent_tasks = [t for t in tasks if t.get("responsible") == agent_name]
+        
+        # Interações desse agente
+        agent_interactions = [i for i in all_interactions if i.get("agent") == agent_name]
+        agent_interactions.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+        
+        # Calcular acertividade
+        total_tasks = len(agent_tasks)
+        completed = len([t for t in agent_tasks if t.get("status") in ("Concluído", "COMPLETED", "done")])
+        open_tasks = len([t for t in agent_tasks if t.get("status") in ("Aberto", "OPEN", "pending")])
+        in_progress = len([t for t in agent_tasks if t.get("status") in ("Em Progresso", "IN_PROGRESS")])
+        
+        # Acertividade: tarefas concluídas / total + bonus por ter prompt definido
+        has_prompt = bool(agent.get("system_prompt"))
+        has_tools = len(agent.get("tools", [])) > 0
+        
+        if total_tasks > 0:
+            accuracy = round((completed / total_tasks) * 100)
+        elif len(agent_interactions) > 0:
+            accuracy = 70  # tem atividade mas sem tarefas = aceitável
+        else:
+            accuracy = 0  # sem tarefas e sem atividade
+        
+        # Bonus: +10 se tem prompt, +5 se tem tools
+        if has_prompt:
+            accuracy = min(100, accuracy + 10)
+        if has_tools:
+            accuracy = min(100, accuracy + 5)
+        
+        report.append({
+            "agent_name": agent_name,
+            "purpose": agent.get("purpose", "Sem propósito definido"),
+            "has_prompt": has_prompt,
+            "has_tools": has_tools,
+            "tools": agent.get("tools", []),
+            "tasks": agent_tasks,
+            "task_summary": {
+                "total": total_tasks,
+                "completed": completed,
+                "open": open_tasks,
+                "in_progress": in_progress
+            },
+            "interactions": agent_interactions[:10],
+            "total_interactions": len(agent_interactions),
+            "accuracy": accuracy
+        })
+    
+    # Agentes não registrados que aparecem nas interações
+    registered_names = {a.get("agent_name") for a in agents}
+    orphan_agents = set()
+    for i in all_interactions:
+        if i.get("agent") and i.get("agent") not in registered_names:
+            orphan_agents.add(i.get("agent"))
+    
+    # Tarefas sem agente atribuído
+    unassigned_tasks = [t for t in tasks if not t.get("responsible") or t.get("responsible") not in registered_names]
+    
+    report.sort(key=lambda x: x["accuracy"])
+    
+    return {
+        "agents": report,
+        "orphan_agents": list(orphan_agents),
+        "unassigned_tasks": unassigned_tasks,
+        "total_interactions": len(all_interactions),
+        "summary": {
+            "total_agents": len(agents),
+            "total_tasks": len(tasks),
+            "avg_accuracy": round(sum(a["accuracy"] for a in report) / len(report)) if report else 0
+        }
+    }
+
+@app.post("/api/qa/enrich-agent")
+async def enrich_agent(request: Request, agent_name: str, token: str = None):
+    """Quality Inspector: Enriquece propósito, prompt e cria tarefas para o agente."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    from src.orchestrator.cognitive_orchestrator import CognitiveOrchestrator
+    orchestrator = CognitiveOrchestrator(gcs_client=gcs)
+    
+    # 1. Carregar Agente
+    agents_reg = gcs.read_json("agents/registry.json") or {"agents": []}
+    agent_idx = next((i for i, a in enumerate(agents_reg.get("agents", [])) if a["agent_name"] == agent_name), None)
+    if agent_idx is None: return {"error": "Agent not found"}
+    agent_data = agents_reg["agents"][agent_idx]
+    
+    # 2. Carregar Tarefas
+    task_reg = gcs.read_json("demands/registry.json") or {"demands": []}
+    agent_tasks = [t for t in task_reg.get("demands", []) if t.get("responsible") == agent_name]
+    
+    # 3. Solicitar enriquecimento ao LLM
+    prompt = f"""
+    SISTEMA: Você é o Quality Inspector Supremo da plataforma Flose AI.
+    AGENTE ALVO: {agent_name}
+    
+    ESTADO ATUAL:
+    - Propósito: {agent_data.get('purpose')}
+    - System Prompt: {agent_data.get('system_prompt')}
+    - Tarefas: {json.dumps(agent_tasks)}
+    
+    SUA MISSÃO:
+    1. Re-escreva o 'purpose' para ser extremamente profissional, ambicioso e claro (em Português).
+    2. Enriqueça o 'system_prompt' com diretrizes avançadas, tom de voz e protocolos de segurança.
+    3. Se o agente não possui tarefas de qualidade ou desafiadoras, sugira uma nova 'TRD' de alto valor estratégico.
+    ⚠️ IMPORTANTE: Para a nova tarefa, você DEVE gerar um 'objective' detalhado (mínimo 2 frases) e um processo de 'governance_finops' claro (estimativa de custo e regras de uso).
+
+    RESPONDA EXCLUSIVAMENTE NO FORMATO JSON:
+    {{
+      "new_purpose": "...",
+      "new_system_prompt": "...",
+      "suggested_task": {{ 
+          "title": "...", 
+          "priority": "Alta",
+          "objective": "...",
+          "governance_finops": "..." 
+      }} ou null
+    }}
+    """
+    
+    raw_response = orchestrator.call_gemini(prompt)
+    if "```json" in raw_response:
+        raw_response = raw_response.split("```json")[1].split("```")[0].strip()
+    
+    try:
+        enriched = json.loads(raw_response)
+        
+        # 4. Atualizar Registro
+        agent_data["purpose"] = enriched.get("new_purpose", agent_data["purpose"])
+        agent_data["system_prompt"] = enriched.get("new_system_prompt", agent_data["system_prompt"])
+        gcs.upload_json(agents_reg, "agents/registry.json")
+        
+        # 5. Criar Tarefa
+        msg_task = ""
+        if enriched.get("suggested_task"):
+            new_id = f"TRD-{random.randint(100, 999)}"
+            new_status = "Aberto"
+            new_task = {
+                "id": new_id,
+                "title": enriched["suggested_task"]["title"],
+                "status": new_status,
+                "priority": enriched["suggested_task"]["priority"],
+                "objective": enriched["suggested_task"].get("objective", "Geração pendente..."),
+                "governance_finops": enriched["suggested_task"].get("governance_finops", "Aguardando auditoria..."),
+                "responsible": agent_name,
+                "budget_approved": False
+            }
+            if "demands" not in task_reg: task_reg["demands"] = []
+            task_reg["demands"].append(new_task)
+            gcs.upload_json(task_reg, "demands/registry.json")
+            msg_task = f" e nova tarefa {new_id} criada"
+            
+        return {
+            "status": "success",
+            "message": f"Agente {agent_name} ajustado com sucesso{msg_task}!",
+            "changes": enriched
+        }
+    except Exception as e:
+        return {"error": f"Erro no parsing do Inspector: {str(e)}", "raw": raw_response}
 
 @app.post("/api/qa/auto-fix")
 async def qa_auto_fix(request: Request, token: str = None):
@@ -367,6 +688,10 @@ async def get_delivery(result_id: str, request: Request, token: str = None):
     
     file_path = f"logs/executions/{result_id}.json"
     data = gcs.read_json(file_path)
+    if not data:
+        # Tenta sem o prefixo caso o gcs_client já adicione algo ou para compatibilidade
+        data = gcs.read_json(f"executions/{result_id}.json")
+        
     if not data:
         return {"error": f"Artifact {result_id} not found in path {file_path}"}
     return data
