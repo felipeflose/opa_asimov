@@ -60,7 +60,7 @@ function App() {
 
   const NapkinVisual = ({ visualUrl }) => {
     if (!visualUrl) return null;
-    const proxied = `/api/marketplace/visual-proxy?url=${encodeURIComponent(visualUrl)}`;
+    const proxied = `/api/marketplace/visual-proxy?url=${encodeURIComponent(visualUrl)}&token=${token}`;
     return (
       <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
         <img 

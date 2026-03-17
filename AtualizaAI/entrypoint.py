@@ -1,5 +1,9 @@
 import os, json, random
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request
 
