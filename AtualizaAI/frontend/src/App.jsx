@@ -182,14 +182,21 @@ function App() {
 
   const handleAuditFinOps = async (taskId) => {
     try {
+      console.log("Starting audit for", taskId);
       const res = await fetch(`/api/tasks/audit-finops?task_id=${taskId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.status === 'success') fetchData();
+      if (data.status === 'success') {
+        alert("Auditoria concluída com sucesso!");
+        fetchData();
+      } else {
+        alert("Erro na auditoria: " + (data.error || "Erro desconhecido"));
+      }
     } catch (err) {
       console.error("Audit error", err);
+      alert("Falha de rede na auditoria.");
     }
   };
 
