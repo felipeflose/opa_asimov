@@ -355,8 +355,11 @@ async def get_delivery(result_id: str, token: str = None):
     bucket_name = f"flose-ai-platform-{project_id}"
     gcs = GCSClient(bucket_name, project_id=project_id)
     
-    data = gcs.read_json(f"logs/executions/{result_id}.json")
-    return data or {"error": "Result not found"}
+    file_path = f"logs/executions/{result_id}.json"
+    data = gcs.read_json(file_path)
+    if not data:
+        return {"error": f"Artifact {result_id} not found in path {file_path}"}
+    return data
 
 @app.get("/api/agents")
 async def get_agents(token: str = None):

@@ -27,6 +27,7 @@ function App() {
   const [isRunningPipeline, setIsRunningPipeline] = useState(false);
   const [marketTemplates, setMarketTemplates] = useState([]);
   const [isFixing, setIsFixing] = useState(false);
+  const [viewingDelivery, setViewingDelivery] = useState(null);
 
   // Buscar dados reais da API
   const fetchData = async () => {
@@ -75,9 +76,14 @@ function App() {
   };
 
   const handleViewDelivery = async (resultId) => {
-    const res = await fetch(`/api/tasks/delivery/${resultId}?token=${token}`);
-    const data = await res.json();
-    alert("Resultado:\n\n" + data.result);
+    try {
+      const res = await fetch(`/api/tasks/delivery/${resultId}?token=${token}`);
+      const data = await res.json();
+      // Mesmo se houver erro, setamos o objeto para o modal abrir com a mensagem de erro formatada
+      setViewingDelivery(data);
+    } catch (err) {
+      setViewingDelivery({ error: "Conectividade falhou: " + err.message });
+    }
   };
 
   const handleAgentQuery = async (query) => {
@@ -1112,6 +1118,58 @@ function App() {
               
               <div style={{ marginTop: '30px', textAlign: 'right' }}>
                 <button className="login-button" style={{ width: 'auto', padding: '10px 30px' }} onClick={() => setViewingAgent(null)}>CLOSE</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delivery Artifact Modal */}
+        {viewingDelivery && (
+          <div className="modal-overlay" onClick={() => setViewingDelivery(null)}>
+            <div className="glass-card modal-content" style={{ maxWidth: '900px', width: '90%' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '15px' }}>
+                <div>
+                  <h2 className="title-grad">Agent Delivery Artifact</h2>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>ID: {viewingDelivery.task_id} | Agent: {viewingDelivery.agent}</p>
+                </div>
+                <button onClick={() => setViewingDelivery(null)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+              </div>
+
+              <div style={{ 
+                background: '#09090b', 
+                padding: '30px', 
+                borderRadius: '12px', 
+                border: '1px solid var(--border)', 
+                maxHeight: '60vh', 
+                overflowY: 'auto',
+                boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)'
+              }}>
+                <pre style={{ 
+                  whiteSpace: 'pre-wrap', 
+                  fontSize: '0.95rem', 
+                  color: viewingDelivery.error ? 'var(--accent)' : '#e2e8f0', 
+                  lineHeight: '1.7',
+                  fontFamily: '"JetBrains Mono", monospace'
+                }}>
+                  {viewingDelivery.error ? (
+                    <div style={{ padding: '20px', border: '1px dashed var(--accent)', borderRadius: '8px' }}>
+                      <h3 style={{ marginBottom: '10px' }}>⚠️ DATA RETRIEVAL ERROR</h3>
+                      {viewingDelivery.error}
+                      <p style={{ marginTop: '20px', fontSize: '0.8rem', opacity: 0.7 }}>
+                        This usually happens if the agent execution logs were cleared or if the task was completed in a legacy session.
+                      </p>
+                    </div>
+                  ) : (
+                    viewingDelivery.result || "No data returned from agent execution."
+                  )}
+                </pre>
+              </div>
+
+              <div style={{ marginTop: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                  {viewingDelivery.timestamp ? `Verified by Flose AI Platform • ${new Date(viewingDelivery.timestamp).toLocaleString()}` : "System Log Analysis"}
+                </span>
+                <button className="login-button" style={{ width: 'auto', padding: '12px 35px' }} onClick={() => setViewingDelivery(null)}>CLOSE</button>
               </div>
             </div>
           </div>
