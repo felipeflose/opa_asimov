@@ -31,6 +31,16 @@ async def get_tg_agent():
         await tg_agent.setup()
     return tg_agent
 
+def validate_token(request: Request, token: str = None):
+    # Tenta pegar do header primeiro (Mais seguro)
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    
+    if token != API_TOKEN:
+        return False
+    return True
+
 # --- 3. Endpoint do Webhook do Telegram ---
 @app.post("/telegram_webhook")
 async def telegram_webhook(request: Request):
@@ -88,9 +98,9 @@ async def verify_auth(request: Request):
     return {"status": "unauthorized"}
 
 @app.get("/api/stats")
-async def get_stats(token: str = None):
-    # Proteção simples via token
-    if token != API_TOKEN:
+async def get_stats(request: Request, token: str = None):
+    # Proteção via header ou fallback token
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
         
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -121,8 +131,8 @@ async def get_stats(token: str = None):
     }
 
 @app.get("/api/graph")
-async def get_graph(token: str = None):
-    if token != API_TOKEN:
+async def get_graph(request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -139,8 +149,8 @@ async def get_graph(token: str = None):
     return graph_data or {"nodes": [], "links": []}
 
 @app.get("/api/tasks")
-async def get_tasks(token: str = None):
-    if token != API_TOKEN:
+async def get_tasks(request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -163,8 +173,8 @@ async def get_tasks(token: str = None):
     return registry.get("demands", [])
 
 @app.get("/api/activity")
-async def get_activity(token: str = None):
-    if token != API_TOKEN:
+async def get_activity(request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -210,8 +220,8 @@ async def get_activity(token: str = None):
     return activity_list
 
 @app.post("/api/qa/auto-fix")
-async def qa_auto_fix(token: str = None):
-    if token != API_TOKEN:
+async def qa_auto_fix(request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
         
     # Lazy load dependencies
@@ -258,8 +268,8 @@ async def qa_auto_fix(token: str = None):
     return {"status": "success", "result": result}
 
 @app.post("/api/tasks/approve")
-async def approve_task(task_id: str, token: str = None):
-    if token != API_TOKEN:
+async def approve_task(task_id: str, request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -277,8 +287,8 @@ async def approve_task(task_id: str, token: str = None):
     return {"error": "Task not found"}
 
 @app.post("/api/tasks/execute")
-async def execute_task(task_id: str, agent_name: str, token: str = None):
-    if token != API_TOKEN:
+async def execute_task(task_id: str, agent_name: str, request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
         
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -347,8 +357,8 @@ async def execute_task(task_id: str, agent_name: str, token: str = None):
     return {"status": "success", "result": result}
 
 @app.get("/api/tasks/delivery/{result_id}")
-async def get_delivery(result_id: str, token: str = None):
-    if token != API_TOKEN:
+async def get_delivery(result_id: str, request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -362,8 +372,8 @@ async def get_delivery(result_id: str, token: str = None):
     return data
 
 @app.get("/api/agents")
-async def get_agents(token: str = None):
-    if token != API_TOKEN:
+async def get_agents(request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -374,8 +384,8 @@ async def get_agents(token: str = None):
     return registry.get("agents", []) if registry else []
 
 @app.post("/api/agents/update")
-async def update_agent(agent_data: dict, token: str = None):
-    if token != API_TOKEN:
+async def update_agent(agent_data: dict, request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -403,7 +413,7 @@ async def update_agent(agent_data: dict, token: str = None):
 
 @app.post("/api/agents/chat")
 async def chat_agents(request: Request, token: str = None):
-    if token != API_TOKEN:
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     data = await request.json()
@@ -423,8 +433,8 @@ async def chat_agents(request: Request, token: str = None):
     return logs
 
 @app.get("/api/marketplace")
-async def get_marketplace(token: str = None):
-    if token != API_TOKEN:
+async def get_marketplace(request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -436,8 +446,8 @@ async def get_marketplace(token: str = None):
     return market.list_templates()
 
 @app.post("/api/marketplace/export/{agent_name}")
-async def export_to_marketplace(agent_name: str, token: str = None):
-    if token != API_TOKEN:
+async def export_to_marketplace(agent_name: str, request: Request, token: str = None):
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     project_id = os.getenv("GCP_PROJECT_ID")
@@ -453,7 +463,7 @@ async def export_to_marketplace(agent_name: str, token: str = None):
 
 @app.post("/api/marketplace/import")
 async def import_from_marketplace(request: Request, token: str = None):
-    if token != API_TOKEN:
+    if not validate_token(request, token):
         return {"error": "Unauthorized"}
     
     data = await request.json()
@@ -483,14 +493,14 @@ async def import_from_marketplace(request: Request, token: str = None):
     return {"status": "success", "message": f"Agent {template_data['name']} imported from marketplace."}
 
 @app.get("/api/marketplace/visual-proxy")
-async def napkin_visual_proxy(url: str = None, token: str = None):
+async def napkin_visual_proxy(request: Request, url: str = None, token: str = None):
     """
     Proxy autenticado para servir imagens SVG do Napkin AI.
     O browser não pode acessar a URL do Napkin diretamente (precisa de Bearer token).
     Este endpoint baixa e re-serve o SVG com os headers corretos.
     """
     from fastapi.responses import Response
-    if token != API_TOKEN:
+    if not validate_token(request, token):
         return Response(content="Unauthorized", status_code=401)
     if not url:
         return Response(content="Missing url param", status_code=400)

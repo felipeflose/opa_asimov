@@ -4,10 +4,11 @@ import subprocess
 import sys
 import pkgutil
 
-# Configurações de caminhos
-PATH_PROJETO = r'C:\Users\fflose\flose\opa_asimov'
+# Configurações de caminhos dinâmicos
+PATH_PROJETO = os.path.dirname(os.path.abspath(__file__))
 PATH_REQUIREMENTS = os.path.join(PATH_PROJETO, 'requirements.txt')
-PATH_VENV_PIP = r'C:\Users\fflose\flose\.venv\Scripts\pip.exe'
+# Tenta localizar o pip do ambiente atual automaticamente
+PATH_VENV_PIP = os.path.join(os.path.dirname(sys.executable), 'pip.exe') if sys.platform == 'win32' else os.path.join(os.path.dirname(sys.executable), 'pip')
 
 def buscar_bibliotecas_padrao():
     """Lista módulos nativos para não colocar no requirements.txt"""

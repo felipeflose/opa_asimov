@@ -166,10 +166,17 @@ class CognitiveOrchestrator:
         # Limite de tamanho para evitar ataques de estouro de contexto
         text = text[:4000]
         # Sanitização básica de tokens que podem confundir o papel do LLM
-        forbidden_tokens = ["SYSTEM_PROMPT:", "IGNORE ALL PREVIOUS", "YOU ARE NOW", "ORCHESTRATOR_DNA"]
+        forbidden_tokens = [
+            "SYSTEM_PROMPT:", "IGNORE ALL PREVIOUS", "YOU ARE NOW", "ORCHESTRATOR_DNA",
+            "ACT AS", "NEW ROLE:", "OVERRIDE", "DISREGARD", "FORGET EVERYTHING",
+            "MENSAGEM DO SISTEMA:", "HACK", "SIMULATE", "DAN MODE"
+        ]
+        sanitized = text
         for token in forbidden_tokens:
-            text = text.replace(token, "[REDACTED]")
-        return text.strip()
+            import re
+            # Busca insensível a caso para maior proteção
+            sanitized = re.sub(re.escape(token), "[REDACTED]", sanitized, flags=re.IGNORECASE)
+        return sanitized.strip()
 
     @retry(
         wait=wait_exponential(multiplier=1, min=2, max=10),

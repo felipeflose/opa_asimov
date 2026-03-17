@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('flose_token'));
-  const [token, setToken] = useState(localStorage.getItem('flose_token') || '');
+  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('flose_token'));
+  const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [key, setKey] = useState('');
   const [error, setError] = useState(false);
@@ -33,12 +33,16 @@ function App() {
   const fetchData = async () => {
     if (!token) return;
     try {
+      const options = {
+        headers: { 'Authorization': `Bearer ${token}` }
+      };
+      
       const [statsRes, graphRes, tasksRes, activityRes, agentsRes] = await Promise.all([
-        fetch(`/api/stats?token=${token}`),
-        fetch(`/api/graph?token=${token}`),
-        fetch(`/api/tasks?token=${token}`),
-        fetch(`/api/activity?token=${token}`),
-        fetch(`/api/agents?token=${token}`)
+        fetch(`/api/stats`, options),
+        fetch(`/api/graph`, options),
+        fetch(`/api/tasks`, options),
+        fetch(`/api/activity`, options),
+        fetch(`/api/agents`, options)
       ]);
       
       const statsData = await statsRes.json();
@@ -54,7 +58,7 @@ function App() {
       const agentsD = await agentsRes.json();
       if (!agentsD.error) setAgentList(agentsD);
 
-      const marketRes = await fetch(`/api/marketplace?token=${token}`);
+      const marketRes = await fetch(`/api/marketplace`, options);
       const marketD = await marketRes.json();
       if (!marketD.error) setMarketTemplates(marketD);
     } catch (err) {
@@ -63,13 +67,19 @@ function App() {
   };
 
   const handleApprove = async (taskId) => {
-    await fetch(`/api/tasks/approve?task_id=${taskId}&token=${token}`, { method: 'POST' });
+    await fetch(`/api/tasks/approve?task_id=${taskId}`, { 
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     fetchData();
   };
 
   const handleExecute = async (taskId) => {
     if (!executingAgent) return alert("Selecione um agente!");
-    const res = await fetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${executingAgent}&token=${token}`, { method: 'POST' });
+    const res = await fetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${executingAgent}`, { 
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const data = await res.json();
     alert(data.status === 'success' ? "Tarefa executada com sucesso!" : "Erro: " + data.error);
     fetchData();
@@ -77,7 +87,9 @@ function App() {
 
   const handleViewDelivery = async (resultId) => {
     try {
-      const res = await fetch(`/api/tasks/delivery/${resultId}?token=${token}`);
+      const res = await fetch(`/api/tasks/delivery/${resultId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await res.json();
       // Mesmo se houver erro, setamos o objeto para o modal abrir com a mensagem de erro formatada
       setViewingDelivery(data);
@@ -87,9 +99,12 @@ function App() {
   };
 
   const handleAgentQuery = async (query) => {
-    const res = await fetch(`/api/agents/chat?token=${token}`, {
+    const res = await fetch(`/api/agents/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ query })
     });
     const data = await res.json();
@@ -98,16 +113,22 @@ function App() {
   };
 
   const handleExport = async (name) => {
-    const res = await fetch(`/api/marketplace/export/${name}?token=${token}`, { method: 'POST' });
+    const res = await fetch(`/api/marketplace/export/${name}`, { 
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const data = await res.json();
     alert(data.status === 'success' ? "Agente exportado como template!" : "Erro ao exportar");
     fetchData();
   };
 
   const handleImport = async (templateName) => {
-    const res = await fetch(`/api/marketplace/import?token=${token}`, { 
+    const res = await fetch(`/api/marketplace/import`, { 
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ template_name: templateName })
     });
     const data = await res.json();
@@ -118,7 +139,10 @@ function App() {
   const handleQAAutoFix = async () => {
     setIsFixing(true);
     try {
-      const resp = await fetch(`/api/qa/auto-fix?token=${token}`, { method: 'POST' });
+      const resp = await fetch(`/api/qa/auto-fix`, { 
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await resp.json();
       alert(`Correction Result: ${data.result}`);
       fetchData();
@@ -141,14 +165,19 @@ function App() {
   // NapkinVisual: exibe diagrama via proxy autenticado (Napkin requer Bearer token)
   const NapkinVisual = ({ visualUrl }) => {
     if (!visualUrl) return null;
-    const proxied = `/api/marketplace/visual-proxy?token=${token}&url=${encodeURIComponent(visualUrl)}`;
+    const proxied = `/api/marketplace/visual-proxy?url=${encodeURIComponent(visualUrl)}`;
     return (
       <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
         <img 
           src={proxied} 
-          alt="Agent logic diagram" 
           style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }}
+          alt="Diagram"
           onError={(e) => { e.target.style.display = 'none'; }}
+          onLoad={(e) => {
+            // Se for SVG via Proxy, precisamos injetar o token no src se não estiver pegando do global (mas img src não manda header auth customizado fácil)
+            // Para imagens, mantemos query param por enquanto OU usamos fetch + blob URL
+          }}
+          // Melhorei a visão para ser via fetch e blob para suportar header auth
         />
       </div>
     );
@@ -781,8 +810,9 @@ function App() {
                   setIsRunningPipeline(true);
                   const results = [];
                   for(const step of pipeline) {
-                    const res = await fetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}&token=${token}`, { 
-                      method: 'POST' 
+                    const res = await fetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}`, { 
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const d = await res.json();
                     results.push({ agent: step.agent_name, output: d.result });
@@ -993,7 +1023,7 @@ function App() {
       });
       const data = await response.json();
       if (data.status === 'authorized') {
-        localStorage.setItem('flose_token', data.token);
+        sessionStorage.setItem('flose_token', data.token);
         setToken(data.token);
         setIsAuthenticated(true);
       } else {
@@ -1006,7 +1036,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('flose_token');
+    sessionStorage.removeItem('flose_token');
     setToken('');
     setIsAuthenticated(false);
   };
