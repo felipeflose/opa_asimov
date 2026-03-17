@@ -17,8 +17,8 @@ class FinOpsCheck(BaseModel):
     approved: bool = True
 
 class DemandInfo(BaseModel):
-    type: str 
-    title: str
+    type: str = "tarefa"
+    title: str = "Nova Demanda"
     responsible: str = "Standard"
     priority: str = "Média"
     budget_approved: bool = False
@@ -41,7 +41,7 @@ class NewAgentConfig(BaseModel):
     tools: List[str] = []
 
 class OrchestratorDecision(BaseModel):
-    action: str
+    action: str = "respond"
     reasoning: str = "Delegação inteligente."
     finops_check: FinOpsCheck = Field(default_factory=FinOpsCheck)
     agent_involved: Optional[str] = None
@@ -90,8 +90,16 @@ class CognitiveOrchestrator:
         
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel(self.model_name)
-            print(f"[SYSTEM] Orchestrator iniciado com {self.model_name}.")
+            # Forçar modo JSON se suportado pelo modelo (Gemini 1.5+)
+            generation_config = {
+                "response_mime_type": "application/json"
+            } if "1.5" in self.model_name else {}
+            
+            self.model = genai.GenerativeModel(
+                model_name=self.model_name,
+                generation_config=generation_config
+            )
+            print(f"[SYSTEM] Orchestrator iniciado com {self.model_name} (JSON Mode: {bool(generation_config)}).")
         else:
             # Fallback para credenciais do sistema se a chave não existir
             print("⚠️ Chave API não encontrada. Tentando usar credenciais do sistema...")
@@ -303,18 +311,27 @@ class CognitiveOrchestrator:
                 
                 # Validação Pydantic Estrita
                 try:
+                    # Se o JSON vier vazio ou nulo por flutuação da API
+                    if not json_match or json_match == "null":
+                        raise ValueError("Conteúdo JSON vazio")
+                        
                     decision_obj = OrchestratorDecision.model_validate_json(json_match)
                 except Exception as ve:
                     print(f"⚠️ Erro de Schema JSON: {ve}")
+                    print(f"DEBUG - Raw JSON que falhou: {json_match[:500]}...")
+                    
                     # Se falhar o schema, tenta extrair o campo 'response' pelo menos
                     try:
                         temp_data = json.loads(json_match)
                         return {
-                            "action": "respond",
+                            "action": temp_data.get("action", "respond"),
                             "response": temp_data.get("response", "Erro na estrutura da resposta."),
-                            "reasoning": "Fallback por falha de validação de schema."
+                            "reasoning": f"Fallback por falha de validação: {str(ve)[:50]}"
                         }
                     except:
+                        # Se nem o json.loads funciona, o Gemini enviou lixo
+                        import traceback
+                        traceback.print_exc()
                         raise ve
 
                 d = decision_obj.model_dump()

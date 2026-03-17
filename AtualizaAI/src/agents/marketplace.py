@@ -6,20 +6,28 @@ class AgentMarketplace:
         self.market_path = "marketplace/templates/"
 
     async def export_agent(self, agent_name: str):
-        """Transforma um agente local em um template público com visual do Napkin AI."""
+        """Transforma um agente local em um template público com visual persistido no GCS."""
         agent_data = self.gcs.read_json(f"agents/{agent_name}.json")
         if not agent_data:
             return None
         
-        # 1. Gerar Visual via Napkin AI
+        # 1. Gerar e Persistir Visual via GCS (Soberania de Dados)
         napkin_visual_url = None
         try:
             from src.utils.napkin_client import NapkinClient
             napkin = NapkinClient()
             content_for_visual = f"Agent: {agent_data['agent_name']}. Purpose: {agent_data['purpose']}. {agent_data['system_prompt'][:400]}"
-            napkin_visual_url = await napkin.generate_and_return_url(content_for_visual)
+            
+            # Usar o método que já faz o upload para GCS
+            ts = os.urandom(4).hex()
+            persistent_path = await napkin.generate_and_upload_to_gcs(
+                content_for_visual, 
+                self.gcs, 
+                f"market_{agent_name.lower()}_{ts}.svg"
+            )
+            napkin_visual_url = persistent_path
         except Exception as e:
-            print(f"Napkin visual generation failed: {e}")
+            print(f"Napkin visual persistence failed: {e}")
 
         # 2. Limpa métricas privadas antes de exportar
         template = {
@@ -29,7 +37,7 @@ class AgentMarketplace:
             "tools": agent_data.get("tools", []),
             "avatar": agent_data.get("avatar"),
             "author": "Flose Community",
-            "napkin_visual_url": napkin_visual_url  # URL pública do diagrama SVG
+            "napkin_visual_url": napkin_visual_url  # URL final persistida no GCS
         }
         
         filename = f"{self.market_path}{agent_name.lower()}_template.json"

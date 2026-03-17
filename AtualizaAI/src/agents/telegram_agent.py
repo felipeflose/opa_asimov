@@ -173,9 +173,9 @@ class TelegramAgent:
                 pass
 
     async def _handle_napkin_request(self, update: Update, user_text: str):
-        """Gera um diagrama via Napkin AI e envia o SVG para o Telegram."""
+        """Gera um diagrama via Napkin AI, persiste no GCS e envia para o Telegram."""
         await update.message.reply_chat_action(action="upload_photo")
-        await self.safe_reply(update, "🎨 Gerando seu diagrama... Aguarde uns 30 segundos!")
+        await self.safe_reply(update, "🎨 Gerando seu diagrama e salvando no cofre da Flose AI... Aguarde!")
         
         try:
             from src.utils.napkin_client import NapkinClient
@@ -191,15 +191,41 @@ class TelegramAgent:
                     })
                     if svg_resp.status_code == 200:
                         svg_bytes = svg_resp.content
+                        
+                        # 1. Persistência no GCS (Não perder nada)
+                        gcs_url = None
+                        if self.gcs_client:
+                            ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+                            gcs_path = f"visuals/diagrams/diagram_{ts}.svg"
+                            blob = self.gcs_client.bucket.blob(self.gcs_client._full_path(gcs_path))
+                            blob.upload_from_string(svg_bytes, content_type="image/svg+xml")
+                            gcs_url = f"https://storage.googleapis.com/{self.gcs_client.bucket_name}/{self.gcs_client._full_path(gcs_path)}"
+                            self.log(f"Diagrama persistido: {gcs_path}")
+
+                        # 2. Enviar para Telegram
                         await update.message.reply_document(
                             document=svg_bytes,
                             filename="flose_diagram.svg",
-                            caption=f"📊 Diagrama gerado pela Flose AI"
+                            caption=f"📊 Diagrama persistido na Flose AI."
                         )
+
+                        # 3. Registrar no Log de Atividades para aparecer no Dashboard
+                        if self.gcs_client:
+                            log_entry = {
+                                "timestamp": datetime.now().isoformat(),
+                                "user": update.effective_user.username or "telegram_user",
+                                "message": f"Diagrama gerado: {user_text[:50]}...",
+                                "type": "diagram_gen",
+                                "visual_url": gcs_url
+                            }
+                            # Log individual
+                            self.gcs_client.upload_json(log_entry, f"logs/executions/diag_{ts}.json")
                         return
             
             await self.safe_reply(update, "⚠️ Não consegui gerar o diagrama. Tente com uma descrição mais detalhada.")
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             self.log(f"Erro Napkin: {str(e)}")
             await self.safe_reply(update, "⚠️ Serviço de diagramas indisponível no momento.")
 

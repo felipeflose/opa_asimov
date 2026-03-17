@@ -98,14 +98,14 @@ class NapkinClient:
 
     async def generate_and_upload_to_gcs(self, content: str, gcs_client, filename: str) -> str | None:
         """
-        Gera o visual e faz upload para o GCS.
-        Retorna o path GCS ou None se falhar.
+        Gera o visual e faz upload para o GCS respeitando o namespace do usuário.
+        Retorna a URL pública ou None se falhar.
         """
         url = await self.generate_and_return_url(content)
         if not url:
             return None
 
-        # Baixa o SVG
+        # Baixa o SVG (diagrama)
         headers = {
             "Authorization": f"Bearer {self.napkin_token}",
             "Accept": "image/svg+xml"
@@ -113,17 +113,24 @@ class NapkinClient:
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(url, headers=headers)
             if resp.status_code != 200:
-                return None
+                logger.error(f"Failed to download Napkin SVG: {resp.status_code}")
+                return url # fallback
+
             svg_bytes = resp.content
 
-        # Faz upload para GCS
-        gcs_path = f"marketplace/visuals/{filename}"
+        # Faz upload para GCS usando o caminho completo (Namespace amigável)
         try:
-            bucket = storage.Client().bucket(gcs_client.bucket_name)
-            blob = bucket.blob(gcs_path)
+            # Pasta dedicada para visuais
+            gcs_path = f"visuals/marketplace/{filename}"
+            full_remote_path = gcs_client._full_path(gcs_path)
+            
+            blob = gcs_client.bucket.blob(full_remote_path)
             blob.upload_from_string(svg_bytes, content_type="image/svg+xml")
-            blob.make_public()
-            return blob.public_url
+            
+            # Retorna URL pública persistente
+            final_url = f"https://storage.googleapis.com/{gcs_client.bucket_name}/{full_remote_path}"
+            logger.info(f"Visual persistido no GCS: {final_url}")
+            return final_url
         except Exception as e:
             logger.error(f"GCS upload failed: {e}")
-            return url  # fallback: retorna a URL original do Napkin
+            return url # fallback para URL original se falhar o upload
