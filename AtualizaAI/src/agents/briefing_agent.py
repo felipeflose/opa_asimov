@@ -38,7 +38,8 @@ class BriefingAgent:
         REGRAS:
         1. Seja direto (máximo 5 linhas).
         2. Use um tom de "Secretária Executiva de Alta Performance".
-        3. Termine com uma sugestão estratégica de "Próximo Passo".
+        3. ⚠️ PROIBIÇÃO: Jamais invente nomes de pessoas (ex: Sophia, João). Use apenas os nomes técnicos dos agentes registrados.
+        4. Termine com uma sugestão estratégica de "Próximo Passo".
         """
         
         # Usamos o orquestrador para processar o prompt de geração (ou chamamos direto o modelo)

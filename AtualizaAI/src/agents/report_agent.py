@@ -33,7 +33,10 @@ class ReportAgent:
         2. Top 3 Projetos Concluídos.
         3. Visão de Futuro (o que a IA aprendeu esta semana).
         
-        Use Markdown elegante. Seja formal e premium.
+        REGRAS:
+        1. Use Markdown elegante. Seja formal e premium.
+        2. ⚠️ PROIBIÇÃO ABSOLUTA: Não use nomes humanos genéricos (Sophia, João, Bia). Refira-se aos agentes pelos seus nomes técnicos (ex: FinOpsGuardian, TaskManager).
+        3. Se não houver dados suficientes para um projeto, não invente; apenas reporte o que existe no registry.
         """
         
         decision = self.orchestrator.process_command(prompt)

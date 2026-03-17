@@ -1,13 +1,22 @@
+# General
 .venv/
 __pycache__/
 *.pyc
 *.log
 *.tmp
 .env
-brain/
+node_modules/
+dist/
+
+# Project Specific
+AtualizaAI/tmp_vectors/
+AtualizaAI/scripts_aux/
+AtualizaAI/brain/
 .agents/
 .agent/
 .gemini/
+
+# Misc
 *.jpg
 *.png
 *.zip

@@ -54,11 +54,11 @@ class OrchestratorDecision(BaseModel):
     @classmethod
     def validate_action(cls, v: str) -> str:
         v = v.lower()
-        if 'trd' in v or 'demand' in v: return 'generate_demand'
-        if 'agent' in v:
+        if 'trd' in v or 'demand' in v or 'tarefa' in v or 'backlog' in v: return 'generate_demand'
+        if 'agent' in v or 'agente' in v:
             if 'edit' in v or 'update' in v or 'mudar' in v or 'alterar' in v: return 'update_agent'
             if 'create' in v or 'criar' in v or 'novo' in v: return 'create_agent'
-        if 'response' in v: return 'respond'
+        if 'response' in v or 'responder' in v or 'respond' in v: return 'respond'
         if 'exec' in v: return 'execute'
         return v
 
@@ -82,7 +82,7 @@ class CognitiveOrchestrator:
         if self.api_key:
             genai.configure(api_key=self.api_key)
             self.model = genai.GenerativeModel(self.model_name)
-            print(f"🚀 Orchestrator iniciado com {self.model_name}.")
+            print(f"[SYSTEM] Orchestrator iniciado com {self.model_name}.")
         else:
             # Fallback para credenciais do sistema se a chave não existir
             print("⚠️ Chave API não encontrada. Tentando usar credenciais do sistema...")
@@ -147,9 +147,8 @@ class CognitiveOrchestrator:
 
         REGRAS DE OURO:
         - NUNCA responda algo complexo você mesmo se puder delegar para um especialista.
-        - Se o usuário reclamar de um erro, o QualityInspector deve ser acionado.
-        - Se o usuário perguntar "quanto gastei", o FinOpsGuardian é o dono da resposta.
-        - Valorize a REUTILIZAÇÃO. Só crie novos agentes se realmente não houver um especialista adequado.
+        - ⚠️ REGRA CRÍTICA: O campo "response" JAMAIS pode ter mais de 4 frases. Seja DIRETO e CONCISO. Nunca use listas ou markdown. Apenas texto limpo e curto em português brasileiro.
+        - ⚠️ PROIBIÇÃO ABSOLUTA: Jamais invente ou use nomes de pessoas (ex: João, Sophia, Ana, Bia, Carlos). Os agentes da Flose AI NÃO SÃO PESSOAS, são ESPECIALISTAS TÉCNICOS. Use APENAS os nomes que estão no json de 'Registered Agents' ou no json de 'Active Demands'. Se um agente se chamar 'FinOpsGuardian', chame-o de 'FinOpsGuardian'. Se inventar nomes humanos, você estará violando o protocolo de segurança.
         """
 
     def process_command(self, user_command, image_path=None, visual_context="", chat_history=None):
@@ -162,10 +161,15 @@ class CognitiveOrchestrator:
         finops_data = "Gasto Diário: $2.80 | Limite: $10.00 | Status: SEGURO"
 
         agents = []
+        demands = []
         if self.gcs_client:
-            registry = self.gcs_client.read_json("agents/registry.json")
-            if registry:
-                agents = registry.get("agents", [])
+            agent_registry = self.gcs_client.read_json("agents/registry.json")
+            if agent_registry:
+                agents = agent_registry.get("agents", [])
+            
+            demand_registry = self.gcs_client.read_json("demands/registry.json")
+            if demand_registry:
+                demands = demand_registry.get("demands", [])
 
         # RAG Interface: Recuperação de Memória Semântica
         semantic_context = ""
@@ -208,6 +212,7 @@ class CognitiveOrchestrator:
             - Telegram Bot: @{tg_bot}
             - FinOps State: {finops_data}
             - Registered Agents: {json.dumps(agents)}
+            - Active Demands (Backlog): {json.dumps(demands[:15])}
             
             {history_context}
             {semantic_context}
@@ -253,7 +258,7 @@ class CognitiveOrchestrator:
             except Exception as e:
                 retry_count += 1
                 last_error = str(e)
-                print(f"⚠️ Tentativa {retry_count} falhou: {last_error}")
+                print(f"[!] Tentativa {retry_count} falhou: {last_error}")
                 if retry_count > max_retries:
                     return {"error": "Invalid response format after retries", "raw": last_error}
                 time.sleep(1) # Pequena pausa antes do retry
@@ -416,12 +421,22 @@ class CognitiveOrchestrator:
                 )
                 
                 # Execução Real do Especialista
-                execution_result = agent_obj.run(task_desc)
+                # agent.run() retorna (result_text, evaluation_dict) - desempacotar corretamente
+                run_output = agent_obj.run(task_desc)
+                if isinstance(run_output, tuple):
+                    execution_result = run_output[0]
+                else:
+                    execution_result = run_output
                 
+                # Garante que é string antes de formatar
+                if not isinstance(execution_result, str):
+                    execution_result = str(execution_result)
+
                 # Resposta Composta
-                final_result = f"🤖 **{agent_name} (Especialista)**:\n\n{execution_result}"
+                final_result = f"🤖 **{agent_name}**:\n\n{execution_result}"
             else:
                 final_result = f"⚠️ Agente '{agent_name}' não encontrado no registro para execução."
+
         else:
             final_result = decision.get("response", "Decisão não reconhecida.")
 

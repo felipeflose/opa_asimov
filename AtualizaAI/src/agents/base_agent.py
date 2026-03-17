@@ -76,6 +76,7 @@ class BaseAgent:
             {task}
             
             Responda como o agente {self.name}. Forneça uma solução técnica, um relatório ou o resultado da execução.
+            ⚠️ REGRA CRÍTICA: Sua resposta deve ser DIRETA e CONCISA, com no máximo 4 frases. Use linguagem natural em português brasileiro.
             """
             response = model.generate_content(prompt)
             result = response.text.strip()

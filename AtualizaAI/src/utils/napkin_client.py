@@ -1,59 +1,129 @@
 import httpx
-import json
-import logging
 import asyncio
 import os
+import logging
+import google.generativeai as genai
+from google.cloud import storage
 
-logger = logging.getLogger("napkin-client")
+logger = logging.getLogger("napkin-ai")
 
 class NapkinClient:
-    def __init__(self, api_key=None):
-        self.api_key = api_key or os.getenv("NAPKIN_API_KEY")
+    """
+    Cliente integrado Gemini + Napkin AI.
+    Gemini escolhe o melhor formato visual, Napkin gera o diagrama.
+    """
+    def __init__(self, api_key: str = None, gemini_key: str = None):
+        self.napkin_token = api_key or os.getenv("NAPKIN_API_KEY")
+        gemini_key = gemini_key or os.getenv("GEMINI_API_KEY")
         self.base_url = "https://api.napkin.ai/v1"
-        self.headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
+        
+        if gemini_key:
+            genai.configure(api_key=gemini_key)
+            model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+            self.gemini = genai.GenerativeModel(model_name)
+        else:
+            self.gemini = None
 
-    async def generate_visual(self, content: str, style_id: str = None, visual_query: str = "mindmap"):
+    async def _decide_format(self, content: str) -> str:
+        """Usa o Gemini para escolher o melhor formato visual."""
+        if not self.gemini:
+            return "mindmap"
+        prompt = f"""
+        Analise o texto e escolha o melhor formato de diagrama.
+        Formatos válidos APENAS: mindmap, flowchart, timeline, venn_diagram, swot_analysis, infographic
+        Responda APENAS com uma única palavra do formato acima.
+        
+        Texto: "{content[:500]}"
         """
-        Gera um visual baseado no texto fornecido.
+        try:
+            resp = self.gemini.generate_content(prompt)
+            fmt = resp.text.strip().lower().replace("'", "").replace('"', '').split()[0]
+            valid = ["mindmap", "flowchart", "timeline", "venn_diagram", "swot_analysis", "infographic"]
+            return fmt if fmt in valid else "mindmap"
+        except:
+            return "mindmap"
+
+    async def generate_and_return_url(self, content: str) -> str | None:
         """
+        Fluxo completo: Gemini decide formato → Napkin gera → retorna URL do SVG.
+        """
+        if not self.napkin_token:
+            logger.error("NAPKIN_API_KEY não configurada")
+            return None
+
+        formato = await self._decide_format(content)
+        headers = {
+            "Authorization": f"Bearer {self.napkin_token}",
+            "Content-Type": "application/json"
+        }
         payload = {
-            "format": "png",
             "content": content,
-            "visual_query": visual_query,
-            "number_of_visuals": 1,
-            "transparent_background": True
+            "visual_query": formato,
+            "format": "svg",
+            "number_of_visuals": 1
         }
-        if style_id:
-            payload["style_id"] = style_id
 
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(f"{self.base_url}/visual", json=payload, headers=self.headers, timeout=60)
-                if response.status_code == 201:
-                    return response.json()
-                else:
-                    logger.error(f"Napkin API Error: {response.status_code} - {response.text}")
-                    return None
-            except Exception as e:
-                logger.error(f"Napkin Client Exception: {e}")
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(f"{self.base_url}/visual", json=payload, headers=headers)
+            if resp.status_code not in [200, 201]:
+                logger.error(f"Napkin create error: {resp.status_code}")
                 return None
 
-    async def get_visual_status(self, visual_id: str):
-        """
-        Verifica o status e obtém o link do visual gerado.
-        """
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(f"{self.base_url}/visual/{visual_id}", headers=self.headers, timeout=30)
-                if response.status_code == 200:
-                    return response.json()
-                else:
-                    logger.error(f"Napkin API Status Error: {response.status_code} - {response.text}")
-                    return None
-            except Exception as e:
-                logger.error(f"Napkin Status Exception: {e}")
+            req_id = resp.json().get("id") or resp.json().get("request_id")
+            if not req_id:
                 return None
+
+            for _ in range(15):
+                await asyncio.sleep(3)
+                status_resp = await client.get(
+                    f"{self.base_url}/visual/{req_id}/status",
+                    headers=headers
+                )
+                data = status_resp.json()
+                status = data.get("status", "").lower()
+                
+                if status == "completed":
+                    generated_files = data.get("generated_files") or data.get("files") or []
+                    if len(generated_files) > 0:
+                        url = generated_files[0].get("url")
+                        logger.info(f"Napkin visual gerado ({formato}): {url}")
+                        return url
+                    return None
+                
+                if status in ["failed", "error", "rejected"]:
+                    logger.error(f"Napkin falhou: {data}")
+                    return None
+
+        return None
+
+    async def generate_and_upload_to_gcs(self, content: str, gcs_client, filename: str) -> str | None:
+        """
+        Gera o visual e faz upload para o GCS.
+        Retorna o path GCS ou None se falhar.
+        """
+        url = await self.generate_and_return_url(content)
+        if not url:
+            return None
+
+        # Baixa o SVG
+        headers = {
+            "Authorization": f"Bearer {self.napkin_token}",
+            "Accept": "image/svg+xml"
+        }
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(url, headers=headers)
+            if resp.status_code != 200:
+                return None
+            svg_bytes = resp.content
+
+        # Faz upload para GCS
+        gcs_path = f"marketplace/visuals/{filename}"
+        try:
+            bucket = storage.Client().bucket(gcs_client.bucket_name)
+            blob = bucket.blob(gcs_path)
+            blob.upload_from_string(svg_bytes, content_type="image/svg+xml")
+            blob.make_public()
+            return blob.public_url
+        except Exception as e:
+            logger.error(f"GCS upload failed: {e}")
+            return url  # fallback: retorna a URL original do Napkin

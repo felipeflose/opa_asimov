@@ -29,7 +29,7 @@ class EpisodicMemory:
             days_old = (datetime.now() - datetime.fromisoformat(ep["ts"])).days
             score = (overlap * 0.7) + (max(0.1, 1 - days_old / days_back) * 0.3)
             scored.append((score, ep))
-        scored.sort(reverse=True)
+        scored.sort(key=lambda x: x[0], reverse=True)  # Sort only by score, never compare dicts
         return [ep for _, ep in scored[:top_k]]
 
     def _save(self):

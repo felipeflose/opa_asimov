@@ -17,6 +17,7 @@ class GCSClient:
             self.client = storage.Client.from_service_account_json(credentials_path)
         else:
             self.client = storage.Client(project=project_id)
+        self.bucket_name = bucket_name
         self.bucket = self.client.bucket(bucket_name)
         self._cache = {}
 

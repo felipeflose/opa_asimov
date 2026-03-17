@@ -46,15 +46,15 @@ class TelegramAgent:
                 print(f"Erro ao subir log para GCS: {e}")
 
     async def safe_reply(self, update: Update, text: str, parse_mode=None):
-        """Evita o erro 'Message is too long' do Telegram (limite ~4096 chars)."""
+        """Envia mensagem garantindo que não ultrapasse o limite do Telegram."""
+        # Garante resposta curta - max 4000 chars, sem truncamento apelativo
         if len(text) > 4000:
-            text = text[:3900] + "...\n\n⚠️ *Mensagem truncada por ser muito longa. Veja os detalhes completos no Command Center Dashboard!*"
+            text = text[:3900] + "..."
         
         try:
             await update.message.reply_text(text, parse_mode=parse_mode)
         except Exception:
-            # Fallback se o parse_mode der erro (ex: markdown inválido vindo da IA)
-            await update.message.reply_text(text)
+            await update.message.reply_text(text.replace('*', '').replace('_', '').replace('`', ''))
 
     async def start_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.effective_user.username or update.effective_user.first_name
@@ -80,6 +80,13 @@ class TelegramAgent:
             
             await update.message.reply_chat_action(action="typing")
             
+            # --- Detecta comando de diagrama Napkin ---
+            lower_text = user_text.lower()
+            napkin_triggers = ["diagrama", "desenho", "visual", "mapa", "flowchart", "mindmap", "esquema", "arquitetura"]
+            if any(t in lower_text for t in napkin_triggers):
+                await self._handle_napkin_request(update, user_text)
+                return
+
             image_path = None
             visual_context = ""
             
@@ -99,56 +106,55 @@ class TelegramAgent:
                     visual_context = self.vision_agent.analyze_image(image_path)
                     self.log(f"Análise de Visão completa: {visual_context[:50]}...")
                 else:
-                    visual_context = "[Imagem recebida, mas VisionAgent offline]"
+                    visual_context = "[Imagem recebida, mas Vision Agent offline]"
     
-            # Process via Orchestrator (Agora enviamos o que o Vision Agent viu!)
+            # Process via Orchestrator
             full_command = f"Contexto Visual: {visual_context}\n\nComando do Usuário: {user_text}"
             decision = self.orchestrator.process_command(full_command, image_path=image_path)
             
             # Limpeza da imagem após processar
             if image_path and os.path.exists(image_path):
                 os.remove(image_path)
-    
-            action = decision.get("action")
-            reasoning = decision.get("reasoning", "Processando...")
-            
-            log_data["decision"] = decision
-    
-            # Mostrar Reasoning Chain se solicitado (Transparência)
-            reasoning_msg = f"🧠 AI Reasoning Chain:\n{reasoning}"
-            self.log(f"Enviando reasoning para @{user}...")
-            await self.safe_reply(update, reasoning_msg)
 
+            # Se o Orchestrator falhou, responde de forma limpa
+            if not decision or decision.get("error"):
+                await self.safe_reply(update, "🤔 Não consegui entender o comando. Pode reformular?")
+                return
+
+            action = decision.get("action", "respond")
+            reasoning = decision.get("reasoning", "")
+            log_data["decision"] = decision
+
+            # Reasoning Chain — visibilidade do raciocínio da IA
+            if reasoning:
+                reasoning_short = reasoning[:800]  # limita para não travar
+                await self.safe_reply(update, f"🧠 *Reasoning Chain:*\n{reasoning_short}")
+    
             if action == "respond":
-                response = decision.get("response", "Não consegui processar sua dúvida.")
-                self.log(f"Enviando resposta direta para @{user}")
-                await self.safe_reply(update, f"💬 Flose AI\n\n{response}")
+                response = decision.get("response", "Processado com sucesso.")
+                await self.safe_reply(update, f"💬 {response}")
             
             elif action == "create_agent":
                 result = self.orchestrator.execute_decision(decision)
-                self.log(f"Enviando confirmação de criação de agente para @{user}")
-                await self.safe_reply(update, f"🏗️ Processamento de Agente\n\n✅ {result}")
+                await self.safe_reply(update, f"🏗️ {result}")
             
             elif action == "generate_demand":
                 result = self.orchestrator.execute_decision(decision)
                 demand = decision.get("demand_info") or {}
-                title = demand.get("title", "Sem título")
-                dtype = demand.get("type", "tarefa")
-                self.log(f"Enviando confirmação de demanda para @{user}")
-                await self.safe_reply(update, f"📝 Nova Demanda (TRD)\n\nTítulo: {title}\nTipo: {dtype}\n\n{result}")
+                title = demand.get("title", "Nova demanda")
+                await self.safe_reply(update, f"📝 Demanda registrada: {title}\n\n{result}")
     
             else: # execute
                 result = self.orchestrator.execute_decision(decision)
-                self.log(f"Enviando resultado de execução para @{user}")
-                await self.safe_reply(update, f"⚙️ Execução Finalizada\n\nResultado: {result}")
+                await self.safe_reply(update, f"⚙️ {result}")
             
             # Sincroniza o log final (com a decisão) no GCS
             if self.gcs_client:
                 filename_final = f"logs/telegram/decision_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.json"
                 self.gcs_client.upload_json(log_data, filename_final)
     
-            # Atualiza o Knowledge Graph com novos conceitos aprendidos
-            if self.kg_manager:
+            # Atualiza o Knowledge Graph com novos conceitos aprendidos APENAS se houver execução real
+            if self.kg_manager and decision.get("action") == "execute":
                 agent_name = decision.get("agent_involved") or "Orchestrator"
                 self.kg_manager.add_interaction(
                     agent_name=agent_name,
@@ -162,9 +168,40 @@ class TelegramAgent:
             error_msg = f"Erro no message_handler: {str(e)}"
             self.log(error_msg)
             try:
-                await self.safe_reply(update, f"⚠️ *Opa! Tive um pequeno problema interno:* \n`{str(e)}`", parse_mode='Markdown')
+                await self.safe_reply(update, f"⚠️ Tive um problema interno. Tente novamente.")
             except:
                 pass
+
+    async def _handle_napkin_request(self, update: Update, user_text: str):
+        """Gera um diagrama via Napkin AI e envia o SVG para o Telegram."""
+        await update.message.reply_chat_action(action="upload_photo")
+        await self.safe_reply(update, "🎨 Gerando seu diagrama... Aguarde uns 30 segundos!")
+        
+        try:
+            from src.utils.napkin_client import NapkinClient
+            napkin = NapkinClient()
+            url = await napkin.generate_and_return_url(user_text)
+            
+            if url:
+                import httpx
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    svg_resp = await client.get(url, headers={
+                        "Authorization": f"Bearer {os.getenv('NAPKIN_API_KEY')}",
+                        "Accept": "image/svg+xml"
+                    })
+                    if svg_resp.status_code == 200:
+                        svg_bytes = svg_resp.content
+                        await update.message.reply_document(
+                            document=svg_bytes,
+                            filename="flose_diagram.svg",
+                            caption=f"📊 Diagrama gerado pela Flose AI"
+                        )
+                        return
+            
+            await self.safe_reply(update, "⚠️ Não consegui gerar o diagrama. Tente com uma descrição mais detalhada.")
+        except Exception as e:
+            self.log(f"Erro Napkin: {str(e)}")
+            await self.safe_reply(update, "⚠️ Serviço de diagramas indisponível no momento.")
 
     async def error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
         self.log(f"Exception while handling an update: {context.error}")

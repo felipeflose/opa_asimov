@@ -161,6 +161,101 @@ async def get_tasks(token: str = None):
     
     return registry.get("demands", [])
 
+@app.get("/api/activity")
+async def get_activity(token: str = None):
+    if token != "flosetoken_secure_v2":
+        return {"error": "Unauthorized"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    activity_list = []
+    
+    try:
+        # 1. Executions
+        prefix_exec = f"users/{gcs.user_id}/logs/executions/"
+        blobs_exec = list(gcs.bucket.list_blobs(prefix=prefix_exec))
+        blobs_exec.sort(key=lambda x: x.updated, reverse=True)
+        
+        for blob in blobs_exec[:10]:
+            data = gcs.read_json(blob.name.replace(f"users/{gcs.user_id}/", ""))
+            if data:
+                activity_list.append({
+                    "agent": data.get("agent"),
+                    "message": data.get("result"),
+                    "timestamp": data.get("timestamp")
+                })
+
+        # 2. Telegram
+        prefix_tg = f"users/{gcs.user_id}/logs/telegram/"
+        blobs_tg = list(gcs.bucket.list_blobs(prefix=prefix_tg))
+        blobs_tg.sort(key=lambda x: x.updated, reverse=True)
+        
+        for blob in blobs_tg[:15]:
+            data = gcs.read_json(blob.name.replace(f"users/{gcs.user_id}/", ""))
+            if data:
+                decision = data.get("decision", {})
+                agent = decision.get("agent_involved") or "Orchestrator"
+                activity_list.append({
+                    "agent": agent,
+                    "message": data.get("response") or data.get("user_text"),
+                    "timestamp": data.get("timestamp")
+                })
+    except Exception as e:
+        print(f"Error loading activity: {e}")
+            
+    activity_list.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    return activity_list
+
+@app.post("/api/qa/auto-fix")
+async def qa_auto_fix(token: str = None):
+    if token != "flosetoken_secure_v2":
+        return {"error": "Unauthorized"}
+        
+    # Lazy load dependencies
+    from src.orchestrator.cognitive_orchestrator import CognitiveOrchestrator
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    orchestrator = CognitiveOrchestrator(gcs_client=gcs)
+    
+    # 1. Carregar estado atual para o prompt
+    registry = gcs.read_json("demands/registry.json") or {"demands": []}
+    agents = gcs.read_json("agents/registry.json") or {"agents": []}
+    
+    command = f"""
+    SISTEMA EM ALERTA: O usuário solicitou uma CORREÇÃO E AUDITORIA GERAL.
+    QualityInspector, você deve agir AGORA:
+    1. Analise o registry de demandas: {json.dumps(registry.get('demands', [])[:20])}
+    2. Liste todos os problemas críticos encontrados (tarefas paradas, backlog vazio, falta de responsáveis).
+    3. Para CADA problema encontrado, tome uma ação:
+       - Se o backlog de TRDs estiver vazio ou insuficiente para um projeto de IA, use 'GENERATE_DEMAND' para criar as tarefas de 'Arquitetura', 'Segurança' e 'Entrega'.
+       - Se houver falha de agente, use 'CREATE_AGENT'.
+    4. Seja extremamente detalhado na sua 'response' final, evidenciando o que você corrigiu.
+    """
+    
+    decision = orchestrator.process_command(command)
+    result = orchestrator.execute_decision(decision)
+    
+    # Log da correção na atividade
+    log_data = {
+        "timestamp": datetime.now().isoformat(),
+        "agent": "QualityInspector",
+        "message": f"AUTO-FIX EXECUTADO: {result}",
+        "type": "qa_fix"
+    }
+    # Opcional: Salvar no log de telegram para aparecer no feed
+    gcs.upload_json({
+        "timestamp": datetime.now().isoformat(),
+        "user_text": "CORREÇÃO AUTOMÁTICA",
+        "decision": decision,
+        "response": result
+    }, f"logs/telegram/autofix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+    
+    return {"status": "success", "result": result}
+
 @app.post("/api/tasks/approve")
 async def approve_task(task_id: str, token: str = None):
     if token != "flosetoken_secure_v2":
@@ -232,6 +327,21 @@ async def execute_task(task_id: str, agent_name: str, token: str = None):
             t["result_id"] = execution_id
             break
     gcs.upload_json(registry, "demands/registry.json")
+    
+    # 6. Atualiza o Knowledge Graph
+    try:
+        from src.graph.knowledge_graph import KnowledgeGraphManager
+        kg = KnowledgeGraphManager(gcs_client=gcs)
+        kg.add_interaction(
+            agent_name=agent_name,
+            task_name=task['title'],
+            outcome={
+                "status": "executed",
+                "learned_concepts": [task['title']]
+            }
+        )
+    except Exception as e:
+        print(f"Erro ao atualizar o grafo cognitivo: {e}")
     
     return {"status": "success", "result": result}
 
@@ -368,15 +478,40 @@ async def import_from_marketplace(request: Request, token: str = None):
     
     return {"status": "success", "message": f"Agent {template_data['name']} imported from marketplace."}
 
-@app.get("/api/marketplace/visual/{visual_id}")
-async def get_napkin_visual(visual_id: str, token: str = None):
+@app.get("/api/marketplace/visual-proxy")
+async def napkin_visual_proxy(url: str = None, token: str = None):
+    """
+    Proxy autenticado para servir imagens SVG do Napkin AI.
+    O browser não pode acessar a URL do Napkin diretamente (precisa de Bearer token).
+    Este endpoint baixa e re-serve o SVG com os headers corretos.
+    """
+    from fastapi.responses import Response
     if token != "flosetoken_secure_v2":
-        return {"error": "Unauthorized"}
+        return Response(content="Unauthorized", status_code=401)
+    if not url:
+        return Response(content="Missing url param", status_code=400)
     
-    from src.utils.napkin_client import NapkinClient
-    napkin = NapkinClient(api_key=os.getenv("NAPKIN_API_KEY"))
-    res = await napkin.get_visual_status(visual_id)
-    return res or {"error": "Visual not found"}
+    napkin_key = os.getenv("NAPKIN_API_KEY")
+    if not napkin_key:
+        return Response(content="Napkin key not configured", status_code=500)
+    
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(url, headers={
+                "Authorization": f"Bearer {napkin_key}",
+                "Accept": "image/svg+xml,image/png,*/*"
+            })
+            if resp.status_code == 200:
+                content_type = resp.headers.get("content-type", "image/svg+xml")
+                return Response(
+                    content=resp.content,
+                    media_type=content_type,
+                    headers={"Cache-Control": "public, max-age=3600"}
+                )
+            return Response(content=f"Napkin returned {resp.status_code}", status_code=resp.status_code)
+    except Exception as e:
+        return Response(content=str(e), status_code=500)
 
 # --- 4. Servir Frontend React ---
 # Montamos a pasta dist gerada pelo build do Vite

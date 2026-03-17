@@ -25,6 +25,7 @@ function App() {
   const [pipelineResults, setPipelineResults] = useState([]);
   const [isRunningPipeline, setIsRunningPipeline] = useState(false);
   const [marketTemplates, setMarketTemplates] = useState([]);
+  const [isFixing, setIsFixing] = useState(false);
 
   // Buscar dados reais da API
   const fetchData = async () => {
@@ -113,6 +114,20 @@ function App() {
     fetchData();
   };
 
+  const handleQAAutoFix = async () => {
+    setIsFixing(true);
+    try {
+      const resp = await fetch(`/api/qa/auto-fix?token=flosetoken_secure_v2`, { method: 'POST' });
+      const data = await resp.json();
+      alert(`Correction Result: ${data.result}`);
+      fetchData();
+    } catch (err) {
+      console.error("Auto-fix error", err);
+    } finally {
+      setIsFixing(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchData();
@@ -122,303 +137,376 @@ function App() {
   }, [isAuthenticated]);
 
   // Hook de Física Avançado v4
-  const NapkinVisual = ({ visualId }) => {
-    const [imgUrl, setImgUrl] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-      const fetchVisual = async () => {
-        if (!visualId) return;
-        try {
-          const token = "flosetoken_secure_v2";
-          const res = await fetch(`/api/marketplace/visual/${visualId}?token=${token}`);
-          const data = await res.json();
-          // Based on exploration, Napkin returns something like { "files": [ { "url": "..." } ] }
-          if (data && data.files && data.files.length > 0) {
-            setImgUrl(data.files[0].url);
-          }
-        } catch (e) {
-          console.error("Napkin fetch error", e);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchVisual();
-    }, [visualId]);
-
-    if (!visualId) return null;
-    if (loading) return <div style={{ fontSize: '0.6rem', opacity: 0.5 }}>🎨 Generating visual...</div>;
-    if (!imgUrl) return <div style={{ fontSize: '0.6rem', opacity: 0.3 }}>No visual available</div>;
-
+  // NapkinVisual: exibe diagrama via proxy autenticado (Napkin requer Bearer token)
+  const NapkinVisual = ({ visualUrl }) => {
+    if (!visualUrl) return null;
+    const token = "flosetoken_secure_v2";
+    const proxied = `/api/marketplace/visual-proxy?token=${token}&url=${encodeURIComponent(visualUrl)}`;
     return (
-      <div style={{ marginTop: '15px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-        <img src={imgUrl} alt="Agent logic diagram" style={{ width: '100%', display: 'block' }} />
+      <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
+        <img 
+          src={proxied} 
+          alt="Agent logic diagram" 
+          style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }}
+          onError={(e) => { e.target.style.display = 'none'; }}
+        />
       </div>
     );
   };
 
+  const SlantButton = ({ children, active, onClick, color = '#00f2ff' }) => (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "8px 22px",
+        fontSize: "11px",
+        fontWeight: "800",
+        cursor: "pointer",
+        border: "none",
+        background: active ? color : "rgba(255,255,255,0.03)",
+        color: active ? "#000" : "rgba(255,255,255,0.6)",
+        transform: "skew(-15deg)",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        boxShadow: active ? `0 0 20px ${color}66` : "none",
+        marginRight: "10px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minWidth: "100px",
+        textTransform: "uppercase",
+        letterSpacing: "1px",
+        border: active ? "none" : "1px solid rgba(255,255,255,0.1)"
+      }}
+    >
+      <span style={{ transform: "skew(15deg)" }}>{children}</span>
+    </button>
+  );
+
   const useForce = (nodes, links, width, height) => {
-    const [positions, setPositions] = useState({});
-    const simulationRef = useRef(null);
+    const pos = useRef({});
+    const vel = useRef({});
+    const iter = useRef(0);
+    const raf = useRef(null);
+    const [, tick] = useState(0);
 
     useEffect(() => {
-      const safeNodes = nodes || [];
-      const safeLinks = links || [];
-      if (!safeNodes.length) return;
+      if (!width || !height || !nodes.length) return;
       
-      const pos = {};
-      const vel = {};
       const cx = width / 2;
       const cy = height / 2;
 
-      // Inicialização inteligente baseada em hierarquia
-      safeNodes.forEach((n, i) => {
+      nodes.forEach((n, i) => {
+        if (pos.current[n.id]) return;
+        
         if (n.type === 'core') {
-          pos[n.id] = { x: cx, y: cy };
+          pos.current[n.id] = { x: cx, y: cy };
         } else if (n.type === 'pilar') {
-          const angle = (i / 10) * Math.PI * 2;
-          pos[n.id] = { x: cx + Math.cos(angle) * 180, y: cy + Math.sin(angle) * 180 };
+          const angle = (i / 8) * Math.PI * 2;
+          pos.current[n.id] = { x: cx + Math.cos(angle) * 250, y: cy + Math.sin(angle) * 250 };
         } else {
           const angle = Math.random() * Math.PI * 2;
-          pos[n.id] = { x: cx + Math.cos(angle) * 350, y: cy + Math.sin(angle) * 350 };
+          pos.current[n.id] = { x: cx + Math.cos(angle) * 450, y: cy + Math.sin(angle) * 450 };
         }
-        vel[n.id] = { x: 0, y: 0 };
+        vel.current[n.id] = { x: 0, y: 0 };
       });
+      
+      iter.current = 0;
 
-      let iteration = 0;
       const step = () => {
-        iteration++;
-        const alpha = Math.max(0.01, 1.0 * Math.exp(-iteration * 0.012));
-        
-        // 1. Repulsão Global (Muito maior para evitar overlap)
-        safeNodes.forEach(n1 => {
-          safeNodes.forEach(n2 => {
-            if (n1.id === n2.id) return;
-            const dx = pos[n2.id].x - pos[n1.id].x;
-            const dy = pos[n2.id].y - pos[n1.id].y;
+        iter.current++;
+        const a = Math.max(0.005, 0.8 * Math.exp(-iter.current * 0.01));
+        const p = pos.current, v = vel.current;
+        const ids = nodes.map(n => n.id);
+
+        for (let i = 0; i < ids.length; i++) {
+          for (let j = i + 1; j < ids.length; j++) {
+            const A = ids[i], B = ids[j];
+            const dx = p[B].x - p[A].x, dy = p[B].y - p[A].y;
             const distSq = dx * dx + dy * dy || 1;
             const dist = Math.sqrt(distSq);
             
-            // Repulsão variável: Pilares se repelem mais
-            const charge = (n1.type === 'pilar' || n2.type === 'pilar') ? 15000 : 5000;
-            if (dist < 450) {
-              const force = (charge / distSq) * alpha;
-              vel[n1.id].x -= (dx / dist) * force;
-              vel[n1.id].y -= (dy / dist) * force;
-            }
-          });
-        });
+            const nA = nodes.find(n => n.id === A);
+            const nB = nodes.find(n => n.id === B);
+            if (!nA || !nB) continue;
 
-        // 2. Atração de Links
-        safeLinks.forEach(l => {
+            const charge = (nA.type === 'core' || nB.type === 'core') ? 120000 : 
+                           (nA.type === 'pilar' || nB.type === 'pilar') ? 40000 : 10000;
+
+            if (dist < 500) {
+              const f = (charge / distSq) * a;
+              v[A].x -= dx / dist * f; v[A].y -= dy / dist * f;
+              v[B].x += dx / dist * f; v[B].y += dy / dist * f;
+            }
+          }
+        }
+
+        links.forEach(l => {
           const sId = typeof l.source === 'object' ? l.source.id : l.source;
           const tId = typeof l.target === 'object' ? l.target.id : l.target;
-          const s = pos[sId];
-          const t = pos[tId];
-          if (!s || !t) return;
+          if (!p[sId] || !p[tId]) return;
           
-          const dx = t.x - s.x;
-          const dy = t.y - s.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const dx = p[tId].x - p[sId].x, dy = p[tId].y - p[sId].y;
+          const d = Math.sqrt(dx * dx + dy * dy) || 1;
+          const ideal = l.relation === 'groups' ? 120 : 250;
+          const strength = (l.relation === 'groups' ? 0.15 : 0.05) * a;
+          const f = (d - ideal) * strength;
           
-          // Distância ideal por tipo de relação
-          let ideal = 140;
-          if (l.relation === 'defined_by') ideal = 200;
-          if (l.relation === 'groups') ideal = 100;
-
-          const strength = (l.relation === 'groups' ? 0.2 : 0.1) * alpha;
-          const force = (dist - ideal) * strength;
-          
-          vel[sId].x += (dx / dist) * force;
-          vel[sId].y += (dy / dist) * force;
-          vel[tId].x -= (dx / dist) * force;
-          vel[tId].y -= (dy / dist) * force;
+          v[sId].x += dx / d * f; v[sId].y += dy / d * f;
+          v[tId].x -= dx / d * f; v[tId].y -= dy / d * f;
         });
 
-        // 3. Gravidade e Centralização
-        safeNodes.forEach(n => {
-          if (n.type === 'core') {
-            vel[n.id].x += (cx - pos[n.id].x) * 0.25 * alpha;
-            vel[n.id].y += (cy - pos[n.id].y) * 0.25 * alpha;
-          } else {
-            vel[n.id].x += (cx - pos[n.id].x) * 0.015 * alpha;
-            vel[n.id].y += (cy - pos[n.id].y) * 0.015 * alpha;
-          }
+        nodes.forEach(n => {
+          v[n.id].x += (cx - p[n.id].x) * (n.type === 'core' ? 0.1 : 0.01) * a;
+          v[n.id].y += (cy - p[n.id].y) * (n.type === 'core' ? 0.1 : 0.01) * a;
           
-          pos[n.id].x += vel[n.id].x;
-          pos[n.id].y += vel[n.id].y;
-          
-          vel[n.id].x *= 0.75;
-          vel[n.id].y *= 0.75;
+          v[n.id].x *= 0.8; v[n.id].y *= 0.8;
+          p[n.id].x = Math.max(50, Math.min(width - 50, p[n.id].x + v[n.id].x));
+          p[n.id].y = Math.max(50, Math.min(height - 50, p[n.id].y + v[n.id].y));
         });
 
-        setPositions({...pos});
-        if (alpha > 0.01) simulationRef.current = requestAnimationFrame(step);
+        tick(t => t + 1);
+        if (a > 0.006) raf.current = requestAnimationFrame(step);
       };
 
-      simulationRef.current = requestAnimationFrame(step);
-      return () => cancelAnimationFrame(simulationRef.current);
+      if (raf.current) cancelAnimationFrame(raf.current);
+      raf.current = requestAnimationFrame(step);
+      return () => { if (raf.current) cancelAnimationFrame(raf.current); };
     }, [nodes.length, links.length, width, height]);
 
-    return positions;
+    return pos.current;
   };
 
   const CognitiveMap = ({ data }) => {
     const nodes = data?.nodes || [];
     const links = data?.links || [];
-    const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: 1200, h: 800 });
-    const pos = useForce(nodes, links, 1200, 800);
+    const containerRef = useRef(null);
+    const [dims, setDims] = useState({ w: 1200, h: 800 });
+    const [selected, setSelected] = useState(null);
+    const [hovered, setHovered] = useState(null);
+    const [filterType, setFilterType] = useState("all");
+    const [dragging, setDragging] = useState(null);
+    const dragOff = useRef({ x: 0, y: 0 });
+    const posOverride = useRef({});
+    const [, forceRender] = useState(0);
+    const [isSaved, setIsSaved] = useState(false);
+
+    useEffect(() => {
+      const saved = localStorage.getItem("flose_cognitive_map_v2");
+      if (saved) {
+        try {
+          posOverride.current = JSON.parse(saved);
+          forceRender(v => v + 1);
+        } catch (e) {
+          console.error("Erro ao carregar layout", e);
+        }
+      }
+    }, []);
+
+    const handleSave = () => {
+      const current = { ...posOverride.current };
+      visNodes.forEach(n => {
+        if (!current[n.id] && simPos[n.id]) current[n.id] = simPos[n.id];
+      });
+      localStorage.setItem("flose_cognitive_map_v2", JSON.stringify(current));
+      posOverride.current = current;
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    };
+
+    const handleReset = () => {
+      if (window.confirm("Reseta o layout cognitivo?")) {
+        localStorage.removeItem("flose_cognitive_map_v2");
+        posOverride.current = {};
+        window.location.reload();
+      }
+    };
+
+    useEffect(() => {
+      const obs = new ResizeObserver(e => {
+        if (!e[0]) return;
+        const { width, height } = e[0].contentRect;
+        setDims({ w: Math.max(800, width), h: Math.max(500, height) });
+      });
+      if (containerRef.current) obs.observe(containerRef.current);
+      return () => obs.disconnect();
+    }, []);
+
+    const visNodes = filterType === "all" ? nodes : nodes.filter(n => n.type === filterType);
+    const visIds = new Set(visNodes.map(n => n.id));
+    const visLinks = links.filter(l => {
+      const sId = typeof l.source === 'object' ? l.source.id : l.source;
+      const tId = typeof l.target === 'object' ? l.target.id : l.target;
+      return visIds.has(sId) && visIds.has(tId);
+    });
+
+    const simPos = useForce(visNodes, visLinks, dims.w, dims.h);
+    const getP = id => posOverride.current[id] || simPos[id] || { x: dims.w / 2, y: dims.h / 2 };
+
+    const activeNode = selected || hovered;
+    const activeLinks = activeNode ? visLinks.filter(l => {
+      const sId = typeof l.source === 'object' ? l.source.id : l.source;
+      const tId = typeof l.target === 'object' ? l.target.id : l.target;
+      return sId === activeNode?.id || tId === activeNode?.id;
+    }) : [];
     
-    if (!nodes.length) {
-      return (
-        <div className="glass-card" style={{ height: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="loading-spinner"></div>
-          <p style={{ marginLeft: '15px', color: 'var(--primary)', letterSpacing: '2px' }}>LOADING COGNITIVE NEURONS...</p>
-        </div>
-      );
-    }
+    const activeIds = new Set(activeLinks.flatMap(l => [
+      typeof l.source === 'object' ? l.source.id : l.source,
+      typeof l.target === 'object' ? l.target.id : l.target
+    ]));
+
+    const onMD = (e, id) => {
+      e.stopPropagation();
+      const p = getP(id), svg = e.currentTarget.closest("svg"), r = svg.getBoundingClientRect();
+      dragOff.current = { x: e.clientX - r.left - p.x, y: e.clientY - r.top - p.y };
+      setDragging(id); setSelected(nodes.find(n => n.id === id));
+    };
+
+    useEffect(() => {
+      if (!dragging) return;
+      const mv = e => {
+        const svg = containerRef.current?.querySelector("svg");
+        if (!svg) return;
+        const r = svg.getBoundingClientRect();
+        posOverride.current[dragging] = {
+          x: Math.max(50, Math.min(dims.w - 50, e.clientX - r.left - dragOff.current.x)),
+          y: Math.max(50, Math.min(dims.h - 50, e.clientY - r.top - dragOff.current.y)),
+        };
+        forceRender(v => v + 1);
+      };
+      const up = () => setDragging(null);
+      window.addEventListener("mousemove", mv); window.addEventListener("mouseup", up);
+      return () => { window.removeEventListener("mousemove", mv); window.removeEventListener("mouseup", up); };
+    }, [dragging, dims]);
+
+    if (!nodes.length) return <div className="loading">LOADING COGNITIVE_DATA...</div>;
 
     return (
-      <div className="glass-card graph-container" style={{ height: '75vh', position: 'relative', overflow: 'hidden', padding: 0, border: '1px solid rgba(0, 242, 255, 0.2)' }}>
-        {/* Top Header Overlay */}
-        <div style={{ position: 'absolute', top: '25px', left: '30px', zIndex: 10, pointerEvents: 'none' }}>
-          <h2 className="title-grad" style={{ letterSpacing: '4px', fontSize: '1.2rem', marginBottom: '8px', textShadow: '0 0 20px rgba(0,242,255,0.4)' }}>COGNITIVE_NEXUS_v4.5</h2>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.65rem', color: '#00ff80', fontWeight: 'bold' }}>● SYSTEM_ONLINE</span>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{nodes.length} KNOWLEDGE_NODES</span>
+      <div className="glass-card" style={{ height: '75vh', position: 'relative', overflow: 'hidden', padding: 0, border: '1px solid var(--border)', background: '#02040a' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(2,4,10,0.9), transparent)' }}>
+          <div style={{ pointerEvents: 'none' }}>
+            <h2 className="title-grad" style={{ letterSpacing: '4px', fontSize: '1.1rem', marginBottom: '5px' }}>COGNITIVE_NEXUS_v4.5</h2>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.6rem', color: '#00ff80', fontWeight: 'bold' }}>● SYSTEM_OPERATIONAL</span>
+              <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>{visNodes.length} NODES_IN_VIEW</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '15px' }}>
+             <button onClick={handleSave} style={{ padding: "8px 16px", background: isSaved ? "var(--secondary)" : "rgba(255,255,255,0.05)", color: isSaved ? "#000" : "#fff", border: isSaved ? "none" : "1px solid var(--primary)", borderRadius: "4px", fontSize: "10px", fontWeight: "900", cursor: "pointer", transition: "all 0.3s" }}>
+              {isSaved ? "LAYOUT_SAVED" : "SAVE_SNAPSHOT"}
+            </button>
+            <button onClick={handleReset} style={{ padding: "8px 16px", background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", fontSize: "10px", fontWeight: "900", cursor: "pointer" }}>
+              RESET
+            </button>
+            <div style={{ width: '1px', height: '25px', background: 'rgba(255,255,255,0.1)', margin: '0 5px' }} />
+            <SlantButton active={filterType === 'all'} onClick={() => setFilterType('all')}>ALL_NODES</SlantButton>
+            <SlantButton color="var(--primary)" active={filterType === 'core'} onClick={() => setFilterType('core')}>CORE</SlantButton>
+            <SlantButton color="#f59e0b" active={filterType === 'pilar'} onClick={() => setFilterType('pilar')}>PILLARS</SlantButton>
+            <SlantButton color="#34d399" active={filterType === 'concept'} onClick={() => setFilterType('concept')}>CONCEPTS</SlantButton>
           </div>
         </div>
-
-        {/* Legend */}
-        <div style={{ position: 'absolute', bottom: '25px', right: '30px', zIndex: 10, display: 'flex', gap: '20px', background: 'rgba(0,0,0,0.5)', padding: '10px 25px', borderRadius: '40px', border: '1px solid var(--border)', backdropFilter: 'blur(10px)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 10px var(--primary)' }}></div>
-            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)' }}>Core Intelligence</span>
+        <div style={{ position: "absolute", bottom: 30, right: selected ? 420 : 30, zIndex: 15, background: "rgba(5, 8, 18, 0.9)", backdropFilter: "blur(10px)", border: `1px solid var(--border)`, borderRadius: 12, padding: "15px 25px", boxShadow: "0 0 40px rgba(0,0,0,0.5)", transition: "all 0.4s cubic-bezier(0.19, 1, 0.22, 1)", display: "flex", gap: "30px", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: "800", textTransform: "uppercase", letterSpacing: '1px', marginBottom: '4px' }}>CORE_ENGINES</div>
+            <div style={{ fontSize: "22px", fontWeight: "900", color: "var(--primary)", textShadow: '0 0 10px var(--primary)' }}>{nodes.filter(n => n.type === 'core').length}</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 10px #f59e0b' }}></div>
-            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)' }}>Pillar Cluster</span>
+          <div style={{ width: "1px", height: "35px", background: "rgba(255,255,255,0.1)" }} />
+          <div>
+            <div style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: "800", textTransform: "uppercase", letterSpacing: '1px', marginBottom: '4px' }}>PILLAR_MODULES</div>
+            <div style={{ fontSize: "22px", fontWeight: "900", color: "#f59e0b", textShadow: '0 0 10px #f59e0b66' }}>{nodes.filter(n => n.type === 'pilar').length}</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399' }}></div>
-            <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.7)' }}>Deep Concept</span>
+          <div style={{ width: "1px", height: "35px", background: "rgba(255,255,255,0.1)" }} />
+          <div>
+            <div style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: "800", textTransform: "uppercase", letterSpacing: '1px', marginBottom: '4px' }}>TOTAL_CONCEPTS</div>
+            <div style={{ fontSize: "22px", fontWeight: "900", color: "#34d399", textShadow: '0 0 10px #34d39966' }}>{nodes.length}</div>
           </div>
         </div>
-
-        <div style={{ height: '100%', width: '100%' }}>
-          <svg width="100%" height="100%" viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`} style={{ background: 'radial-gradient(circle at center, #0a0e1a 0%, #02040a 100%)' }}>
+        <div ref={containerRef} style={{ height: '100%', width: '100%', position: "relative" }} onClick={() => setSelected(null)}>
+          <svg width={dims.w} height={dims.h} style={{ background: 'radial-gradient(circle at center, #0a0e1a 0%, #010101 100%)' }}>
             <defs>
-              <filter id="neon-glow" x="-100%" y="-100%" width="300%" height="300%">
-                <feGaussianBlur stdDeviation="4" result="blur" />
+              <filter id="floseGlow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="5" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
             </defs>
-
-            {/* Radiant Circles */}
-            <circle cx="600" cy="400" r="180" fill="none" stroke="rgba(0,242,255,0.04)" strokeWidth="1" strokeDasharray="10 20" />
-            <circle cx="600" cy="400" r="350" fill="none" stroke="rgba(0,242,255,0.02)" strokeWidth="1" strokeDasharray="5 15" />
-
-            {/* Links - Highly Visible Neon */}
-            {links.map((link, i) => {
-              const sId = typeof link.source === 'object' ? link.source.id : link.source;
-              const tId = typeof link.target === 'object' ? link.target.id : link.target;
-              const s = pos[sId];
-              const t = pos[tId];
-              if (!s || !t) return null;
-              
-              const isHigh = hoveredNode && (hoveredNode.id === sId || hoveredNode.id === tId);
-              
-              return (
-                <g key={`l-grp-${i}`}>
-                   <line 
-                    x1={s.x} y1={s.y} x2={t.x} y2={t.y} 
-                    stroke="var(--primary)" 
-                    strokeOpacity={isHigh ? 0.7 : 0.08} 
-                    strokeWidth={isHigh ? 3 : 1.5} 
-                    filter={isHigh ? "url(#neon-glow)" : ""}
-                    style={{ transition: 'all 0.4s ease' }}
-                  />
-                </g>
-              );
+            {filterType === "all" && nodes.filter(n => n.type === 'pilar').map(pnode => {
+              const p = getP(pnode.id);
+              return <circle key={`cluster-${pnode.id}`} cx={p.x} cy={p.y} r={120} fill="none" stroke="#f59e0b" strokeWidth={0.5} strokeDasharray="5,10" opacity={0.15} />;
             })}
-
-            {/* Nodes */}
-            {nodes.map(node => {
-              const p = pos[node.id];
-              if (!p) return null;
-              
-              const isCore = node.type === 'core';
-              const isPilar = node.type === 'pilar';
-              const isSel = selectedNode && selectedNode.id === node.id;
-              const isHov = hoveredNode && hoveredNode.id === node.id;
-              
-              // CRITICAL FIX: Only show labels for Core & Pillars by default to avoid mess
-              const showLabel = isCore || isPilar || isHov || isSel;
-
+            {visLinks.map((l, i) => {
+              const sId = typeof l.source === 'object' ? l.source.id : l.source;
+              const tId = typeof l.target === 'object' ? l.target.id : l.target;
+              const sp = getP(sId), tp = getP(tId);
+              if (!sp || !tp) return null;
+              const isAct = activeLinks.includes(l);
+              return <line key={`l-${i}`} x1={sp.x} y1={sp.y} x2={tp.x} y2={tp.y} stroke={isAct ? "var(--primary)" : "rgba(255,255,255,0.06)"} strokeWidth={isAct ? 2 : 1} filter={isAct ? "url(#floseGlow)" : ""} style={{ transition: "all 0.3s" }} />;
+            })}
+            {visNodes.map(n => {
+              const p = getP(n.id); if (!p) return null;
+              const isSel = selected?.id === n.id, isHov = hovered?.id === n.id;
+              const isDim = activeNode && !activeIds.has(n.id) && activeNode.id !== n.id;
+              const radius = n.type === 'core' ? 35 : (n.type === 'pilar' ? 20 : 10);
+              const col = n.type === 'core' ? "var(--primary)" : (n.type === 'pilar' ? "var(--secondary)" : "var(--accent)");
               return (
-                <g 
-                  key={node.id} 
-                  transform={`translate(${p.x}, ${p.y})`} 
-                  className={`graph-node ${isCore ? 'core' : ''}`}
-                  onMouseEnter={() => setHoveredNode(node)} 
-                  onMouseLeave={() => setHoveredNode(null)} 
-                  onClick={() => setSelectedNode(node)}
-                >
-                  {/* Node Body with Glow */}
-                  <circle 
-                    r={isCore ? 30 : (isPilar ? 15 : 7)} 
-                    fill={isCore ? 'var(--primary)' : (isPilar ? '#f59e0b' : '#34d399')}
-                    fillOpacity={isHov || isSel ? 1 : 0.8}
-                    stroke={isSel ? '#fff' : (isHov ? 'var(--primary)' : 'rgba(255,255,255,0.05)')}
-                    strokeWidth={isSel || isHov ? 3 : 1}
-                    filter={isCore || isHov || isSel ? "url(#neon-glow)" : ""}
-                    style={{ transition: 'all 0.3s' }}
-                  />
-
-                  {/* Hierarchical Label Rendering */}
-                  {showLabel && (
-                    <g transform={`translate(0, ${isCore ? 50 : 30})`}>
-                      <text 
-                        textAnchor="middle" 
-                        fill={isCore ? 'var(--primary)' : (isPilar ? '#f59e0b' : '#fff')} 
-                        fontSize={isCore ? "16" : (isPilar ? "12" : "10")} 
-                        style={{ 
-                          fontWeight: isCore ? 900 : 700, 
-                          pointerEvents: 'none',
-                          textShadow: '0 0 10px rgba(0,0,0,0.9)',
-                          letterSpacing: isCore ? '2px' : '1px'
-                        }}
-                      >
-                        {node.id.toUpperCase()}
-                      </text>
-                    </g>
-                  )}
+                <g key={n.id} transform={`translate(${p.x},${p.y})`} style={{ cursor: "grab" }} onMouseDown={ev => onMD(ev, n.id)} onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(null)} onClick={ev => { ev.stopPropagation(); setSelected(n); }}>
+                  {(isSel || isHov) && <circle r={radius + 8} fill="none" stroke={col} strokeWidth={2} strokeDasharray="4,4" opacity={0.6} filter="url(#floseGlow)" className="rotate" />}
+                  {(n.type === 'core' || isSel || isHov) && <circle r={radius + 5} fill={col} opacity={isDim ? 0.05 : 0.15} filter="url(#floseGlow)" />}
+                  <circle r={radius} fill={isDim ? "rgba(255,255,255,0.05)" : (isSel || isHov ? col : "rgba(10,14,26,0.9)")} stroke={col} strokeWidth={isSel ? 3 : 1.5} style={{ transition: "all 0.2s" }} />
+                  {(n.type !== 'concept' || isSel || isHov) && !isDim && <text y={radius + 20} textAnchor="middle" fontSize={radius < 15 ? 9 : 11} fill={isSel || isHov ? "#fff" : "rgba(255,255,255,0.6)"} fontWeight={isSel ? 900 : 700} style={{ pointerEvents: "none", userSelect: "none" }}>{n.id.toUpperCase()}</text>}
                 </g>
               );
             })}
           </svg>
-          
-          {/* Detail Overlay */}
-          {selectedNode && (
-            <div className="glass-card" style={{ position: 'absolute', bottom: '30px', left: '30px', width: '380px', zIndex: 20, background: 'rgba(5, 8, 18, 0.98)', border: '1px solid var(--primary)', padding: '30px', boxShadow: '0 0 50px rgba(0,242,255,0.2)', animation: 'slideUp 0.3s' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '3px' }}>NEURAL_NODE_DATA</span>
-                <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
-              </div>
-              <h3 style={{ color: 'white', fontSize: '1.6rem', marginBottom: '15px' }}>{selectedNode.id}</h3>
-              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '20px', borderRadius: '15px', marginBottom: '25px', borderLeft: '4px solid var(--primary)' }}>
-                <p style={{ color: '#eee', fontSize: '0.9rem', lineHeight: '1.7' }}>
-                  {selectedNode.type === 'core' ? 'Primary Nexus. Managing all cognitive orchestration and decentralized agent coordination.' : 
-                   selectedNode.type === 'pilar' ? 'Thematic Cluster. Higher order organization of related technical concepts and logic vectors.' : 
-                   'Knowledge Concept. Atomic intelligence unit validated through recursive system interactions.'}
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: '15px' }}>
-                <span className="badge" style={{ background: 'rgba(0,255,128,0.1)', color: '#00ff80', border: '1px solid rgba(0,255,128,0.3)', padding: '5px 15px' }}>HEALTH: ACTIVE</span>
-                <span className="badge" style={{ background: 'rgba(0,242,255,0.1)', color: 'var(--primary)', border: '1px solid rgba(0,242,255,0.3)', padding: '5px 15px' }}>TYPE: {selectedNode.type.toUpperCase()}</span>
-              </div>
+
+          {/* Legend Card (Jamef Style) */}
+          <div style={{ position: "absolute", bottom: 24, left: 24, background: "rgba(5, 8, 18, 0.8)", backdropFilter: "blur(10px)", border: `1px solid var(--border)`, borderRadius: 12, padding: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", minWidth: "160px", zIndex: 15 }}>
+            <div style={{ color: "var(--primary)", fontSize: 10, fontWeight: 900, marginBottom: 12, borderBottom: `2px solid var(--primary)`, display: "inline-block", letterSpacing: '1px' }}>SYSTEM_MAP_LEGEND</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--primary)", boxShadow: "0 0 10px var(--primary)" }} />
+              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 9, fontWeight: 800 }}>CORE_ENGINE</span>
             </div>
-          )}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--secondary)", boxShadow: "0 0 10px var(--secondary)" }} />
+              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 9, fontWeight: 800 }}>PILLAR_CLUSTER</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--accent)", boxShadow: "0 0 10px var(--accent)" }} />
+              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 9, fontWeight: 800 }}>DEEP_CONCEPT</span>
+            </div>
+          </div>
+
+          <div style={{ position: "absolute", top: 0, right: 0, width: selected ? 400 : 0, height: '100%', background: "rgba(2,4,10,0.95)", borderLeft: `1px solid var(--border)`, overflow: "hidden", transition: "width .4s cubic-bezier(0.19, 1, 0.22, 1)", display: "flex", flexDirection: "column", boxShadow: "-20px 0 50px rgba(0,0,0,0.8)", zIndex: 100, backdropFilter: 'blur(20px)' }}>
+            {selected && (
+              <div style={{ padding: 40, overflowY: "auto", flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30 }}>
+                  <div>
+                    <div style={{ color: "var(--primary)", fontSize: "0.6rem", fontWeight: "900", letterSpacing: '5px', marginBottom: "10px" }}>NEURAL_NODE_ID: {selected.type === 'core' ? '0XFF' : '0XBC'}</div>
+                    <h2 style={{ color: "#fff", fontSize: "2rem", fontWeight: "900", lineHeight: 1.1 }}>{selected.id.toUpperCase()}</h2>
+                  </div>
+                  <button onClick={() => setSelected(null)} style={{ background: "rgba(255,255,255,0.05)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", cursor: "pointer" }}>✕</button>
+                </div>
+                <div style={{ background: "rgba(0,242,255,0.03)", border: "1px solid var(--border)", borderRadius: 12, padding: 25, marginBottom: 30, borderLeft: '4px solid var(--primary)' }}>
+                  <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.95rem", lineHeight: 1.6 }}>{selected.type === 'core' ? 'Primary Nexus. Managing all cognitive orchestration and coordination.' : selected.type === 'pilar' ? 'Thematic Cluster. Higher order organization of related modules.' : 'Deep Intelligence Concept. Atomic memory unit validated by system.'}</p>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: '1fr 1fr', gap: 15, marginBottom: 30 }}>
+                  <div style={{ border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 12, padding: 15, background: 'rgba(255,255,255,0.02)' }}>
+                    <div style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)", fontWeight: "800", marginBottom: '5px' }}>HEALTH</div>
+                    <div style={{ fontSize: "1rem", fontWeight: "900", color: "#00ff80" }}>100% ONLINE</div>
+                  </div>
+                  <div style={{ border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 12, padding: 15, background: 'rgba(255,255,255,0.02)' }}>
+                    <div style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)", fontWeight: "800", marginBottom: '5px' }}>LATENCY</div>
+                    <div style={{ fontSize: "1rem", fontWeight: "900", color: "var(--primary)" }}>24MS</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", fontWeight: "900", letterSpacing: '2px', marginBottom: "15px", borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>CONNECTED_NODES ({activeLinks.length})</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {activeLinks.map((l, idx) => {
+                    const otherId = (typeof l.source === 'object' ? l.source.id : l.source) === selected.id ? (typeof l.target === 'object' ? l.target.id : l.target) : (typeof l.source === 'object' ? l.source.id : l.source);
+                    return <div key={idx} onClick={() => setSelected(nodes.find(n => n.id === otherId))} style={{ padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}><div style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '700' }}>{otherId}</div></div>;
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -764,7 +852,7 @@ function App() {
                   </div>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minHeight: '40px' }}>{tpl.purpose}</p>
                   
-                  <NapkinVisual visualId={tpl.napkin_visual_id} />
+                  <NapkinVisual visualUrl={tpl.napkin_visual_url} />
 
                   <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>By {tpl.author}</span>
@@ -814,6 +902,74 @@ function App() {
             <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
               <span>API Request Volume</span>
               <span style={{ color: 'var(--primary)' }}>{stats.calls || 0} calls</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'Quality Inspector') {
+      const qaLogs = activity.filter(a => a.agent === 'QualityInspector' || (a.message && a.message.includes('QualityInspector')));
+      
+      return (
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px' }}>
+          <div className="glass-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+              <div>
+                <h2 className="title-grad" style={{ fontSize: '1.8rem' }}>QA & Audit Logs</h2>
+                <p style={{ color: 'var(--text-muted)' }}>Watch the QualityInspector enforce rules and debate with other agents.</p>
+              </div>
+              <button 
+                onClick={handleQAAutoFix} 
+                disabled={isFixing}
+                className="login-button" 
+                style={{ width: 'auto', padding: '10px 25px', background: 'var(--primary)', boxShadow: '0 0 15px var(--primary-glow)' }}
+              >
+                {isFixing ? '🌀 ANALYZING...' : '⚡ AUTO-FIX BACKLOG'}
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+              {qaLogs.length > 0 ? qaLogs.map((log, idx) => (
+                <div key={idx} style={{ background: 'rgba(255,0,0,0.05)', padding: '20px', borderRadius: '12px', borderLeft: '4px solid #ff4d4d' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <span style={{ fontWeight: 'bold', color: '#ff4d4d' }}>🚨 QualityInspector Request</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{new Date(log.timestamp).toLocaleString()}</span>
+                  </div>
+                  <p style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>{log.message}</p>
+                </div>
+              )) : (
+                <div style={{ textAlign: 'center', padding: '50px', opacity: 0.5 }}>
+                  <h3>No Quality Inspector Interventions Yet</h3>
+                  <p style={{ fontSize: '0.8rem', marginTop: '10px' }}>The system is currently operating within expected parameters.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="glass-card">
+            <h3 style={{ marginBottom: '20px' }}>System Health</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div style={{ padding: '15px', background: 'var(--glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>REJECTIONS</p>
+                <p style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#ff4d4d' }}>{qaLogs.length}</p>
+              </div>
+              <div style={{ padding: '15px', background: 'var(--glass)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>PASS RATE</p>
+                <p style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#00ff80' }}>
+                  {qaLogs.length === 0 ? '100%' : `${Math.max(10, 100 - qaLogs.length * 5)}%`}
+                </p>
+              </div>
+            </div>
+            
+            <div style={{ marginTop: '30px' }}>
+              <h4 style={{ marginBottom: '15px', color: 'var(--primary)', fontSize: '0.9rem' }}>Current Directives:</h4>
+              <ul style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <li>✔️ Prevent agents from closing empty tasks</li>
+                <li>✔️ Force Terraform plan verification</li>
+                <li>✔️ Ensure cost explanations in FinOps</li>
+                <li>✔️ Debate unnecessary allocations</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -885,7 +1041,7 @@ function App() {
         </div>
         
         <nav className="nav-menu">
-          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'FinOps Guardian', 'Settings'].map(tab => (
+          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'FinOps Guardian', 'Settings'].map(tab => (
             <div 
               key={tab}
               className={`nav-item ${activeTab === tab ? 'active' : ''}`}

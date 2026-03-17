@@ -1,4 +1,3 @@
-import json
 import os
 
 class AgentMarketplace:
@@ -13,22 +12,24 @@ class AgentMarketplace:
             return None
         
         # 1. Gerar Visual via Napkin AI
-        from src.utils.napkin_client import NapkinClient
-        napkin = NapkinClient(api_key=os.getenv("NAPKIN_API_KEY"))
-        
-        content_for_visual = f"Agent: {agent_data['agent_name']}\nPurpose: {agent_data['purpose']}\nFeatures: {agent_data['system_prompt'][:500]}"
-        visual_res = await napkin.generate_visual(content_for_visual)
-        visual_id = visual_res.get("id") if visual_res else None
+        napkin_visual_url = None
+        try:
+            from src.utils.napkin_client import NapkinClient
+            napkin = NapkinClient()
+            content_for_visual = f"Agent: {agent_data['agent_name']}. Purpose: {agent_data['purpose']}. {agent_data['system_prompt'][:400]}"
+            napkin_visual_url = await napkin.generate_and_return_url(content_for_visual)
+        except Exception as e:
+            print(f"Napkin visual generation failed: {e}")
 
-        # Limpa métricas privadas antes de exportar
+        # 2. Limpa métricas privadas antes de exportar
         template = {
             "name": agent_data["agent_name"],
             "purpose": agent_data["purpose"],
             "system_prompt": agent_data["system_prompt"],
-            "tools": agent_data["tools"],
+            "tools": agent_data.get("tools", []),
             "avatar": agent_data.get("avatar"),
             "author": "Flose Community",
-            "napkin_visual_id": visual_id
+            "napkin_visual_url": napkin_visual_url  # URL pública do diagrama SVG
         }
         
         filename = f"{self.market_path}{agent_name.lower()}_template.json"
@@ -36,23 +37,23 @@ class AgentMarketplace:
         return filename
 
     def list_templates(self):
-        """Lista templates disponíveis no marketplace."""
-        files = self.gcs.list_files(self.market_path)
-        templates = []
-        for f in files:
-            # Note: list_files returns full path
-            # We need to extract the part after users/id/ to call read_json correctly if using multi-tenancy
-            # But the marketplace might be global? 
-            # The prompt says: "marketplace/templates/". 
-            # If GCSClient prefixes everything with users/fflose/, then marketplace will be per-user unless handled.
-            # I'll assume for now it's per-user as per the GCSClient change.
-            path_in_user = f.replace(f"users/{self.gcs.user_id}/", "")
-            data = self.gcs.read_json(path_in_user)
-            if data:
-                templates.append(data)
-        return templates
+        """Lista todos os templates disponíveis no Marketplace."""
+        try:
+            import json
+            blobs = self.gcs.bucket.list_blobs(prefix=self._full_market_path())
+            templates = []
+            for blob in blobs:
+                if blob.name.endswith('_template.json'):
+                    content = blob.download_as_text()
+                    data = json.loads(content)
+                    if data:
+                        templates.append(data)
+            return templates
+        except Exception as e:
+            print(f"Error listing templates: {e}")
+            return []
 
-    def import_template(self, template_name: str):
-        """Cria um novo agente a partir de um template."""
-        # TODO: Implementar busca por nome de arquivo se necessário
-        pass
+    def _full_market_path(self):
+        """Retorna o path completo incluindo o user namespace."""
+        return f"users/{self.gcs.user_id}/{self.market_path}"
+

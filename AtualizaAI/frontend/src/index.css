@@ -229,3 +229,12 @@ body {
   height: fit-content;
   border-left: 1px solid var(--border);
 }
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.rotate {
+  transform-origin: center;
+  animation: rotate 10s linear infinite;
+}

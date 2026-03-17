@@ -1,19 +1,66 @@
-.venv/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.venv/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Data & Storage
+tmp_vectors/
+*.json
+!global_graph.json
+!package.json
+!package-lock.json
+*.yaml
+!service_desc.yaml
+*.txt
+!requirements.txt
+!DOCUMENTACAO_COMPLETA.md
+*.svg
 *.log
 *.tmp
 .env
-brain/
+
+# Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# GCP & Tools
+.gcloud/
 .agents/
 .agent/
 .gemini/
-*.jpg
-*.png
-*.zip
-*.tgz
-*.gz
-dist/
-build/
+brain/
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# OS & IDE
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Project specific
+scripts_aux/
+test_*.py
+tmp_*.py
