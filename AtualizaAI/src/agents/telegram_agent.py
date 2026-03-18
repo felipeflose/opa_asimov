@@ -165,6 +165,7 @@ class TelegramAgent:
             if action == "respond":
                 response = decision.get("response", "Processado com sucesso.")
                 await self.safe_reply(update, f"💬 {response}")
+                result = response
             
             elif action == "create_agent":
                 result = self.orchestrator.execute_decision(decision)
@@ -181,17 +182,15 @@ class TelegramAgent:
                 await self.safe_reply(update, f"⚙️ {result}")
             
             # --- NOVO: Auto-Renderização de Diagramas ---
-            # Se a resposta contiver Mermaid, gera a imagem visual automaticamente
-            if "```mermaid" in result:
+            if isinstance(result, str) and "```mermaid" in result:
                 import re
                 mermaid_match = re.search(r"```mermaid\s*(.*?)\s*```", result, re.DOTALL)
                 if mermaid_match:
                     mermaid_content = mermaid_match.group(1).strip()
                     self.log(f"Diagrama Mermaid detectado na resposta. Acionando Napkin...")
-                    # Pequeno delay para a mensagem de texto chegar primeiro
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(1) # Delay para mensagem chegar primeiro no TG
                     await self._handle_napkin_request(update, mermaid_content)
-            
+
             # Sincroniza o log final (com a decisão) no GCS
             if self.gcs_client:
                 filename_final = f"logs/telegram/decision_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.json"
