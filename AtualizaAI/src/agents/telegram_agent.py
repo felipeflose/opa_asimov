@@ -208,10 +208,20 @@ class TelegramAgent:
                     }
                 )
         except Exception as e:
-            error_msg = f"Erro no message_handler: {str(e)}"
+            import traceback
+            error_details = traceback.format_exc()
+            error_msg = f"Erro no message_handler: {str(e)}\n{error_details}"
             self.log(error_msg)
+            print(f"CRITICAL ERROR: {error_msg}")
+            
+            # Detectar falta de saldo/tokens (Erro 429 ResourceExhausted)
+            if "ResourceExhausted" in str(e) or "spending cap" in str(e) or "429" in str(e):
+                user_friendly_error = "🛑 **Saldo Insuficiente / Cota Excedida**\n\nNossos tokens (ou orçamento do GCP) acabaram para este ciclo ou o projeto atingiu o teto de faturamento. Por favor, verifique o Console Billing do GCP."
+            else:
+                user_friendly_error = "⚠️ Tive um problema interno técnico. Tente novamente."
+
             try:
-                await self.safe_reply(update, f"⚠️ Tive um problema interno. Tente novamente.")
+                await self.safe_reply(update, user_friendly_error)
             except:
                 pass
 

@@ -30,7 +30,8 @@ async def get_tg_agent():
         project_id = os.getenv("GCP_PROJECT_ID")
         bucket_name = f"flose-ai-platform-{project_id}"
         gcs = GCSClient(bucket_name, project_id=project_id)
-        orchestrator = CognitiveOrchestrator(gcs_client=gcs)
+        finops = FinOpsManager(gcs_client=gcs)
+        orchestrator = CognitiveOrchestrator(gcs_client=gcs, finops_manager=finops)
         kg = KnowledgeGraphManager(gcs_client=gcs)
         vision = VisionAgent(gcs_client=gcs)
         audio = AudioAgent(gcs_client=gcs)

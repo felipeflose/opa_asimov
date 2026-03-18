@@ -151,7 +151,7 @@ class CognitiveOrchestrator:
           "knowledge_graph_update": ["conceito"],
           "demand_info": {"type": "tarefa", "title": "...", "responsible": "...", "priority": "..."},
           "new_agent_config": {"agent_name": "...", "purpose": "...", "system_prompt": "..."},
-          "task_description": "comando para o especialista",
+          " task_description": "comando para o especialista",
           "response": "confirmação curta para o usuário"
         }
 
@@ -161,6 +161,7 @@ class CognitiveOrchestrator:
         - Se o usuário pedir para criar ou editar um agente via Telegram, FAÇA-O IMEDIATAMENTE.
         - ⚠️ REGRA CRÍTICA: O campo "response" JAMAIS pode ter mais de 4 frases. Seja DIRETO e CONCISO. Nunca use listas ou markdown. Apenas texto limpo e curto.
         - ⚠️ PROIBIÇÃO ABSOLUTA: Jamais use nomes de pessoas. Os agentes NÃO SÃO HUMANOS.
+        - ⚠️ VERDADE FINANCEIRA: Nunca invente números de custo. Use APENAS os dados fornecidos em 'FinOps State'. Se os dados não estiverem disponíveis, diga que está aguardando a atualização do pipeline.
         """
 
     def _sanitize_input(self, text: str) -> str:
@@ -212,8 +213,13 @@ class CognitiveOrchestrator:
         region = os.getenv("GCP_REGION", "us-central1")
         tg_bot = os.getenv("TELEGRAM_BOT_NAME", "Desativado")
         
-        # Simulation of FinOps data
-        finops_data = "Gasto Diário: $2.80 | Limite: $10.00 | Status: SEGURO"
+        # Fetch current state for real-time FinOps context
+        if self.finops:
+            finops_data = self.finops.get_finops_report()
+            # Log usage for the incoming input (simulation pre-call)
+            # A chamada real logará os tokens exatos depois
+        else:
+            finops_data = "Billing não configurado."
 
         agents = []
         demands = []
@@ -506,7 +512,13 @@ class CognitiveOrchestrator:
 
         elif action == "execute":
             agent_name = decision.get("agent_involved") or decision.get("agent_name", "Unknown")
-            task_desc = decision.get("task_description") or decision.get("reasoning", "Executar tarefa.")
+            
+            # Injeção de Contexto Real (FinOps) para o Especialista
+            finops_ctx = self.finops.get_finops_report() if self.finops else "N/A"
+            # Blindagem do prompt contra aspas que quebram o JSON do agente especialista (Fix Delimiter Error)
+            finops_ctx_clean = str(finops_ctx).replace('"', "'")
+            
+            task_desc = f"[FINOPS STATE: {finops_ctx_clean}]\n\n{decision.get('task_description') or decision.get('reasoning', 'Executar tarefa.')}"
             
             print(f"Delegating to agent: {agent_name}")
             
