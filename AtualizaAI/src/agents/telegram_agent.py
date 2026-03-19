@@ -77,8 +77,8 @@ class TelegramAgent:
             
             # 2. Custo do Dia
             cost_info = "Custo: Indisponível"
-            if hasattr(self.orchestrator, 'finops_manager'):
-                cost_info = self.orchestrator.finops_manager.get_finops_report()
+            if hasattr(self.orchestrator, 'finops'):
+                cost_info = self.orchestrator.finops.get_finops_report()
             
             # 3. Último Agente Executado
             last_agent = "Nenhum"
@@ -87,9 +87,14 @@ class TelegramAgent:
                 blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix))
                 if blobs:
                     blobs.sort(key=lambda x: x.updated, reverse=True)
-                    latest_log = self.gcs_client.read_json(blobs[0].name.replace(f"users/{self.gcs_client.user_id}/", ""))
-                    if latest_log:
-                        last_agent = latest_log.get("agent", "Unknown")
+                    for blob in blobs[:10]: # Tenta nos últimos 10 logs
+                        data = self.gcs_client.read_json(blob.name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                        if data and "agent" in data:
+                            last_agent = data["agent"]
+                            break
+                        elif data and "user" in data and data.get("type") == "diagram_gen":
+                            last_agent = f"DiagramAgent (via @{data['user']})"
+                            break
 
             status_msg = (
                 f"📊 *Status do Sistema*\n"

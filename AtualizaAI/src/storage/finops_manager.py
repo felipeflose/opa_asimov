@@ -79,3 +79,14 @@ class FinOpsManager:
                 data[today]["total_cost"] = data[today]["cost"] + infra_cost
             return data
         return {}
+
+    def get_finops_report(self):
+        """Retorna uma string sumarizada para o Telegram."""
+        summary = self.get_daily_summary()
+        today = datetime.now().strftime("%Y-%m-%d")
+        if today in summary:
+            data = summary[today]
+            cost = data.get("total_cost", data.get("cost", 0))
+            tokens = data.get("tokens", 0)
+            return f"Custo: ${cost:.2f} ({tokens/1000:.1f}k tokens)"
+        return "Custo: $0.00 (sem atividade hoje)"
