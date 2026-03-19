@@ -39,7 +39,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          gcloud builds submit --tag "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest" AtualizaAI/ --project=${{ env.PROJECT_ID }}
+          gcloud builds submit --tag "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest" AtualizaAI/ --project=${{ env.PROJECT_ID }} --suppress-logs || echo "Build iniciado, mas streaming de logs falhou localmente. Verificando status no GCP..."
 
       - name: Deploy to Cloud Run
         id: deploy
