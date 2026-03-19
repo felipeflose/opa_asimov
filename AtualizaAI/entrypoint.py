@@ -81,9 +81,9 @@ async def evolution_job():
 @app.post("/weekly_report")
 async def weekly_report():
     agent = await get_tg_agent()
-    from src.agents.report_agent import ReportAgent
-    r = ReportAgent(agent.gcs_client, agent.orchestrator)
-    await r.send_to_telegram()
+    from src.agents.weekly_report_agent import WeeklyReportAgent
+    r = WeeklyReportAgent(agent.gcs_client, agent.orchestrator)
+    await r.generate_and_send()
     return {"status": "ok"}
 
 @app.post("/api/auth")
