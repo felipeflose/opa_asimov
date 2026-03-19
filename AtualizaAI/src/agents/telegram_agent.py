@@ -62,6 +62,48 @@ class TelegramAgent:
         self.log(f"Comando /start recebido de @{user}")
         await update.message.reply_text("🤖 Flose AI Platform | Telegram Bridge ATIVO.\nEnvie um comando para o Orchestrator!")
 
+    async def status_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Retorna o status atual: tarefas, custo e último agente."""
+        try:
+            user = update.effective_user.username or update.effective_user.first_name
+            self.log(f"Comando /status recebido de @{user}")
+            
+            # 1. Tarefas Abertas
+            open_tasks = 0
+            if self.gcs_client:
+                registry = self.gcs_client.read_json("demands/registry.json")
+                if registry and "demands" in registry:
+                    open_tasks = len([t for t in registry["demands"] if t.get("status") in ["Aberto", "OPEN", "pending"]])
+            
+            # 2. Custo do Dia
+            cost_info = "Custo: Indisponível"
+            if hasattr(self.orchestrator, 'finops_manager'):
+                cost_info = self.orchestrator.finops_manager.get_finops_report()
+            
+            # 3. Último Agente Executado
+            last_agent = "Nenhum"
+            if self.gcs_client:
+                prefix = f"users/{self.gcs_client.user_id}/logs/executions/"
+                blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix))
+                if blobs:
+                    blobs.sort(key=lambda x: x.updated, reverse=True)
+                    latest_log = self.gcs_client.read_json(blobs[0].name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                    if latest_log:
+                        last_agent = latest_log.get("agent", "Unknown")
+
+            status_msg = (
+                f"📊 *Status do Sistema*\n"
+                f"📝 Tarefas Abertas: {open_tasks}\n"
+                f"💰 {cost_info}\n"
+                f"🤖 Último Agente: {last_agent}"
+            )
+            
+            await self.safe_reply(update, status_msg, parse_mode='Markdown')
+            
+        except Exception as e:
+            self.log(f"Erro no status_handler: {e}")
+            await self.safe_reply(update, "⚠️ Erro ao buscar o status.")
+
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             user = update.effective_user.username or update.effective_user.first_name
@@ -298,6 +340,7 @@ class TelegramAgent:
             .build()
         )
         self.application.add_handler(CommandHandler("start", self.start_handler))
+        self.application.add_handler(CommandHandler("status", self.status_handler))
         self.application.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.Document.IMAGE | filters.VOICE | filters.AUDIO, self.message_handler))
         self.application.add_error_handler(self.error_handler)
         
