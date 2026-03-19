@@ -79,25 +79,20 @@ Telegram ──► Cloud Run (FastAPI) ──► CognitiveOrchestrator (Gemini A
 | `NAPKIN_API_KEY` | Chave da API do Napkin AI (diagramas) | ❌ Opcional |
 | `PORT` | Porta do servidor FastAPI (default: 8080) | ❌ Opcional |
 
-> ⚠️ **NUNCA** commite valores reais no repositório. Use o Secret Manager do GCP ou um arquivo `.env` local (que está no `.gitignore`).
+> ⚠️ **NUNCA** commite valores reais no repositório. O Flose AI agora utiliza **GitHub Secrets** (`Settings > Secrets and variables > Actions`) para gerenciar as credenciais no deploy automatizado. Arquivos `.env` locais podem ser usados restritamente (estão no `.gitignore`).
 
 ---
 
 ## Deploy
 
-O projeto é deployado via Google Cloud Run usando o script:
+O projeto conta com uma esteira de integração e entrega contínua (**CI/CD**) gerida pelo **GitHub Actions**.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File deploy_gcp.ps1
-```
-
-O script automaticamente:
-1. Habilita APIs necessárias no GCP
-2. Configura os secrets no Secret Manager
-3. Faz o build do frontend (`npm run build`)
-4. Constrói e publica a imagem Docker no Artifact Registry
-5. Deploya no Cloud Run com variáveis de ambiente configuradas
-6. Configura o webhook do Telegram para o novo endpoint
+Ao realizar um `git push` ou concluir um PR na branch `main`, o arquivo `deploy.yml` será acionado automaticamente e:
+1. Instala dependências e constrói o build do frontend (`npm run build`).
+2. Autentica no GCP usando a account de serviço registrada nos secrets do GitHub.
+3. Constrói e publica a imagem Docker no Artifact Registry (`gcloud builds submit`).
+4. Realiza o deploy da nova versão no Cloud Run com as variáveis de ambiente e injeta secrets no GCP Secret Manager a partir do GitHub.
+5. Configura e atualiza a URL do webhook do Telegram apontando para o novo Cloud Run.
 
 ---
 
@@ -139,7 +134,6 @@ Veja o arquivo [SECURITY.md](./SECURITY.md) para informações detalhadas sobre 
 | Script | Descrição |
 |--------|-----------|
 | `Atualiza_requirements.py` | Analisa imports do projeto e gera `requirements.txt` automaticamente |
-| `deploy_gcp.ps1` | Script completo de CI/CD para o GCP |
 | `scripts_aux/` | Scripts auxiliares de manutenção |
 
 ---
@@ -150,7 +144,6 @@ Veja o arquivo [SECURITY.md](./SECURITY.md) para informações detalhadas sobre 
 AtualizaAI/
 ├── entrypoint.py           # Servidor FastAPI + todos os endpoints da API
 ├── Dockerfile              # Container de produção
-├── deploy_gcp.ps1          # Script de deploy automatizado
 ├── requirements.txt        # Dependências Python
 ├── docs/                   # Documentação
 ├── frontend/               # React + Vite (Command Center)

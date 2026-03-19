@@ -13,9 +13,9 @@ Plataforma multi-agente de IA com orquestração via Gemini, deploy no Google Cl
 
 ## Quick Start
 
-```powershell
-# Deploy para produção (GCP)
-powershell -ExecutionPolicy Bypass -File AtualizaAI/deploy_gcp.ps1
+```node
+# O deploy para produção (GCP) agora é automatizado via GitHub Actions
+# Qualquer push ou PR merge na branch `main` disparatá a esteira de CI/CD.
 ```
 
 ## Stack
@@ -24,5 +24,5 @@ powershell -ExecutionPolicy Bypass -File AtualizaAI/deploy_gcp.ps1
 - **Frontend:** React + Vite
 - **AI:** Google Gemini API
 - **Storage:** Google Cloud Storage
-- **Deploy:** Cloud Run (GCP)
+- **Deploy:** Cloud Run (GCP) via GitHub Actions CI/CD
 - **Bot:** Telegram Webhook

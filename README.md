@@ -20,6 +20,12 @@ ao iniciar um dia de aula, fazer:
 
 .venv\Scripts\activate
 
+------------------
+
+## CI/CD Pipeline
+Este repositório está configurado com **GitHub Actions** para CI/CD automático.
+- Qualquer `push` ou `merge` na branch `main` dispara o deploy no **Google Cloud Run**.
+- O Webhook do Telegram é atualizado automaticamente na esteira de deploy.
 
 
 
