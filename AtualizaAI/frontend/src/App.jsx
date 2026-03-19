@@ -205,10 +205,18 @@ function App() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchData();
-      const interval = setInterval(fetchData, 30000); 
-      return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, activeTab]);
+
+  useEffect(() => {
+    let interval;
+    if (isAuthenticated && (activeTab === 'Dashboard' || activeTab === 'Task Manager')) {
+      interval = setInterval(fetchData, 30000); 
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isAuthenticated, activeTab]);
 
   const handleUpdateStatus = async (taskId, newStatus) => {
     try {
@@ -394,6 +402,7 @@ function App() {
     const dragOff = useRef({ x: 0, y: 0 });
     const posOverride = useRef({});
     const [, forceRender] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
     const [isSaved, setIsSaved] = useState(false);
 
     useEffect(() => {
@@ -438,14 +447,18 @@ function App() {
     }, []);
 
     const visNodes = filterType === "all" ? nodes : nodes.filter(n => n.type === filterType);
-    const visIds = new Set(visNodes.map(n => n.id));
+    const filteredNodes = searchTerm 
+      ? visNodes.filter(n => n.id.toLowerCase().includes(searchTerm.toLowerCase())) 
+      : visNodes;
+
+    const visIds = new Set(filteredNodes.map(n => n.id));
     const visLinks = links.filter(l => {
       const sId = typeof l.source === 'object' ? l.source.id : l.source;
       const tId = typeof l.target === 'object' ? l.target.id : l.target;
       return visIds.has(sId) && visIds.has(tId);
     });
 
-    const simPos = useForce(visNodes, visLinks, dims.w, dims.h);
+    const simPos = useForce(filteredNodes, visLinks, dims.w, dims.h);
     const getP = id => posOverride.current[id] || simPos[id] || { x: dims.w / 2, y: dims.h / 2 };
 
     const activeNode = selected || hovered;
@@ -496,7 +509,28 @@ function App() {
               <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>{visNodes.length} NODES_IN_VIEW</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '15px' }}>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <div style={{ position: 'relative' }}>
+              <input 
+                type="text" 
+                placeholder="SEARCH_COGNITIVE_NODE..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ 
+                  background: 'rgba(255,255,255,0.05)', 
+                  border: '1px solid rgba(0,242,255,0.3)', 
+                  borderRadius: '20px', 
+                  padding: '8px 20px', 
+                  color: 'white', 
+                  fontSize: '10px', 
+                  width: '200px',
+                  outline: 'none',
+                  transition: 'all 0.3s'
+                }}
+                onFocus={(e) => e.target.style.border = '1px solid var(--primary)'}
+              />
+              {searchTerm && <span onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '10px', opacity: 0.5 }}>✕</span>}
+            </div>
              <button onClick={handleSave} style={{ padding: "8px 16px", background: isSaved ? "var(--secondary)" : "rgba(255,255,255,0.05)", color: isSaved ? "#000" : "#fff", border: isSaved ? "none" : "1px solid var(--primary)", borderRadius: "4px", fontSize: "10px", fontWeight: "900", cursor: "pointer", transition: "all 0.3s" }}>
               {isSaved ? "LAYOUT_SAVED" : "SAVE_SNAPSHOT"}
             </button>
@@ -551,7 +585,8 @@ function App() {
               const isSel = selected?.id === n.id, isHov = hovered?.id === n.id;
               const isDim = activeNode && !activeIds.has(n.id) && activeNode.id !== n.id;
               const radius = n.type === 'core' ? 35 : (n.type === 'pilar' ? 20 : 10);
-              const col = n.type === 'core' ? "var(--primary)" : (n.type === 'pilar' ? "var(--secondary)" : "var(--accent)");
+              const isMatch = searchTerm && n.id.toLowerCase().includes(searchTerm.toLowerCase());
+              const col = isMatch ? "#ff00ff" : (n.type === 'core' ? "var(--primary)" : (n.type === 'pilar' ? "var(--secondary)" : "var(--accent)"));
               return (
                 <g key={n.id} transform={`translate(${p.x},${p.y})`} style={{ cursor: "grab" }} onMouseDown={ev => onMD(ev, n.id)} onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(null)} onClick={ev => { ev.stopPropagation(); setSelected(n); }}>
                   {(isSel || isHov) && <circle r={radius + 8} fill="none" stroke={col} strokeWidth={2} strokeDasharray="4,4" opacity={0.6} filter="url(#floseGlow)" className="rotate" />}
