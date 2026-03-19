@@ -217,6 +217,22 @@ function App() {
   };
 
   useEffect(() => {
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [isAuthenticated, activeTab]);
+
+  useEffect(() => {
+    let interval;
+    if (isAuthenticated && (activeTab === 'Dashboard' || activeTab === 'Task Manager')) {
+      interval = setInterval(fetchData, 30000); 
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isAuthenticated, activeTab]);
+
+  useEffect(() => {
     if (activeTab === 'Quality Inspector') {
       fetchQAReport();
     }
