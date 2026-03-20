@@ -76,6 +76,9 @@ class CognitiveOrchestrator:
         self.gcs_client = gcs_client
         self.finops = finops_manager
         
+        from src.storage.dora_manager import DoraManager
+        self.dora = DoraManager(gcs_client=gcs_client)
+        
         # Inicialização do VectorStore (Memória Semântica)
         self.vector_store = VectorStore(gcs_client=gcs_client)
         self.vector_store.load() # Tenta carregar do GCS
