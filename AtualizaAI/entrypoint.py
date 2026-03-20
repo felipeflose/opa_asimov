@@ -60,6 +60,75 @@ async def telegram_webhook(request: Request):
     print("✅ Processamento concluído. Retornando 200 OK.")
     return {"status": "ok"}
 
+@app.post("/broker_cycle")
+async def broker_cycle():
+    """Acionado pelo Cloud Scheduler à meia-noite. Executa o ciclo autônomo."""
+    agent = await get_tg_agent()
+    
+    from src.agents.token_budget_agent import TokenBudgetAgent
+    from src.agents.knowledge_broker_agent import KnowledgeBrokerAgent
+    
+    budget_agent = TokenBudgetAgent(gcs_client=agent.gcs_client)
+    agents_allowed = budget_agent.calculate_daily_agent_budget()
+    priority_queue = budget_agent.build_priority_queue()
+    budget_agent.log_budget_decision(agents_allowed, "Ciclo automático noturno")
+    
+    broker = KnowledgeBrokerAgent(
+        gcs_client=agent.gcs_client,
+        orchestrator=agent.orchestrator
+    )
+    await broker.run_certification_cycle(agent_budget=agents_allowed, priority_queue=priority_queue)
+    
+    return {"status": "ok", "agents_processed": agents_allowed}
+
+@app.get("/api/broker/status")
+async def get_broker_status(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    registry = gcs.read_json("agents/registry.json") or {"agents": []}
+    core_agents = ["FinOpsGuardian", "CognitiveOrchestrator", "VisionAgent", 
+                   "AudioAgent", "BriefingAgent", "ReportAgent", 
+                   "ProactiveAlertAgent", "EvolutionJob"]
+    
+    dynamic_agents = [
+        a for a in registry.get("agents", []) 
+        if a["agent_name"] not in core_agents
+    ]
+    
+    certified = [a for a in dynamic_agents if a.get("certified") == True]
+    failed = [a for a in dynamic_agents if a.get("certified") == False]
+    pending = [a for a in dynamic_agents if "certified" not in a]
+    
+    # Buscar último log de ciclo
+    last_cycle = None
+    try:
+        prefix = f"logs/broker/"
+        blobs = list(gcs.bucket.list_blobs(prefix=prefix))
+        cycle_blobs = [b for b in blobs if "cycle_" in b.name]
+        if cycle_blobs:
+            cycle_blobs.sort(key=lambda x: x.updated, reverse=True)
+            last_cycle = gcs.read_json(
+                cycle_blobs[0].name.replace(f"users/{gcs.user_id}/", "") if hasattr(gcs, 'user_id') else cycle_blobs[0].name
+            )
+    except:
+        pass
+    
+    return {
+        "summary": {
+            "total_dynamic": len(dynamic_agents),
+            "certified": len(certified),
+            "failed": len(failed),
+            "pending": len(pending)
+        },
+        "agents": dynamic_agents,
+        "last_cycle": last_cycle
+    }
+
 @app.post("/daily_briefing")
 async def daily_briefing():
     agent = await get_tg_agent()

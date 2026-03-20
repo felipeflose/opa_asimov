@@ -1,6 +1,107 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
+function BrokerDashboard({ token }) {
+    const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        fetch(`/api/broker/status?token=${token}`)
+            .then(r => r.json())
+            .then(d => { setData(d); setLoading(false); });
+    }, [token]);
+
+    if (loading) return <div className="p-8 text-center">🎓 Carregando Fila do Broker...</div>;
+
+    return (
+        <div className="p-8 space-y-8 animate-in fade-in duration-500">
+            <header className="flex justify-between items-center bg-gray-900/40 p-6 rounded-2xl border border-white/5">
+                <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent italic">🎓 Knowledge Broker</h1>
+                    <p className="text-gray-400">Curadoria e Certificação Autônoma de Agentes</p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="bg-gray-800/80 p-4 rounded-xl border border-white/5 text-center px-8">
+                      <div className="text-xs text-blue-400 uppercase font-bold tracking-widest">Aprovados</div>
+                      <div className="text-2xl font-mono text-white mt-1">{data.summary.certified}</div>
+                  </div>
+                  <div className="bg-gray-800/80 p-4 rounded-xl border border-white/5 text-center px-8">
+                      <div className="text-xs text-red-400 uppercase font-bold tracking-widest">Reprovados</div>
+                      <div className="text-2xl font-mono text-white mt-1">{data.summary.failed}</div>
+                  </div>
+                  <div className="bg-gray-800/80 p-4 rounded-xl border border-white/5 text-center px-8">
+                      <div className="text-xs text-yellow-500 uppercase font-bold tracking-widest">Fila</div>
+                      <div className="text-2xl font-mono text-white mt-1">{data.summary.pending}</div>
+                  </div>
+                </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 bg-gray-900/40 rounded-2xl border border-white/5 overflow-hidden">
+                    <div className="p-4 bg-white/5 font-bold flex justify-between">
+                        <span>Status de Certificação</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-white/5 text-gray-500 text-xs uppercase">
+                                <tr>
+                                    <th className="p-4">Agente</th>
+                                    <th className="p-4">Status</th>
+                                    <th className="p-4">Data</th>
+                                    <th className="p-4">Tries</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-sm">
+                                {data.agents.map(a => (
+                                    <tr key={a.agent_name} className="hover:bg-white/5 transition-colors">
+                                        <td className="p-4 flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-xs">
+                                                {a.agent_name[0]}
+                                            </div>
+                                            <span className="font-medium">{a.agent_name}</span>
+                                        </td>
+                                        <td className="p-4">
+                                            {a.certified ? 
+                                                <span className="text-emerald-400 flex items-center gap-1">✅ Certificado</span> : 
+                                                (a.certified === false ? <span className="text-red-400 flex items-center gap-1">❌ Reprovado</span> : <span className="text-gray-500">⏳ Pendente</span>)}
+                                        </td>
+                                        <td className="p-4 text-gray-500">{a.certified_at?.split('T')[0] || '-'}</td>
+                                        <td className="p-4 text-gray-500 font-mono">{a.certification_attempts || 0}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                    <div className="bg-gray-900/40 p-6 rounded-2xl border border-blue-500/20">
+                        <h3 className="text-blue-400 font-bold mb-4 flex items-center gap-2">🔄 Último Ciclo Autônomo</h3>
+                        {data.last_cycle ? (
+                            <div className="space-y-4">
+                                <div className="text-sm text-gray-300">
+                                    <div className="flex justify-between border-b border-white/5 py-2">
+                                        <span>Data:</span> <span>{data.last_cycle.timestamp.split('T')[0]}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b border-white/5 py-2">
+                                        <span>Tokens Usados:</span> <span className="text-yellow-500 font-mono">{data.last_cycle.tokens_used_estimate}</span>
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-black/40 rounded-lg text-xs font-mono text-emerald-400 border border-emerald-500/20">
+                                    ✨ {data.last_cycle.certified.length} agentes certificados
+                                </div>
+                                <div className="p-3 bg-black/40 rounded-lg text-xs font-mono text-red-400 border border-red-500/20">
+                                    🛠️ {data.last_cycle.failed.length} melhorias geradas
+                                </div>
+                            </div>
+                        ) : <p className="text-gray-500 text-sm italic">Nenhum ciclo registrado ainda.</p>}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('flose_token'));
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
@@ -1566,7 +1667,7 @@ function App() {
         </div>
         
         <nav className="nav-menu">
-          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'FinOps Guardian', 'DORA Metrics', 'Settings'].map(tab => (
+          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'Broker', 'FinOps Guardian', 'DORA Metrics', 'Settings'].map(tab => (
             <div 
               key={tab}
               className={`nav-item ${activeTab === tab ? 'active' : ''}`}
