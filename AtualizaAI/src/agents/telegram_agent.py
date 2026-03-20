@@ -62,6 +62,28 @@ class TelegramAgent:
         self.log(f"Comando /start recebido de @{user}")
         await update.message.reply_text("🤖 Flose AI Platform | Telegram Bridge ATIVO.\nEnvie um comando para o Orchestrator!")
 
+    async def dora_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Retorna o resumo das métricas DORA."""
+        try:
+            user = update.effective_user.username or update.effective_user.first_name
+            self.log(f"Comando /dora recebido de @{user}")
+            
+            summary = "Métricas DORA indisponíveis."
+            if hasattr(self.orchestrator, 'dora'):
+                data = self.orchestrator.dora.get_metrics_summary()
+                summary = (
+                    f"📈 *Engineering Metrics (DORA)*\n\n"
+                    f"🚀 *Deploy Freq:* {data.get('deployment_frequency')}\n"
+                    f"⏱️ *Lead Time:* {data.get('lead_time')}\n"
+                    f"⚠️ *Failure Rate:* {data.get('change_failure_rate')}\n"
+                    f"🔧 *MTTR:* {data.get('mttr')}"
+                )
+            
+            await self.safe_reply(update, summary, parse_mode='Markdown')
+        except Exception as e:
+            self.log(f"Erro no dora_handler: {e}")
+            await self.safe_reply(update, "⚠️ Erro ao buscar as métricas DORA.")
+
     async def status_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Retorna o status atual: tarefas, custo e último agente."""
         try:
@@ -77,8 +99,8 @@ class TelegramAgent:
             
             # 2. Custo do Dia
             cost_info = "Custo: Indisponível"
-            if hasattr(self.orchestrator, 'finops_manager'):
-                cost_info = self.orchestrator.finops_manager.get_finops_report()
+            if hasattr(self.orchestrator, 'finops'):
+                cost_info = self.orchestrator.finops.get_finops_report()
             
             # 3. Último Agente Executado
             last_agent = "Nenhum"
@@ -87,9 +109,14 @@ class TelegramAgent:
                 blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix))
                 if blobs:
                     blobs.sort(key=lambda x: x.updated, reverse=True)
-                    latest_log = self.gcs_client.read_json(blobs[0].name.replace(f"users/{self.gcs_client.user_id}/", ""))
-                    if latest_log:
-                        last_agent = latest_log.get("agent", "Unknown")
+                    for blob in blobs[:10]: # Tenta nos últimos 10 logs
+                        data = self.gcs_client.read_json(blob.name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                        if data and "agent" in data:
+                            last_agent = data["agent"]
+                            break
+                        elif data and "user" in data and data.get("type") == "diagram_gen":
+                            last_agent = f"DiagramAgent (via @{data['user']})"
+                            break
 
             status_msg = (
                 f"📊 *Status do Sistema*\n"
@@ -341,6 +368,7 @@ class TelegramAgent:
         )
         self.application.add_handler(CommandHandler("start", self.start_handler))
         self.application.add_handler(CommandHandler("status", self.status_handler))
+        self.application.add_handler(CommandHandler("dora", self.dora_handler))
         self.application.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.Document.IMAGE | filters.VOICE | filters.AUDIO, self.message_handler))
         self.application.add_error_handler(self.error_handler)
         

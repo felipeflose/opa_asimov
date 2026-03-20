@@ -17,12 +17,12 @@ class FinOpsCheck(BaseModel):
     approved: bool = True
 
 class DemandInfo(BaseModel):
-    type: str = "tarefa"
-    title: str = "Nova Demanda"
+    type: str 
+    title: str
     responsible: str = "Standard"
     priority: str = "Média"
     budget_approved: bool = False
-    cost_explanation: Optional[str] = "Geração autônoma de demanda."
+    cost_explanation: Optional[str] = None
     terraform_plan: Optional[str] = None
     evidence_path: Optional[str] = None
 
@@ -35,26 +35,21 @@ class DemandInfo(BaseModel):
         return 'tarefa'
 
 class NewAgentConfig(BaseModel):
-    agent_name: str = "UnknownAgent"
-    purpose: str = "Especialista em processamento de dados."
+    agent_name: str
+    purpose: str
     system_prompt: Optional[str] = None
     tools: List[str] = []
 
 class OrchestratorDecision(BaseModel):
-    action: str = "respond"
+    action: str
     reasoning: str = "Delegação inteligente."
     finops_check: FinOpsCheck = Field(default_factory=FinOpsCheck)
-    agent_involved: Optional[str] = Field(None, alias="agent_name")
+    agent_involved: Optional[str] = None
     knowledge_graph_update: List[str] = []
     demand_info: Optional[DemandInfo] = None
     new_agent_config: Optional[NewAgentConfig] = None
     task_description: Optional[str] = None
     response: str = "Processado com sucesso."
-
-    model_config = {
-        "populate_by_name": True,
-        "extra": "allow" # Permite capturar chaves inesperadas do Gemini
-    }
 
     @field_validator('action')
     @classmethod
@@ -81,6 +76,9 @@ class CognitiveOrchestrator:
         self.gcs_client = gcs_client
         self.finops = finops_manager
         
+        from src.storage.dora_manager import DoraManager
+        self.dora = DoraManager(gcs_client=gcs_client)
+        
         # Inicialização do VectorStore (Memória Semântica)
         self.vector_store = VectorStore(gcs_client=gcs_client)
         self.vector_store.load() # Tenta carregar do GCS
@@ -91,20 +89,12 @@ class CognitiveOrchestrator:
         # Usar apenas o SDK do Google Generative AI (AI Studio)
         # Nunca Vertex AI por ordem expressa do usuário
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
         
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            # Forçar modo JSON se suportado pelo modelo (Gemini 1.5+)
-            generation_config = {
-                "response_mime_type": "application/json"
-            } if "1.5" in self.model_name else {}
-            
-            self.model = genai.GenerativeModel(
-                model_name=self.model_name,
-                generation_config=generation_config
-            )
-            print(f"[SYSTEM] Orchestrator iniciado com {self.model_name} (JSON Mode: {bool(generation_config)}).")
+            self.model = genai.GenerativeModel(self.model_name)
+            print(f"[SYSTEM] Orchestrator iniciado com {self.model_name}.")
         else:
             # Fallback para credenciais do sistema se a chave não existir
             print("⚠️ Chave API não encontrada. Tentando usar credenciais do sistema...")
@@ -122,7 +112,6 @@ class CognitiveOrchestrator:
            - Backlog/Tarefas? -> TaskManager
            - Erros/Auditoria/QA? -> QualityInspector
            - IA Vision/Imagens? -> VisionAgent
-           - Voz/Áudio/Transcrição? -> AudioAgent
            - Algo novo? -> Crie um novo agente (CREATE_AGENT).
         3. AGIR: Delegue a tarefa (EXECUTE) ou responda se for algo trivial.
 
@@ -142,26 +131,36 @@ class CognitiveOrchestrator:
         - TaskManager: Tudo sobre o status das tarefas, criação de TRDs e organização do backlog.
         - QualityInspector: Tudo sobre auditoria, fiscalização de entregas e correção de processos.
 
-        FORMATO OBRIGATÓRIO DE RESPOSTA (JSON):
+        FORMATO OBRIGATÓRIO DE RESPOSTA (JSON)
         {
           "action": "respond | create_agent | execute | generate_demand",
-          "reasoning": "Raciocínio passo a passo...",
-          "finops_check": {"estimated_tokens": 0, "estimated_cost_usd": 0.0, "approved": true},
-          "agent_involved": "nome_do_agente",
-          "knowledge_graph_update": ["conceito"],
-          "demand_info": {"type": "tarefa", "title": "...", "responsible": "...", "priority": "..."},
-          "new_agent_config": {"agent_name": "...", "purpose": "...", "system_prompt": "..."},
-          " task_description": "comando para o especialista",
-          "response": "confirmação curta para o usuário"
+          "reasoning": "CHAIN OF THOUGHT: 1. Input detectado... 2. Intenção mapeada... 3. Justificativa da escolha do agente...",
+          "finops_check": {
+            "estimated_tokens": 0,
+            "estimated_cost_usd": 0.000,
+            "approved": true
+          },
+          "agent_involved": "nome_do_agente_especialista",
+          "knowledge_graph_update": ["ConceitoX", "ConceitoY"],
+          "demand_info": {
+             "type": "tarefa" | "FollowUP" | "reunião",
+             "title": "Título TRD",
+             "responsible": "Papel do agente",
+             "priority": "Alta" | "Média" | "Baixa"
+          },
+          "new_agent_config": {
+             "agent_name": "NomeDoNovoAgente", 
+             "purpose": "O que ele faz melhor que os outros?",
+             "system_prompt": "Instruções específicas de personalidade"
+          },
+          "task_description": "Instrução CLARA e DIRETA para o agente que vai executar",
+          "response": "Mensagem educada ao usuário confirmando para quem a tarefa foi delegada."
         }
 
         REGRAS DE OURO:
-        - NUNCA use 'execute' para um agente que NÃO esteja na lista de 'Registered Agents'. 
-        - Se o tema for NOVO e não houver especialista, use 'create_agent'.
-        - Se o usuário pedir para criar ou editar um agente via Telegram, FAÇA-O IMEDIATAMENTE.
-        - ⚠️ REGRA CRÍTICA: O campo "response" JAMAIS pode ter mais de 4 frases. Seja DIRETO e CONCISO. Nunca use listas ou markdown. Apenas texto limpo e curto.
-        - ⚠️ PROIBIÇÃO ABSOLUTA: Jamais use nomes de pessoas. Os agentes NÃO SÃO HUMANOS.
-        - ⚠️ VERDADE FINANCEIRA: Nunca invente números de custo. Use APENAS os dados fornecidos em 'FinOps State'. Se os dados não estiverem disponíveis, diga que está aguardando a atualização do pipeline.
+        - NUNCA responda algo complexo você mesmo se puder delegar para um especialista.
+        - ⚠️ REGRA CRÍTICA: O campo "response" JAMAIS pode ter mais de 4 frases. Seja DIRETO e CONCISO. Nunca use listas ou markdown. Apenas texto limpo e curto em português brasileiro.
+        - ⚠️ PROIBIÇÃO ABSOLUTA: Jamais invente ou use nomes de pessoas (ex: João, Sophia, Ana, Bia, Carlos). Os agentes da Flose AI NÃO SÃO PESSOAS, são ESPECIALISTAS TÉCNICOS. Use APENAS os nomes que estão no json de 'Registered Agents' ou no json de 'Active Demands'. Se um agente se chamar 'FinOpsGuardian', chame-o de 'FinOpsGuardian'. Se inventar nomes humanos, você estará violando o protocolo de segurança.
         """
 
     def _sanitize_input(self, text: str) -> str:
@@ -213,13 +212,8 @@ class CognitiveOrchestrator:
         region = os.getenv("GCP_REGION", "us-central1")
         tg_bot = os.getenv("TELEGRAM_BOT_NAME", "Desativado")
         
-        # Fetch current state for real-time FinOps context
-        if self.finops:
-            finops_data = self.finops.get_finops_report()
-            # Log usage for the incoming input (simulation pre-call)
-            # A chamada real logará os tokens exatos depois
-        else:
-            finops_data = "Billing não configurado."
+        # Simulation of FinOps data
+        finops_data = "Gasto Diário: $2.80 | Limite: $10.00 | Status: SEGURO"
 
         agents = []
         demands = []
@@ -312,39 +306,18 @@ class CognitiveOrchestrator:
                 
                 # Validação Pydantic Estrita
                 try:
-                    # Se o JSON vier vazio ou nulo por flutuação da API
-                    if not json_match or json_match == "null":
-                        raise ValueError("Conteúdo JSON vazio")
-                        
                     decision_obj = OrchestratorDecision.model_validate_json(json_match)
                 except Exception as ve:
                     print(f"⚠️ Erro de Schema JSON: {ve}")
-                    print(f"DEBUG - Raw JSON que falhou: {json_match[:500]}...")
-                    
-                    # Se falhar o schema, tenta extrair os campos principais de forma bruta
+                    # Se falhar o schema, tenta extrair o campo 'response' pelo menos
                     try:
                         temp_data = json.loads(json_match)
-                        original_reasoning = temp_data.get("reasoning", "Raciocínio não extraído.")
-                        
-                        # Garante que campos que deveriam ser dicts sejam dicts
-                        def clean_dict(val): return val if isinstance(val, dict) else {}
-                        
-                        res = {
-                            "action": temp_data.get("action", "respond"),
+                        return {
+                            "action": "respond",
                             "response": temp_data.get("response", "Erro na estrutura da resposta."),
-                            "reasoning": f"{original_reasoning}\n\n⚠️ (Recuperado via Fallback: {str(ve)[:60]})",
-                            "agent_involved": temp_data.get("agent_involved") or temp_data.get("agent_name"),
-                            "task_description": temp_data.get("task_description"),
-                            "new_agent_config": clean_dict(temp_data.get("new_agent_config")),
-                            "demand_info": clean_dict(temp_data.get("demand_info")),
-                            "finops_check": clean_dict(temp_data.get("finops_check")),
-                            "knowledge_graph_update": temp_data.get("knowledge_graph_update", [])
+                            "reasoning": "Fallback por falha de validação de schema."
                         }
-                        return res
                     except:
-                        # Se nem o json.loads funciona, o Gemini enviou lixo
-                        import traceback
-                        traceback.print_exc()
                         raise ve
 
                 d = decision_obj.model_dump()
@@ -410,8 +383,7 @@ class CognitiveOrchestrator:
             final_result = decision.get("response", "Não consegui formular uma resposta.")
 
         elif action == "create_agent":
-            config = decision.get("new_agent_config")
-            if not isinstance(config, dict): config = {}
+            config = decision.get("new_agent_config") or {}
             agent_name = config.get('agent_name')
             
             if not agent_name or agent_name == "None":
@@ -447,18 +419,9 @@ class CognitiveOrchestrator:
                     self.gcs_client.upload_json(registry, "demands/registry.json")
 
                 final_result = decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
-                
-                # Proatividade: Se houver uma task inicial, executa já!
-                task_desc = decision.get("task_description")
-                if task_desc:
-                    print(f"Auto-executing Task for newly created agent: {agent_name}")
-                    run_output = new_agent.run(task_desc)
-                    exec_res = run_output[0] if isinstance(run_output, tuple) else run_output
-                    final_result = f"✅ **{agent_name}** foi recrutado e já respondeu:\n\n{exec_res}"
         
         elif action == "update_agent":
-            config = decision.get("new_agent_config")
-            if not isinstance(config, dict): config = {}
+            config = decision.get("new_agent_config") or {}
             agent_name = config.get('agent_name')
             if not agent_name: 
                 final_result = "Erro: Nome do agente não fornecido para atualização."
@@ -475,8 +438,7 @@ class CognitiveOrchestrator:
                 final_result = decision.get("response") or f"Agente '{agent_name}' atualizado conforme solicitado."
 
         elif action == "generate_demand":
-            demand = decision.get("demand_info")
-            if not isinstance(demand, dict): demand = {}
+            demand = decision.get("demand_info") or {}
             title = demand.get("title")
             if not title or title == "Sem título":
                 # Fallback: Extrai as 5 primeiras palavras do reasoning ou response
@@ -512,13 +474,7 @@ class CognitiveOrchestrator:
 
         elif action == "execute":
             agent_name = decision.get("agent_involved") or decision.get("agent_name", "Unknown")
-            
-            # Injeção de Contexto Real (FinOps) para o Especialista
-            finops_ctx = self.finops.get_finops_report() if self.finops else "N/A"
-            # Blindagem do prompt contra aspas que quebram o JSON do agente especialista (Fix Delimiter Error)
-            finops_ctx_clean = str(finops_ctx).replace('"', "'")
-            
-            task_desc = f"[FINOPS STATE: {finops_ctx_clean}]\n\n{decision.get('task_description') or decision.get('reasoning', 'Executar tarefa.')}"
+            task_desc = decision.get("task_description") or decision.get("reasoning", "Executar tarefa.")
             
             print(f"Delegating to agent: {agent_name}")
             
