@@ -41,6 +41,25 @@ jobs:
         run: |
           gcloud builds submit --tag "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest" AtualizaAI/ --project=${{ env.PROJECT_ID }} --suppress-logs || echo "Build iniciado, mas streaming de logs falhou localmente. Verificando status no GCP..."
 
+      - name: Setup Cloud Scheduler for Broker Cycle
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.IMAGE_NAME }} \
+            --platform managed --region ${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} --format="value(status.url)")
+          
+          gcloud scheduler jobs create http broker-nightly-cycle \
+            --schedule="0 0 * * *" \
+            --uri="${SERVICE_URL}/broker_cycle" \
+            --http-method=POST \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --description="Ciclo noturno de certificação de agentes" \
+            || gcloud scheduler jobs update http broker-nightly-cycle \
+            --schedule="0 0 * * *" \
+            --uri="${SERVICE_URL}/broker_cycle" \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }}
+
       - name: Deploy to Cloud Run
         id: deploy
         run: |
