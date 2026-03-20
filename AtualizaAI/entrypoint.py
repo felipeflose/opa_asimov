@@ -27,6 +27,11 @@ async def get_tg_agent():
         gcs = GCSClient(bucket_name, project_id=project_id)
         orchestrator = CognitiveOrchestrator(gcs_client=gcs)
         from src.agents.audio_agent import AudioAgent
+        from src.graph.knowledge_graph import KnowledgeGraphManager
+        from src.agents.vision_agent import VisionAgent
+        
+        kg = KnowledgeGraphManager(gcs_client=gcs)
+        vision = VisionAgent(gcs_client=gcs)
         audio = AudioAgent(gcs_client=gcs)
         
         tg_agent = TelegramAgent(orchestrator, gcs_client=gcs, kg_manager=kg, vision_agent=vision, audio_agent=audio)
