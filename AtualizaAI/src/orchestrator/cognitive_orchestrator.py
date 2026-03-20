@@ -506,12 +506,18 @@ class CognitiveOrchestrator:
                         name=agent_name,
                         purpose=agent_config.get("purpose", ""),
                         system_prompt=agent_config.get("system_prompt", ""),
-                        gcs_client=self.gcs_client
+                        gcs_client=self.gcs_client,
+                        finops_manager=self.finops
                     )
-                    resp = agent.execute(task_desc)
+                    run_output = agent.run(task_desc)
+                    resp = run_output[0] if isinstance(run_output, tuple) else run_output
                     combined_responses.append(f"⚙️ 🤖 **{agent_name}**:\n\n{resp}")
                     # Log individual episodes
-                    self.episodic_memory.store(agent_name, resp, {"action": "panel_part"})
+                    self.episodic_memory.add(
+                        content=f"Parte do Painel: {resp[:150]}",
+                        agent=agent_name,
+                        tags=["panel_part"]
+                    )
                 else:
                     combined_responses.append(f"⚠️ Agente '{agent_name}' não localizado para o painel.")
             
