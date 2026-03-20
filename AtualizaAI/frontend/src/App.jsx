@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import localGraph from './global_graph.json';
 import * as d3 from 'd3';
 import './App.css';
 
@@ -104,9 +105,9 @@ function BrokerDashboard({ token }) {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('flose_token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // FIXME: Set to false or use session check before production deploy
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [activeTab, setActiveTab] = useState('Cognitive Map');
   const [key, setKey] = useState('');
   const [error, setError] = useState(false);
   const [stats, setStats] = useState({
@@ -440,7 +441,7 @@ function App() {
   );
 
 
-  // --- NANO FORCE ENGINE (Custom Physics from SSIS Reference) ---
+  // --- NANO FORCE ENGINE v5.3 (Knowledge Bubbles) ---
   const useForceMap = (nodes, edges, w, h) => {
     const pos = useRef({});
     const vel = useRef({});
@@ -448,74 +449,99 @@ function App() {
     const raf = useRef(null);
     const [, tick] = useState(0);
 
+    const getParent = (nId, links) => {
+       const link = links.find(l => (typeof l.target === 'object' ? l.target.id : l.target) === nId);
+       return link ? (typeof l.source === 'object' ? l.source.id : l.source) : null;
+    };
+
     useEffect(() => {
       if (!w || !h || !nodes.length) return;
       const cx = w / 2, cy = h / 2;
-      const types = ["core", "pilar", "concept"];
-      const clusterR = Math.min(w, h) * 0.35;
+      
+      const pilares = nodes.filter(n => n.type === 'pilar');
+      const pilarCenters = {};
+      const radius = Math.min(w, h) * 0.35;
+
+      pilares.forEach((p, i) => {
+        const angle = (2 * Math.PI * i) / pilares.length;
+        pilarCenters[p.id] = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+      });
 
       nodes.forEach(n => {
-        if (pos.current[n.id]) return;
-        const ti = types.indexOf(n.type);
-        const angle = (2 * Math.PI * ti) / types.length;
-        pos.current[n.id] = { x: cx + clusterR * Math.cos(angle) + (Math.random()-.5)*100, y: cy + clusterR * Math.sin(angle) + (Math.random()-.5)*100 };
-        vel.current[n.id] = { x:0, y:0 };
-      });
-      iter.current = 0;
-
-      const clusterCenters = {};
-      types.forEach((t, ti) => {
-        const angle = (2 * Math.PI * ti) / types.length;
-        clusterCenters[t] = { x: cx + clusterR * Math.cos(angle), y: cy + clusterR * Math.sin(angle) };
+        if (!pos.current[n.id]) {
+          let ix = cx, iy = cy;
+          if (n.type === 'concept') {
+            const edge = edges.find(e => {
+                const target = typeof e.target === 'object' ? e.target.id : e.target;
+                return target === n.id;
+            });
+            const pId = edge ? (typeof edge.source === 'object' ? edge.source.id : edge.source) : null;
+            if (pId && pilarCenters[pId]) {
+                ix = pilarCenters[pId].x + (Math.random() - .5) * 50;
+                iy = pilarCenters[pId].y + (Math.random() - .5) * 50;
+            }
+          } else if (n.type === 'pilar' && pilarCenters[n.id]) {
+             ix = pilarCenters[n.id].x;
+             iy = pilarCenters[n.id].y;
+          }
+          pos.current[n.id] = { x: ix, y: iy };
+          vel.current[n.id] = { x: 0, y: 0 };
+        }
       });
 
       const step = () => {
         iter.current++;
-        const a = Math.max(0.005, 0.7 * Math.exp(-iter.current * 0.015));
+        const a = Math.max(0.005, 0.7 * Math.exp(-iter.current * 0.02));
         const p = pos.current, v = vel.current;
         const ids = nodes.map(n => n.id);
 
-        // Repulsion
-        for (let i = 0; i < ids.length; i++)
-          for (let j = i+1; j < ids.length; j++) {
+        for (let i = 0; i < ids.length; i++) {
+          for (let j = i + 1; j < ids.length; j++) {
             const A = ids[i], B = ids[j];
-            const dx = p[B].x-p[A].x, dy = p[B].y-p[A].y;
-            const d = Math.sqrt(dx*dx+dy*dy)||1;
-            const f = (3500/(d*d))*a;
-            v[A].x -= dx/d*f; v[A].y -= dy/d*f;
-            v[B].x += dx/d*f; v[B].y += dy/d*f;
+            const dx = p[B].x - p[A].x, dy = p[B].y - p[A].y;
+            const d = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = 80;
+            if (d < minDist) {
+                const f = ((minDist - d) / d) * 0.4 * a;
+                v[A].x -= dx * f; v[A].y -= dy * f;
+                v[B].x += dx * f; v[B].y += dy * f;
+            }
           }
+        }
 
-        // Attraction (Links)
-        edges.forEach(e => {
-          const s = typeof e.source === 'object' ? e.source.id : e.source;
-          const t = typeof e.target === 'object' ? e.target.id : e.target;
-          if (!p[s]||!p[t]) return;
-          const dx = p[t].x-p[s].x, dy = p[t].y-p[s].y;
-          const d = Math.sqrt(dx*dx+dy*dy)||1;
-          const ideal = 140;
-          const f = ((d-ideal)/d)*0.08*a;
-          v[s].x+=dx*f; v[s].y+=dy*f;
-          v[t].x-=dx*f; v[t].y-=dy*f;
-        });
-
-        // Clustering
         nodes.forEach(n => {
-          const cc = clusterCenters[n.type];
-          if (!cc) return;
-          v[n.id].x += (cc.x-p[n.id].x)*0.03*a;
-          v[n.id].y += (cc.y-p[n.id].y)*0.03*a;
+          if (n.type === 'concept') {
+            const edge = edges.find(e => (typeof e.target === 'object' ? e.target.id : e.target) === n.id);
+            const pId = edge ? (typeof edge.source === 'object' ? edge.source.id : edge.source) : null;
+            if (pId && p[pId]) {
+              const dx = p[pId].x - p[n.id].x, dy = p[pId].y - p[n.id].y;
+              const d = Math.sqrt(dx * dx + dy * dy) || 1;
+              const maxR = 140; 
+              if (d > maxR) {
+                const f = ((d - maxR) / d) * 0.2 * a;
+                v[n.id].x += dx * f; v[n.id].y += dy * f;
+              }
+            }
+          } else if (n.type === 'pilar') {
+             const target = pilarCenters[n.id];
+             if (target) {
+                v[n.id].x += (target.x - p[n.id].x) * 0.05 * a;
+                v[n.id].y += (target.y - p[n.id].y) * 0.05 * a;
+             }
+          } else if (n.type === 'core') {
+            v[n.id].x += (cx - p[n.id].x) * 0.05 * a;
+            v[n.id].y += (cy - p[n.id].y) * 0.05 * a;
+          }
         });
 
-        // Integration
         ids.forEach(id => {
-          v[id].x*=0.75; v[id].y*=0.75;
-          p[id].x = Math.max(65, Math.min(w-65, p[id].x+v[id].x));
-          p[id].y = Math.max(65, Math.min(h-65, p[id].y+v[id].y));
+          v[id].x *= 0.8; v[id].y *= 0.8;
+          p[id].x = Math.max(80, Math.min(w - 80, p[id].x + v[id].x));
+          p[id].y = Math.max(80, Math.min(h - 80, p[id].y + v[id].y));
         });
 
-        tick(t=>t+1);
-        if (a > 0.007) raf.current = requestAnimationFrame(step);
+        tick(t => t + 1);
+        if (a > 0.006) raf.current = requestAnimationFrame(step);
       };
 
       if (raf.current) cancelAnimationFrame(raf.current);
@@ -528,34 +554,32 @@ function App() {
 
   const CognitiveMap = ({ data }) => {
     const rawNodes = data?.nodes || [];
-    const rawLinks = data?.links || [];
+    const rawLinks = data?.links || data?.edges || [];
     const containerRef = useRef(null);
-    const [dims, setDims] = useState({ w:900, h:640 });
+    const [dims, setDims] = useState({ w: 900, h: 640 });
     const [selected, setSelected] = useState(null);
     const [hovered, setHovered] = useState(null);
-    const [filterType, setFilterType] = useState("all");
-    const [searchTerm, setSearchTerm] = useState('');
-    
-    const dragOff = useRef({ x:0, y:0 });
-    const [dragging, setDragging] = useState(null);
-    const posOverride = useRef({});
-    const [, forceUpdate] = useState(0);
+    const [activeTabArea, setActiveTabArea] = useState("TODOS");
 
     useEffect(() => {
       const obs = new ResizeObserver(e => {
         const { width, height } = e[0].contentRect;
-        setDims({ w: Math.max(600, width), h: Math.max(460, height) });
+        setDims({ w: Math.max(800, width), h: Math.max(600, height) });
       });
       if (containerRef.current) obs.observe(containerRef.current);
       return () => obs.disconnect();
     }, []);
 
-    // 1. DATA MAPPING
+    const pilares = rawNodes.filter(n => n.type === 'pilar');
+    const displayPilares = activeTabArea === "TODOS" ? pilares : pilares.filter(p => p.id === activeTabArea);
+
     const visNodes = React.useMemo(() => {
-      let result = filterType === "all" ? rawNodes : rawNodes.filter(n => n.type === filterType);
-      if (searchTerm) result = result.filter(n => n.id.toLowerCase().includes(searchTerm.toLowerCase()));
-      return result;
-    }, [rawNodes, filterType, searchTerm]);
+      if (activeTabArea === "TODOS") return rawNodes;
+      const filteredPilar = pilares.find(p => p.id === activeTabArea);
+      if (!filteredPilar) return rawNodes;
+      const childIds = new Set(rawLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === filteredPilar.id).map(l => (typeof l.target === 'object' ? l.target.id : l.target)));
+      return rawNodes.filter(n => n.id === filteredPilar.id || childIds.has(n.id) || n.type === 'core');
+    }, [rawNodes, activeTabArea, rawLinks]);
 
     const visIds = new Set(visNodes.map(n => n.id));
     const visLinks = rawLinks.filter(l => {
@@ -565,196 +589,70 @@ function App() {
     });
 
     const simPos = useForceMap(visNodes, visLinks, dims.w, dims.h);
-    const getP = id => posOverride.current[id] || simPos[id] || { x:dims.w/2, y:dims.h/2 };
+    const getP = id => simPos[id] || { x: dims.w / 2, y: dims.h / 2 };
 
-    const activeIds = React.useMemo(() => {
-      const active = selected || hovered;
-      if (!active) return new Set();
-      const connected = visLinks.filter(l => {
-        const s = typeof l.source === 'object' ? l.source.id : l.source;
-        const t = typeof l.target === 'object' ? l.target.id : l.target;
-        return s === active.id || t === active.id;
-      });
-      const ids = new Set(connected.flatMap(l => {
-        const s = typeof l.source === 'object' ? l.source.id : l.source;
-        const t = typeof l.target === 'object' ? l.target.id : l.target;
-        return [s, t];
-      }));
-      ids.add(active.id);
-      return ids;
-    }, [selected, hovered, visLinks]);
-
-    const onMD = (e, n) => {
-      e.stopPropagation();
-      const p = getP(n.id), svg = e.currentTarget.closest("svg"), r = svg.getBoundingClientRect();
-      dragOff.current = { x: e.clientX-r.left-p.x, y: e.clientY-r.top-p.y };
-      setDragging(n.id); setSelected(n);
+    const colors = { 
+        core: "rgba(59,130,246,0.8)", pilar: "rgba(245,158,11,0.8)", concept: "rgba(34,197,94,0.8)", 
+        bg: "#050810", text: "#94a3b8", accent: "#00f2ff"
     };
 
-    useEffect(() => {
-      if (!dragging) return;
-      const mv = e => {
-        const svg = containerRef.current?.querySelector("svg");
-        if (!svg) return;
-        const r = svg.getBoundingClientRect();
-        posOverride.current[dragging] = {
-          x: Math.max(65, Math.min(dims.w-65, e.clientX-r.left-dragOff.current.x)),
-          y: Math.max(65, Math.min(dims.h-65, e.clientY-r.top-dragOff.current.y)),
-        };
-        forceUpdate(v=>v+1);
-      };
-      const up = () => setDragging(null);
-      window.addEventListener("mousemove", mv); window.addEventListener("mouseup", up);
-      return () => { window.removeEventListener("mousemove", mv); window.removeEventListener("mouseup", up); };
-    }, [dragging, dims]);
-
-    const colors = { core: "#3b82f6", pilar: "#f59e0b", concept: "#22c55e", border: "#0d1117", muted: "#334155" };
+    const NodeIcon = ({ node, p, active }) => {
+        const c = node.type === 'pilar' ? colors.pilar : node.type === 'core' ? colors.core : colors.concept;
+        const r = node.type === 'pilar' ? 18 : 14;
+        return (
+            <g transform={`translate(${p.x},${p.y})`} style={{ cursor:"pointer" }} onMouseEnter={() => setHovered(node)} onMouseLeave={() => setHovered(null)} onClick={e => { e.stopPropagation(); setSelected(node); }}>
+                <circle r={r+4} fill="none" stroke={c} strokeWidth="1" strokeOpacity={active?1:0.2} />
+                <circle r={r} fill={colors.bg} stroke={c} strokeWidth="2" style={{ filter: active ? "drop-shadow(0 0 8px "+c+")" : "" }} />
+                <text dy="4" textAnchor="middle" fill={c} fontSize={9} fontWeight={900} style={{ pointerEvents:"none", fontFamily:"'JetBrains Mono', monospace" }}>{node.id.substring(0,1).toUpperCase()}</text>
+                <text y={r+18} textAnchor="middle" fill={active ? "#fff" : colors.text} fontSize={8} fontWeight={700} style={{ pointerEvents:"none", textTransform:"uppercase" }}>{node.id.length > 20 ? node.id.substring(0,18)+".." : node.id}</text>
+            </g>
+        );
+    };
 
     return (
-      <div style={{ 
-        width:"100%", height:"100%", background:"#050810", display:"flex", 
-        fontFamily:"'JetBrains Mono','Fira Code',monospace", overflow:"hidden", border:"1px solid #0d1117", borderRadius:12 
-      }}>
-        
-        {/* Main Interface */}
-        <div ref={containerRef} style={{ flex:1, position:"relative", overflow:"hidden" }} onClick={() => setSelected(null)}>
-          <div style={{ position:"absolute", top:15, left:20, zIndex:10 }}>
-            <div style={{ color:"#60a5fa", fontSize:10, fontWeight:700, letterSpacing:2 }}>COGNITIVE_MAP_v5.2 · TECHNICAL_CORE</div>
-            <div style={{ color:colors.muted, fontSize:8, marginTop:4 }}>{visNodes.length} nodes active · Cluster scale 0.35</div>
-          </div>
-
-          <div style={{ position:"absolute", top:15, right:20, zIndex:10, display:"flex", gap:10 }}>
-            <input 
-              type="text" placeholder="SEARCH_ID..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)}
-              style={{ background:"transparent", border:"1px solid #0d1117", borderRadius:4, padding:"4px 10px", color:"#fff", fontSize:9, outline:"none", width:120 }}
-            />
-            <div style={{ display:"flex", gap:4 }}>
-              {["all", "core", "pilar", "concept"].map(t => (
-                <button key={t} onClick={() => setFilterType(t)} style={{
-                  padding:"3px 8px", fontSize:8, borderRadius:3, cursor:"pointer", background:filterType===t?"#1e293b":"transparent",
-                  border:`1px solid ${filterType===t?"#3b82f6":"#0d1117"}`, color:filterType===t?"#60a5fa":colors.muted, fontFamily:"inherit"
-                }}>{t.toUpperCase()}</button>
-              ))}
-            </div>
-          </div>
-
-          <svg width={dims.w} height={dims.h} style={{ display:"block" }}>
-            <defs>
-              <filter id="nodeGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            </defs>
-
-            {/* Links */}
-            {visLinks.map((l, i) => {
-              const sId = typeof l.source === 'object' ? l.source.id : l.source;
-              const tId = typeof l.target === 'object' ? l.target.id : l.target;
-              const sp = getP(sId), tp = getP(tId);
-              if (!sp || !tp) return null;
-              const isAct = (selected?.id === sId || selected?.id === tId) || (hovered?.id === sId || hovered?.id === tId);
-              return (
-                <line key={i} x1={sp.x} y1={sp.y} x2={tp.x} y2={tp.y} 
-                  stroke={isAct ? "#60a5fa" : "#0f172a"} 
-                  strokeWidth={isAct ? 1.5 : 0.8}
-                  strokeOpacity={isAct ? 1 : 0.4}
-                />
-              );
-            })}
-
-            {/* Nodes */}
-            {visNodes.map(n => {
-              const p = getP(n.id); if (!p) return null;
-              const isSel = selected?.id === n.id, isHov = hovered?.id === n.id;
-              const isDim = (selected || hovered) && !activeIds.has(n.id);
-              const col = colors[n.type] || "#fff";
-              const r = n.type === 'core' ? 18 : (n.type === 'pilar' ? 12 : 8);
-
-              return (
-                <g key={n.id} transform={`translate(${p.x},${p.y})`} style={{ cursor:"grab" }}
-                  onMouseDown={e => onMD(e, n)} onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(null)}
-                  onClick={e => { e.stopPropagation(); setSelected(n); }}>
-                  
-                  {n.type === 'core' && <circle r={r+6} fill="none" stroke={col} strokeWidth={1} strokeDasharray="3 3" strokeOpacity={isDim?.1:.4}/>}
-                  {(isSel || isHov) && <circle r={r+4} fill={col} fillOpacity={0.15} style={{ filter:"url(#nodeGlow)" }}/>}
-                  
-                  <circle r={r} fill={isDim ? "#0d1117" : col} fillOpacity={isDim ? 0.1 : 0.9} stroke={isSel ? "#fff" : col} strokeWidth={isSel ? 2 : 1}/>
-                  
-                  <text y={r+14} textAnchor="middle" fontSize={8} fill={isDim ? "#0d1117" : "#94a3b8"} fontWeight={isSel ? 700 : 400} style={{ pointerEvents:"none", userSelect:"none" }}>
-                    {n.id.length > 20 ? n.id.slice(0, 18) + '…' : n.id.toUpperCase()}
-                  </text>
-                  {n.type === 'core' && !isDim && (
-                    <text dominantBaseline="middle" textAnchor="middle" fontSize={9} fill="#fff" fontWeight="900" style={{ pointerEvents:"none" }}>★</text>
-                  )}
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* SOBER LEGEND */}
-          <div style={{ position:"absolute", bottom:20, left:20, background:"rgba(5,8,16,.85)", border:"1px solid #0d1117", borderRadius:6, padding:"10px 14px", pointerEvents:"none" }}>
-            <div style={{ color:colors.muted, fontSize:7, letterSpacing:2, marginBottom:6 }}>SYSTEM_INDEX</div>
-            {["core", "pilar", "concept"].map(t => (
-              <div key={t} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-                <div style={{ width:6, height:6, borderRadius:"50%", background:colors[t] }}/>
-                <span style={{ color:"#64748b", fontSize:8 }}>{t.toUpperCase()}</span>
-              </div>
+      <div style={{ width:"100%", height:"100%", background:colors.bg, display:"flex", flexDirection:"column" }}>
+        <div style={{ height:50, background:"rgba(255,255,255,0.02)", borderBottom:"1px solid #1e293b", display:"flex", alignItems:"center", padding:"0 20px", gap:15, overflowX:"auto" }}>
+            {["TODOS", ...pilares.map(p => p.id)].map(tab => (
+                <button key={tab} onClick={() => setActiveTabArea(tab)} style={{
+                    padding: "6px 16px", background: activeTabArea === tab ? "#fff" : "transparent",
+                    color: activeTabArea === tab ? "#000" : "#94a3b8", border: activeTabArea === tab ? "none" : "1px solid rgba(255,255,255,0.1)",
+                    borderRadius:4, fontSize:9, fontWeight:800, cursor:"pointer", transition:"all 0.2s", whiteSpace:"nowrap"
+                }}>{tab.toUpperCase()}</button>
             ))}
-          </div>
         </div>
-
-        {/* Technical Side Panel */}
-        <div style={{ 
-          width:selected ? 300 : 0, flexShrink:0, background:"#05080e", borderLeft:"1px solid #0d1117", 
-          overflow:"hidden", transition:"width .25s cubic-bezier(0.19, 1, 0.22, 1)", display:"flex", flexDirection:"column" 
-        }}>
-          {selected && (
-            <div style={{ padding:25, flex:1, overflowY:"auto" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:15 }}>
-                <span style={{ color:colors[selected.type], fontSize:9, fontWeight:700, letterSpacing:2 }}>NODE_ID: {selected.id.slice(0,8)}</span>
-                <button onClick={() => setSelected(null)} style={{ background:"none", border:"none", color:"#1e293b", cursor:"pointer", fontSize:14 }}>✕</button>
-              </div>
-
-              <div style={{ color:"#e2e8f0", fontSize:16, fontWeight:900, lineHeight:1.2, marginBottom:15 }}>{selected.id.toUpperCase()}</div>
-
-              <div style={{ display:"flex", gap:10, marginBottom:25 }}>
-                <div style={{ flex:1, background:"#0a0f1a", border:"1px solid #0d1117", borderRadius:6, padding:10, textAlign:"center" }}>
-                   <div style={{ color:colors[selected.type], fontSize:18, fontWeight:900 }}>{visLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === selected.id || (typeof l.target === 'object' ? l.target.id : l.target) === selected.id).length}</div>
-                   <div style={{ color:colors.muted, fontSize:7, marginTop:2 }}>CONNECTIONS</div>
-                </div>
-                <div style={{ flex:1, background:"#0a0f1a", border:"1px solid #0d1117", borderRadius:6, padding:10, textAlign:"center" }}>
-                   <div style={{ color:"#fff", fontSize:18, fontWeight:900 }}>100%</div>
-                   <div style={{ color:colors.muted, fontSize:7, marginTop:2 }}>RELIABILITY</div>
-                </div>
-              </div>
-
-              <div style={{ color:colors.muted, fontSize:7, letterSpacing:2, marginBottom:10, borderBottom:"1px solid #0d1117", paddingBottom:8 }}>SEMANTIC_LAYER</div>
-              <p style={{ color:"#94a3b8", fontSize:10, lineHeight:1.6, marginBottom:30 }}>
-                {selected.type === 'core' ? 'Primary intelligence nexus. Orchestrates and validates all subordinate technical pilots and atomic data nodes within the Flose framework.' : 
-                 selected.type === 'pilar' ? 'Technical vertical pillar. Aggregates specialized concept clusters to provide higher-order cognitive processing.' : 
-                 'Atomic intelligence concept. Fundamental persistent unit of knowledge extracted and verified during autonomous agent operations.'}
-              </p>
-
-              <div style={{ color:colors.muted, fontSize:7, letterSpacing:2, marginBottom:12 }}>CONNECTED_DEPENDENCIES</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                {visLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === selected.id || (typeof l.target === 'object' ? l.target.id : l.target) === selected.id).map((l, i) => {
-                  const other = (typeof l.source === 'object' ? l.source.id : l.source) === selected.id ? (typeof l.target === 'object' ? l.target.id : l.target) : (typeof l.source === 'object' ? l.source.id : l.source);
-                  const node = rawNodes.find(n => n.id === other);
-                  return (
-                    <div key={i} onClick={() => setSelected(node)} style={{ 
-                      background:"#0a0f1a", border:"1px solid #0d1117", borderRadius:6, padding:10, cursor:"pointer", transition:"border 0.2s" 
-                    }} onMouseEnter={e => e.currentTarget.style.borderColor = colors[node?.type] || "#fff"}>
-                      <div style={{ color:"#fff", fontSize:9, fontWeight:700 }}>{other.toUpperCase()}</div>
-                      <div style={{ color:colors[node?.type] || colors.muted, fontSize:7, marginTop:2 }}>RELATION: {l.relation?.toUpperCase() || "CONNECTED"}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+        <div ref={containerRef} style={{ flex:1, position:"relative", overflow:"hidden" }} onClick={() => setSelected(null)}>
+          <svg width={dims.w} height={dims.h} style={{ display:"block" }}>
+            {displayPilares.map(pilar => {
+                const p = getP(pilar.id);
+                return (
+                    <g key={"bubble_"+pilar.id}>
+                        <circle cx={p.x} cy={p.y} r={160} fill="none" stroke="rgba(59,130,246,0.2)" strokeWidth="1" strokeDasharray="5,5" />
+                        <text x={p.x} y={p.y - 175} textAnchor="middle" fill="rgba(59,130,246,0.5)" fontSize={10} fontWeight={900}>{pilar.id.toUpperCase()}</text>
+                    </g>
+                );
+            })}
+            {visLinks.map((l, i) => {
+              const sP = getP(typeof l.source === 'object' ? l.source.id : l.source), tP = getP(typeof l.target === 'object' ? l.target.id : l.target);
+              const active = (selected?.id === l.source || selected?.id === l.target || hovered?.id === l.source || hovered?.id === l.target);
+              return <line key={i} x1={sP.x} y1={sP.y} x2={tP.x} y2={tP.y} stroke={active ? colors.accent : "rgba(255,255,255,0.05)"} strokeWidth={active ? 1.5 : 0.8} />;
+            })}
+            {visNodes.map(n => <NodeIcon key={n.id} node={n} p={getP(n.id)} active={selected?.id === n.id || hovered?.id === n.id} />)}
+          </svg>
+          <div style={{ position:"absolute", bottom:20, left:20, padding:15, background:"rgba(0,0,0,0.4)", borderRadius:8, border:"1px solid rgba(255,255,255,0.05)", fontSize:8 }}>
+              <div style={{ fontWeight:900, marginBottom:8, color:"#fff" }}>LEGENDA_SISTEMA</div>
+              {[{l:"CORE", c:colors.core}, {l:"PILAR", c:colors.pilar}, {l:"CONCEPT", c:colors.concept}].map(it => (
+                  <div key={it.l} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:it.c }} />
+                      <span style={{ color:colors.text }}>{it.l}</span>
+                  </div>
+              ))}
+          </div>
         </div>
       </div>
     );
   };
 
-
+  // --- LAYOUT ENGINE: Main Module Selection ---
   const renderContent = () => {
     if (activeTab === 'Dashboard') {
       return (
@@ -1558,6 +1456,19 @@ function App() {
           </div>
         </div>
       );
+    }
+
+    if (activeTab === 'Broker') {
+       return <BrokerDashboard token={token} />;
+    }
+
+    if (activeTab === 'Settings') {
+       return (
+         <div className="glass-card" style={{ padding: '40px' }}>
+           <h2 className="title-grad">System Settings</h2>
+           <p style={{ color: 'var(--text-muted)' }}>Configure seu ambiente de Agentes e parâmetros de Curadoria.</p>
+         </div>
+       );
     }
 
     return (
