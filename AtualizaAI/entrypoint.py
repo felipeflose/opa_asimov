@@ -151,6 +151,25 @@ async def get_dora_summary(request: Request, token: str = None):
     dora = DoraManager(gcs_client=gcs)
     return dora.get_metrics_summary()
 
+@app.post("/api/dora/incident")
+async def report_incident(data: dict, request: Request, token: str = None):
+    """Registra uma falha ou incidente para cálculo de MTTR e CFR."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+        
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    from src.storage.dora_manager import DoraManager
+    dora = DoraManager(gcs_client=gcs)
+    
+    dora.log_incident(
+        title=data.get("title", "Incidente não detalhado"),
+        description=data.get("description", ""),
+        severity=data.get("severity", "baixa")
+    )
+    return {"status": "incident_logged"}
+
 @app.post("/api/webhook/github")
 async def github_webhook(request: Request):
     """Recebe webhooks do GitHub para Push e PR merges."""
@@ -171,14 +190,15 @@ async def github_webhook(request: Request):
     
     # Se for um Push direto na main
     if "commits" in payload and payload.get("ref") == "refs/heads/main":
-        for commit in payload.get("commits", []):
+        for index, commit in enumerate(payload.get("commits", [])):
             dora.log_commit(
                 commit_hash=commit.get("id"),
                 author=commit.get("author", {}).get("name", "Unknown"),
                 message=commit.get("message", "")
             )
-            # Como é push direto na main, conta como deploy
-            dora.log_deployment(commit_hash=commit.get("id"))
+            # Como é push direto na main, conta como deploy (Apenas o último commit representativo)
+            if index == len(payload.get("commits", [])) - 1:
+                dora.log_deployment(commit_hash=commit.get("id"))
             
             # Avisar no Telegram
             msg = f"🚀 *Novo Push na Main!*\n**Commit**: {commit.get('id')[:7]}\n**Autor**: {commit.get('author', {}).get('name')}\n**Msg**: {commit.get('message')}"
