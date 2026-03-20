@@ -173,6 +173,9 @@ class TelegramAgent:
 
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
+            if not update.message:
+                return
+
             user = update.effective_user.username or update.effective_user.first_name
             user_text = update.message.text or update.message.caption or ""
             
