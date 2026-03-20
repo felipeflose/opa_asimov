@@ -43,6 +43,9 @@ jobs:
 
       - name: Setup Cloud Scheduler for Broker Cycle
         run: |
+          # Garantir que a API necessária esteja ativa
+          gcloud services enable cloudscheduler.googleapis.com --project=${{ env.PROJECT_ID }}
+          
           SERVICE_URL=$(gcloud run services describe ${{ env.IMAGE_NAME }} \
             --platform managed --region ${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }} --format="value(status.url)")
