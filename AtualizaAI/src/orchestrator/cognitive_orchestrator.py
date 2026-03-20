@@ -391,6 +391,21 @@ class CognitiveOrchestrator:
             if not agent_name or agent_name == "None":
                 final_result = f"Erro na criação de agente: {decision.get('response')}"
             else:
+                # TASK-09: Auto-creation check
+                is_auto = False
+                recent_episodes = self.episodic_memory.recall(f"create_agent {agent_name}", top_k=5)
+                # Conta quantos pedidos similares nas últimas 24h
+                now = datetime.now()
+                count = 0
+                for ep in recent_episodes:
+                    ep_time = datetime.fromisoformat(ep['ts'])
+                    if (now - ep_time).total_seconds() < 86400: # 24h
+                        count += 1
+                
+                if count >= 3:
+                    is_auto = True
+                    print(f"TASK-09: Auto-creation triggered for {agent_name} (frequent demand).")
+
                 print(f"Creating new agent: {agent_name}")
                 new_agent = AgentCore(
                     name=agent_name,
@@ -421,6 +436,8 @@ class CognitiveOrchestrator:
                     self.gcs_client.upload_json(registry, "demands/registry.json")
 
                 final_result = decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
+                if is_auto:
+                    final_result = "🚀 [AUTO-CREATE] " + final_result
         
         elif action == "update_agent":
             config = decision.get("new_agent_config") or {}
