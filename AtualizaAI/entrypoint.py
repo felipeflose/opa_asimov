@@ -257,23 +257,26 @@ async def github_webhook(request: Request):
     import asyncio
     agent = await get_tg_agent()
     
-    # Se for um Push direto na main
-    if "commits" in payload and payload.get("ref") == "refs/heads/main":
-        for index, commit in enumerate(payload.get("commits", [])):
+    # Se for um Push na main (dispara em cada merge tbm)
+    if payload.get("ref") == "refs/heads/main":
+        # Logar commits individuais para histórico
+        for commit in payload.get("commits", []):
             dora.log_commit(
                 commit_hash=commit.get("id"),
                 author=commit.get("author", {}).get("name", "Unknown"),
                 message=commit.get("message", "")
             )
-            # Como é push direto na main, conta como deploy (Apenas o último commit representativo)
-            if index == len(payload.get("commits", [])) - 1:
-                dora.log_deployment(commit_hash=commit.get("id"))
             
-            # Avisar no Telegram
-            msg = f"🚀 *Novo Push na Main!*\n**Commit**: {commit.get('id')[:7]}\n**Autor**: {commit.get('author', {}).get('name')}\n**Msg**: {commit.get('message')}"
+        # LOG DE DEPLOY (A frequência DORA se baseia aqui) usando o SHA final (HEAD)
+        final_sha = payload.get("after")
+        if final_sha and final_sha != "0000000000000000000000000000000000000000":
+            dora.log_deployment(commit_hash=final_sha)
+            
+            # Avisar no Telegram sobre o Deploy
+            msg = f"🚀 *ROBO: Deploy na Main!*\n**SHA**: `{final_sha[:7]}`\nAs métricas DORA foram recalculadas."
             asyncio.create_task(agent.bot.send_message(chat_id=agent.admin_chat_id, text=msg, parse_mode='Markdown'))
             
-        return {"status": "commits_logged"}
+        return {"status": "commits_and_deploy_logged"}
         
     # Se for PR Merged
     elif "pull_request" in payload and action == "closed" and payload["pull_request"].get("merged"):
