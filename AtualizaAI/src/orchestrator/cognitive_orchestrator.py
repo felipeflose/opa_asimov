@@ -47,6 +47,7 @@ class OrchestratorDecision(BaseModel):
     reasoning: str = "Delegação inteligente."
     finops_check: FinOpsCheck = Field(default_factory=FinOpsCheck)
     agent_involved: Optional[str] = None
+    panel_agents: List[str] = []
     knowledge_graph_update: List[str] = []
     demand_info: Optional[DemandInfo] = None
     new_agent_config: Optional[NewAgentConfig] = None
@@ -57,6 +58,7 @@ class OrchestratorDecision(BaseModel):
     @classmethod
     def validate_action(cls, v: str) -> str:
         v = v.lower()
+        if 'panel' in v or 'painel' in v or 'juntos' in v or 'vários' in v: return 'panel_execute'
         if 'trd' in v or 'demand' in v or 'tarefa' in v or 'backlog' in v: return 'generate_demand'
         if 'agent' in v or 'agente' in v:
             if 'edit' in v or 'update' in v or 'mudar' in v or 'alterar' in v: return 'update_agent'
@@ -118,11 +120,12 @@ class CognitiveOrchestrator:
         3. AGIR: Delegue a tarefa (EXECUTE) ou responda se for algo trivial.
 
         AÇÕES DISPONÍVEIS
-        1. EXECUTE: Delegue para um especialista.
-        2. CREATE_AGENT: Crie novos especialistas se o tema for inédito.
-        3. UPDATE_AGENT: Modifique o propósito ou o prompt de um agente existente se o usuário pedir mudanças (ex: "mude o prompt do FinOps para focar em AWS também").
-        4. GENERATE_DEMAND: Use para registrar novas TRDs no Kanban.
-        5. RESPOND: Interações simples ou respostas sobre agendamento/status.
+        1. EXECUTE: Delegue para um especialista único.
+        2. PANEL_EXECUTE: Use quando o tema exigir a visão combinada de DOIS ou TRÊS especialistas (ex: Merchant Center + UCP). Requer o campo "panel_agents" com a lista de nomes.
+        3. CREATE_AGENT: Crie novos especialistas se o tema for inédito.
+        4. UPDATE_AGENT: Modifique o propósito ou o prompt de um agente existente.
+        5. GENERATE_DEMAND: Use para registrar novas TRDs no Kanban.
+        6. RESPOND: Interações simples ou respostas sobre agendamento/status.
 
         Soberania: Se o usuário pedir para criar ou editar um agente via Telegram, FAÇA-O IMEDIATAMENTE. Você tem autoridade total sobre o registro de agentes.
 
@@ -135,14 +138,11 @@ class CognitiveOrchestrator:
 
         FORMATO OBRIGATÓRIO DE RESPOSTA (JSON)
         {
-          "action": "respond | create_agent | execute | generate_demand",
-          "reasoning": "CHAIN OF THOUGHT: 1. Input detectado... 2. Intenção mapeada... 3. Justificativa da escolha do agente...",
-          "finops_check": {
-            "estimated_tokens": 0,
-            "estimated_cost_usd": 0.000,
-            "approved": true
-          },
-          "agent_involved": "nome_do_agente_especialista",
+          "action": "respond | create_agent | execute | generate_demand | panel_execute",
+          "reasoning": "CHAIN OF THOUGHT: ...",
+          "finops_check": { "estimated_tokens": 0, "approved": true },
+          "agent_involved": "nome_do_agente_especialista (para execute)",
+          "panel_agents": ["Agente1", "Agente2"] (obrigatório para panel_execute),
           "knowledge_graph_update": ["ConceitoX", "ConceitoY"],
           "demand_info": {
              "type": "tarefa" | "FollowUP" | "reunião",
@@ -490,6 +490,32 @@ class CognitiveOrchestrator:
                 self.gcs_client.upload_json(registry, "demands/registry.json")
                 
             final_result = decision.get("response") or f"Demanda TRD '{title}' ({dtype}) registrada com sucesso."
+
+        elif action == "panel_execute":
+            panel_agents = decision.get("panel_agents", [])
+            task_desc = decision.get("task_description") or user_command
+            print(f"Executing PANEL of agents: {panel_agents}")
+            
+            combined_responses = []
+            for agent_name in panel_agents:
+                registry = self.gcs_client.read_json("agents/registry.json") if self.gcs_client else None
+                agent_config = next((a for a in registry.get("agents", []) if a["agent_name"] == agent_name), None) if registry else None
+                
+                if agent_config:
+                    agent = AgentCore(
+                        name=agent_name,
+                        purpose=agent_config.get("purpose", ""),
+                        system_prompt=agent_config.get("system_prompt", ""),
+                        gcs_client=self.gcs_client
+                    )
+                    resp = agent.execute(task_desc)
+                    combined_responses.append(f"⚙️ 🤖 **{agent_name}**:\n\n{resp}")
+                    # Log individual episodes
+                    self.episodic_memory.store(agent_name, resp, {"action": "panel_part"})
+                else:
+                    combined_responses.append(f"⚠️ Agente '{agent_name}' não localizado para o painel.")
+            
+            final_result = "\n\n---\n\n".join(combined_responses)
 
         elif action == "execute":
             agent_name = decision.get("agent_involved") or decision.get("agent_name", "Unknown")
