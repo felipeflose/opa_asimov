@@ -105,9 +105,9 @@ function BrokerDashboard({ token }) {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // FIXME: Set to false or use session check before production deploy
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
-  const [activeTab, setActiveTab] = useState('Cognitive Map');
+  const [isAuthenticated, setIsAuthenticated] = useState(!!(sessionStorage.getItem('flose_token'))); 
+  const [activeTab, setActiveTab] = useState('Dashboard'); // Better default than Cognitive Map
   const [key, setKey] = useState('');
   const [error, setError] = useState(false);
   const [stats, setStats] = useState({
