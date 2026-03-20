@@ -173,6 +173,9 @@ class TelegramAgent:
 
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
+            if not update.message:
+                return
+
             user = update.effective_user.username or update.effective_user.first_name
             user_text = update.message.text or update.message.caption or ""
             
@@ -394,8 +397,7 @@ class TelegramAgent:
         self.log(f"Exception while handling an update: {context.error}")
 
     async def setup(self):
-        """Inicializa sem iniciar nenhum updater/polling interno."""
-        """Inicializa a aplicação do Telegram."""
+        """Inicializa a aplicação do Telegram em modo Webhook."""
         if not self.token:
             print("⚠️ TELEGRAM_BOT_TOKEN não configurado!")
             return
@@ -407,9 +409,7 @@ class TelegramAgent:
         self.application.add_handler(CommandHandler("status", self.status_handler))
         self.application.add_handler(CommandHandler("dora", self.dora_handler))
         self.application.add_handler(CommandHandler("debug", self.debug_handler)) # TASK-08
-        self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.message_handler))
-        self.application.add_handler(MessageHandler(filters.PHOTO, self.photo_handler))
-        self.application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, self.audio_handler))
+        self.application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, self.message_handler))
         
         await self.application.initialize()
         self.is_running = True
