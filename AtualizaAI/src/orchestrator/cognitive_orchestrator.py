@@ -10,6 +10,8 @@ from src.agents.base_agent import BaseAgent as AgentCore
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from src.storage.vector_store import VectorStore
 from src.storage.episodic_memory import EpisodicMemory
+from src.storage.shared_memory import SharedMemory
+from src.storage.dora_manager import DoraManager
 
 class FinOpsCheck(BaseModel):
     estimated_tokens: int = 0
@@ -76,8 +78,8 @@ class CognitiveOrchestrator:
         self.gcs_client = gcs_client
         self.finops = finops_manager
         
-        from src.storage.dora_manager import DoraManager
         self.dora = DoraManager(gcs_client=gcs_client)
+        self.shared_memory = SharedMemory(gcs_client=gcs_client)
         
         # Inicialização do VectorStore (Memória Semântica)
         self.vector_store = VectorStore(gcs_client=gcs_client)
@@ -294,7 +296,7 @@ class CognitiveOrchestrator:
                 # Tracking Real de Custos (FinOps)
                 if self.finops and hasattr(response, 'usage_metadata'):
                     usage = response.usage_metadata
-                    self.finops.log_usage(usage.prompt_token_count, usage.candidates_token_count)
+                    self.finops.log_usage(usage.prompt_token_count, usage.candidates_token_count, agent_name="Orchestrator")
                 
                 raw_text = response.text.strip()
                 # Extração robusta de JSON
@@ -389,6 +391,21 @@ class CognitiveOrchestrator:
             if not agent_name or agent_name == "None":
                 final_result = f"Erro na criação de agente: {decision.get('response')}"
             else:
+                # TASK-09: Auto-creation check
+                is_auto = False
+                recent_episodes = self.episodic_memory.recall(f"create_agent {agent_name}", top_k=5)
+                # Conta quantos pedidos similares nas últimas 24h
+                now = datetime.now()
+                count = 0
+                for ep in recent_episodes:
+                    ep_time = datetime.fromisoformat(ep['ts'])
+                    if (now - ep_time).total_seconds() < 86400: # 24h
+                        count += 1
+                
+                if count >= 3:
+                    is_auto = True
+                    print(f"TASK-09: Auto-creation triggered for {agent_name} (frequent demand).")
+
                 print(f"Creating new agent: {agent_name}")
                 new_agent = AgentCore(
                     name=agent_name,
@@ -419,6 +436,8 @@ class CognitiveOrchestrator:
                     self.gcs_client.upload_json(registry, "demands/registry.json")
 
                 final_result = decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
+                if is_auto:
+                    final_result = "🚀 [AUTO-CREATE] " + final_result
         
         elif action == "update_agent":
             config = decision.get("new_agent_config") or {}
@@ -491,14 +510,28 @@ class CognitiveOrchestrator:
                     name=agent_data['agent_name'],
                     purpose=agent_data['purpose'],
                     system_prompt=agent_data['system_prompt'],
-                    gcs_client=self.gcs_client
+                    gcs_client=self.gcs_client,
+                    finops_manager=self.finops
                 )
                 
+                # TASK-23: Memória Compartilhada - Injeção de contexto nas últimas 5 entradas relevantes
+                relevant_memories = self.shared_memory.read_relevant(query=task_desc, limit=5)
+                context_inject = ""
+                if relevant_memories:
+                    context_inject = "\n\n--- MEMÓRIA COMPARTILHADA (CONTEXTO ADICIONAL) ---\n"
+                    for m in relevant_memories:
+                        context_inject += f"- Agente {m['agent']} descobriu sobre '{m['key']}': {m['value']}\n"
+                    context_inject += "--- FIM DO CONTEXTO ---\n"
+                
                 # Execução Real do Especialista
-                # agent.run() retorna (result_text, evaluation_dict) - desempacotar corretamente
-                run_output = agent_obj.run(task_desc)
+                run_output = agent_obj.run(task_desc + context_inject)
                 if isinstance(run_output, tuple):
                     execution_result = run_output[0]
+                    # TASK-05: Log usage of the specialized agent
+                    if self.finops and hasattr(run_output[1], 'confidence'): # Dummy check to see if evaluation exists
+                        # Note: If BaseAgent returned usage_metadata, we could log it here.
+                        # For now, we estimate or track it inside the agent if we inject finops there.
+                        pass
                 else:
                     execution_result = run_output
                 
