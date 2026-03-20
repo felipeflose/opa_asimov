@@ -439,283 +439,310 @@ function App() {
     </button>
   );
 
+
+  // --- NANO FORCE ENGINE (Custom Physics from SSIS Reference) ---
+  const useForceMap = (nodes, edges, w, h) => {
+    const pos = useRef({});
+    const vel = useRef({});
+    const iter = useRef(0);
+    const raf = useRef(null);
+    const [, tick] = useState(0);
+
+    useEffect(() => {
+      if (!w || !h || !nodes.length) return;
+      const cx = w / 2, cy = h / 2;
+      const types = ["core", "pilar", "concept"];
+      const clusterR = Math.min(w, h) * 0.35;
+
+      nodes.forEach(n => {
+        if (pos.current[n.id]) return;
+        const ti = types.indexOf(n.type);
+        const angle = (2 * Math.PI * ti) / types.length;
+        pos.current[n.id] = { x: cx + clusterR * Math.cos(angle) + (Math.random()-.5)*100, y: cy + clusterR * Math.sin(angle) + (Math.random()-.5)*100 };
+        vel.current[n.id] = { x:0, y:0 };
+      });
+      iter.current = 0;
+
+      const clusterCenters = {};
+      types.forEach((t, ti) => {
+        const angle = (2 * Math.PI * ti) / types.length;
+        clusterCenters[t] = { x: cx + clusterR * Math.cos(angle), y: cy + clusterR * Math.sin(angle) };
+      });
+
+      const step = () => {
+        iter.current++;
+        const a = Math.max(0.005, 0.7 * Math.exp(-iter.current * 0.015));
+        const p = pos.current, v = vel.current;
+        const ids = nodes.map(n => n.id);
+
+        // Repulsion
+        for (let i = 0; i < ids.length; i++)
+          for (let j = i+1; j < ids.length; j++) {
+            const A = ids[i], B = ids[j];
+            const dx = p[B].x-p[A].x, dy = p[B].y-p[A].y;
+            const d = Math.sqrt(dx*dx+dy*dy)||1;
+            const f = (3500/(d*d))*a;
+            v[A].x -= dx/d*f; v[A].y -= dy/d*f;
+            v[B].x += dx/d*f; v[B].y += dy/d*f;
+          }
+
+        // Attraction (Links)
+        edges.forEach(e => {
+          const s = typeof e.source === 'object' ? e.source.id : e.source;
+          const t = typeof e.target === 'object' ? e.target.id : e.target;
+          if (!p[s]||!p[t]) return;
+          const dx = p[t].x-p[s].x, dy = p[t].y-p[s].y;
+          const d = Math.sqrt(dx*dx+dy*dy)||1;
+          const ideal = 140;
+          const f = ((d-ideal)/d)*0.08*a;
+          v[s].x+=dx*f; v[s].y+=dy*f;
+          v[t].x-=dx*f; v[t].y-=dy*f;
+        });
+
+        // Clustering
+        nodes.forEach(n => {
+          const cc = clusterCenters[n.type];
+          if (!cc) return;
+          v[n.id].x += (cc.x-p[n.id].x)*0.03*a;
+          v[n.id].y += (cc.y-p[n.id].y)*0.03*a;
+        });
+
+        // Integration
+        ids.forEach(id => {
+          v[id].x*=0.75; v[id].y*=0.75;
+          p[id].x = Math.max(65, Math.min(w-65, p[id].x+v[id].x));
+          p[id].y = Math.max(65, Math.min(h-65, p[id].y+v[id].y));
+        });
+
+        tick(t=>t+1);
+        if (a > 0.007) raf.current = requestAnimationFrame(step);
+      };
+
+      if (raf.current) cancelAnimationFrame(raf.current);
+      raf.current = requestAnimationFrame(step);
+      return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    }, [nodes.length, edges.length, w, h]);
+
+    return pos.current;
+  };
+
   const CognitiveMap = ({ data }) => {
     const rawNodes = data?.nodes || [];
     const rawLinks = data?.links || [];
-    const svgRef = useRef(null);
     const containerRef = useRef(null);
-    
-    // Estados do Grafo
+    const [dims, setDims] = useState({ w:900, h:640 });
     const [selected, setSelected] = useState(null);
     const [hovered, setHovered] = useState(null);
     const [filterType, setFilterType] = useState("all");
     const [searchTerm, setSearchTerm] = useState('');
-    const [stats, setStats] = useState({ core: 0, pilar: 0, concepts: 0 });
+    
+    const dragOff = useRef({ x:0, y:0 });
+    const [dragging, setDragging] = useState(null);
+    const posOverride = useRef({});
+    const [, forceUpdate] = useState(0);
 
-    // 1. Filtragem reativa de dados
-    const filteredNodes = React.useMemo(() => {
+    useEffect(() => {
+      const obs = new ResizeObserver(e => {
+        const { width, height } = e[0].contentRect;
+        setDims({ w: Math.max(600, width), h: Math.max(460, height) });
+      });
+      if (containerRef.current) obs.observe(containerRef.current);
+      return () => obs.disconnect();
+    }, []);
+
+    // 1. DATA MAPPING
+    const visNodes = React.useMemo(() => {
       let result = filterType === "all" ? rawNodes : rawNodes.filter(n => n.type === filterType);
-      if (searchTerm) {
-        result = result.filter(n => n.id.toLowerCase().includes(searchTerm.toLowerCase()));
-      }
-      return result.map(n => ({ ...n })); // Deep copy para o D3
+      if (searchTerm) result = result.filter(n => n.id.toLowerCase().includes(searchTerm.toLowerCase()));
+      return result;
     }, [rawNodes, filterType, searchTerm]);
 
-    const filteredLinks = React.useMemo(() => {
-      const nodeIds = new Set(filteredNodes.map(n => n.id));
-      return rawLinks
-        .filter(l => {
-          const sId = typeof l.source === 'object' ? l.source.id : l.source;
-          const tId = typeof l.target === 'object' ? l.target.id : l.target;
-          return nodeIds.has(sId) && nodeIds.has(tId);
-        })
-        .map(l => ({ ...l }));
-    }, [rawLinks, filteredNodes]);
+    const visIds = new Set(visNodes.map(n => n.id));
+    const visLinks = rawLinks.filter(l => {
+      const sId = typeof l.source === 'object' ? l.source.id : l.source;
+      const tId = typeof l.target === 'object' ? l.target.id : l.target;
+      return visIds.has(sId) && visIds.has(tId);
+    });
 
-    // 2. Efeito Principal: Simulação D3
+    const simPos = useForceMap(visNodes, visLinks, dims.w, dims.h);
+    const getP = id => posOverride.current[id] || simPos[id] || { x:dims.w/2, y:dims.h/2 };
+
+    const activeIds = React.useMemo(() => {
+      const active = selected || hovered;
+      if (!active) return new Set();
+      const connected = visLinks.filter(l => {
+        const s = typeof l.source === 'object' ? l.source.id : l.source;
+        const t = typeof l.target === 'object' ? l.target.id : l.target;
+        return s === active.id || t === active.id;
+      });
+      const ids = new Set(connected.flatMap(l => {
+        const s = typeof l.source === 'object' ? l.source.id : l.source;
+        const t = typeof l.target === 'object' ? l.target.id : l.target;
+        return [s, t];
+      }));
+      ids.add(active.id);
+      return ids;
+    }, [selected, hovered, visLinks]);
+
+    const onMD = (e, n) => {
+      e.stopPropagation();
+      const p = getP(n.id), svg = e.currentTarget.closest("svg"), r = svg.getBoundingClientRect();
+      dragOff.current = { x: e.clientX-r.left-p.x, y: e.clientY-r.top-p.y };
+      setDragging(n.id); setSelected(n);
+    };
+
     useEffect(() => {
-      if (!svgRef.current || !filteredNodes.length) return;
+      if (!dragging) return;
+      const mv = e => {
+        const svg = containerRef.current?.querySelector("svg");
+        if (!svg) return;
+        const r = svg.getBoundingClientRect();
+        posOverride.current[dragging] = {
+          x: Math.max(65, Math.min(dims.w-65, e.clientX-r.left-dragOff.current.x)),
+          y: Math.max(65, Math.min(dims.h-65, e.clientY-r.top-dragOff.current.y)),
+        };
+        forceUpdate(v=>v+1);
+      };
+      const up = () => setDragging(null);
+      window.addEventListener("mousemove", mv); window.addEventListener("mouseup", up);
+      return () => { window.removeEventListener("mousemove", mv); window.removeEventListener("mouseup", up); };
+    }, [dragging, dims]);
 
-      const width = containerRef.current.clientWidth;
-      const height = containerRef.current.clientHeight;
-      const svg = d3.select(svgRef.current);
-      svg.selectAll("*").remove(); // Limpeza para re-render
-
-      // Camadas do SVG
-      const gMain = svg.append("g").attr("class", "main-graph");
-      const gLinks = gMain.append("g").attr("class", "links-layer");
-      const gNodes = gMain.append("g").attr("class", "nodes-layer");
-
-      // Definição de Filtros (Glow Effects)
-      const defs = svg.append("defs");
-      const filter = defs.append("filter").attr("id", "glow").attr("x", "-50%").attr("y", "-50%").attr("width", "200%").attr("height", "200%");
-      filter.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "coloredBlur");
-      const feMerge = filter.append("feMerge");
-      feMerge.append("feMergeNode").attr("in", "coloredBlur");
-      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-
-      // Simulação
-      const simulation = d3.forceSimulation(filteredNodes)
-        .force("link", d3.forceLink(filteredLinks).id(d => d.id).distance(d => d.relation === 'defined_by' ? 180 : 250))
-        .force("charge", d3.forceManyBody().strength(d => d.type === 'core' ? -2000 : -800))
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collision", d3.forceCollide().radius(d => d.type === 'core' ? 60 : 40));
-
-      // Zoom & Pan
-      const zoom = d3.zoom()
-        .scaleExtent([0.1, 4])
-        .on("zoom", (event) => gMain.attr("transform", event.transform));
-      svg.call(zoom);
-
-      // Links
-      const link = gLinks.selectAll("line")
-        .data(filteredLinks)
-        .enter().append("line")
-        .attr("class", "link-glow")
-        .attr("stroke", "rgba(0, 242, 255, 0.15)")
-        .attr("stroke-width", 1.5);
-
-      // Grupos de Nós
-      const node = gNodes.selectAll(".node-group")
-        .data(filteredNodes)
-        .enter().append("g")
-        .attr("class", d => `node-group graph-node ${d.type}-node`)
-        .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended))
-        .on("mouseenter", (e, d) => setHovered(d))
-        .on("mouseleave", () => setHovered(null))
-        .on("click", (e, d) => { e.stopPropagation(); setSelected(d); });
-
-      // Desenho dos Nós
-      node.append("circle")
-        .attr("r", d => d.type === 'core' ? 35 : (d.type === 'pilar' ? 22 : 12))
-        .attr("class", "node-glow")
-        .attr("stroke", d => d.type === 'core' ? "var(--primary)" : (d.type === 'pilar' ? "#f59e0b" : "#4ade80"))
-        .attr("stroke-width", 2)
-        .attr("fill", "rgba(10, 15, 30, 0.95)");
-
-      node.append("text")
-        .attr("dy", d => d.type === 'core' ? 60 : 45)
-        .attr("text-anchor", "middle")
-        .attr("fill", "rgba(255,255,255,0.7)")
-        .attr("font-size", "10px")
-        .attr("font-weight", d => d.type === 'core' ? "900" : "500")
-        .style("letter-spacing", "1px")
-        .text(d => (d.type !== 'concept' || hovered?.id === d.id) ? d.id.toUpperCase() : "");
-
-      // Atualização da Simulação
-      simulation.on("tick", () => {
-        link
-          .attr("x1", d => d.source.x)
-          .attr("y1", d => d.source.y)
-          .attr("x2", d => d.target.x)
-          .attr("y2", d => d.target.y);
-
-        node.attr("transform", d => `translate(${d.x},${d.y})`);
-      });
-
-      // Drag Functions
-      function dragstarted(event, d) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x; d.fy = d.y;
-      }
-      function dragged(event, d) {
-        d.fx = event.x; d.fy = event.y;
-      }
-      function dragended(event, d) {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null; d.fy = null;
-      }
-
-      // Estatísticas
-      setStats({
-        core: filteredNodes.filter(n => n.type === 'core').length,
-        pilar: filteredNodes.filter(n => n.type === 'pilar').length,
-        concepts: filteredNodes.length
-      });
-
-      return () => simulation.stop();
-    }, [filteredNodes, filteredLinks]);
+    const colors = { core: "#3b82f6", pilar: "#f59e0b", concept: "#22c55e", border: "#0d1117", muted: "#334155" };
 
     return (
-      <div className="glass-card" style={{ height: '75vh', position: 'relative', overflow: 'hidden', padding: 0, border: '1px solid var(--border)', background: '#02040a' }}>
-        {/* Header Superior */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '25px 35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(2,4,10,0.95), transparent)' }}>
-          <div>
-            <h2 className="title-grad" style={{ letterSpacing: '6px', fontSize: '1.2rem', marginBottom: '5px' }}>COGNITIVE_MAP_v5.0</h2>
-            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.65rem', color: '#00ffcc', fontWeight: 'bold', textShadow: '0 0 10px #00ffcc44' }}>● NEURAL_DYNAMIC_ACTIVE</span>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>L0 / GRID_X_449</span>
+      <div style={{ 
+        width:"100%", height:"100%", background:"#050810", display:"flex", 
+        fontFamily:"'JetBrains Mono','Fira Code',monospace", overflow:"hidden", border:"1px solid #0d1117", borderRadius:12 
+      }}>
+        
+        {/* Main Interface */}
+        <div ref={containerRef} style={{ flex:1, position:"relative", overflow:"hidden" }} onClick={() => setSelected(null)}>
+          <div style={{ position:"absolute", top:15, left:20, zIndex:10 }}>
+            <div style={{ color:"#60a5fa", fontSize:10, fontWeight:700, letterSpacing:2 }}>COGNITIVE_MAP_v5.2 · TECHNICAL_CORE</div>
+            <div style={{ color:colors.muted, fontSize:8, marginTop:4 }}>{visNodes.length} nodes active · Cluster scale 0.35</div>
+          </div>
+
+          <div style={{ position:"absolute", top:15, right:20, zIndex:10, display:"flex", gap:10 }}>
+            <input 
+              type="text" placeholder="SEARCH_ID..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)}
+              style={{ background:"transparent", border:"1px solid #0d1117", borderRadius:4, padding:"4px 10px", color:"#fff", fontSize:9, outline:"none", width:120 }}
+            />
+            <div style={{ display:"flex", gap:4 }}>
+              {["all", "core", "pilar", "concept"].map(t => (
+                <button key={t} onClick={() => setFilterType(t)} style={{
+                  padding:"3px 8px", fontSize:8, borderRadius:3, cursor:"pointer", background:filterType===t?"#1e293b":"transparent",
+                  border:`1px solid ${filterType===t?"#3b82f6":"#0d1117"}`, color:filterType===t?"#60a5fa":colors.muted, fontFamily:"inherit"
+                }}>{t.toUpperCase()}</button>
+              ))}
             </div>
           </div>
-          
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <div style={{ position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder="SEARCH_NODE..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '25px', padding: '10px 25px', color: 'white', fontSize: '10px', width: '220px', outline: 'none', transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)' }}
-                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
-              />
-              {searchTerm && <span onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '10px', color: 'var(--primary)' }}>✕</span>}
-            </div>
-            
-            <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.05)', margin: '0 10px' }} />
-            
-            <SlantButton active={filterType === 'all'} onClick={() => setFilterType('all')}>VIEW_ALL</SlantButton>
-            <SlantButton color="var(--primary)" active={filterType === 'core'} onClick={() => setFilterType('core')}>CORE</SlantButton>
-            <SlantButton color="#f59e0b" active={filterType === 'pilar'} onClick={() => setFilterType('pilar')}>PILARS</SlantButton>
-            <SlantButton color="#4ade80" active={filterType === 'concept'} onClick={() => setFilterType('concept')}>CONCEPTS</SlantButton>
+
+          <svg width={dims.w} height={dims.h} style={{ display:"block" }}>
+            <defs>
+              <filter id="nodeGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+
+            {/* Links */}
+            {visLinks.map((l, i) => {
+              const sId = typeof l.source === 'object' ? l.source.id : l.source;
+              const tId = typeof l.target === 'object' ? l.target.id : l.target;
+              const sp = getP(sId), tp = getP(tId);
+              if (!sp || !tp) return null;
+              const isAct = (selected?.id === sId || selected?.id === tId) || (hovered?.id === sId || hovered?.id === tId);
+              return (
+                <line key={i} x1={sp.x} y1={sp.y} x2={tp.x} y2={tp.y} 
+                  stroke={isAct ? "#60a5fa" : "#0f172a"} 
+                  strokeWidth={isAct ? 1.5 : 0.8}
+                  strokeOpacity={isAct ? 1 : 0.4}
+                />
+              );
+            })}
+
+            {/* Nodes */}
+            {visNodes.map(n => {
+              const p = getP(n.id); if (!p) return null;
+              const isSel = selected?.id === n.id, isHov = hovered?.id === n.id;
+              const isDim = (selected || hovered) && !activeIds.has(n.id);
+              const col = colors[n.type] || "#fff";
+              const r = n.type === 'core' ? 18 : (n.type === 'pilar' ? 12 : 8);
+
+              return (
+                <g key={n.id} transform={`translate(${p.x},${p.y})`} style={{ cursor:"grab" }}
+                  onMouseDown={e => onMD(e, n)} onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(null)}
+                  onClick={e => { e.stopPropagation(); setSelected(n); }}>
+                  
+                  {n.type === 'core' && <circle r={r+6} fill="none" stroke={col} strokeWidth={1} strokeDasharray="3 3" strokeOpacity={isDim?.1:.4}/>}
+                  {(isSel || isHov) && <circle r={r+4} fill={col} fillOpacity={0.15} style={{ filter:"url(#nodeGlow)" }}/>}
+                  
+                  <circle r={r} fill={isDim ? "#0d1117" : col} fillOpacity={isDim ? 0.1 : 0.9} stroke={isSel ? "#fff" : col} strokeWidth={isSel ? 2 : 1}/>
+                  
+                  <text y={r+14} textAnchor="middle" fontSize={8} fill={isDim ? "#0d1117" : "#94a3b8"} fontWeight={isSel ? 700 : 400} style={{ pointerEvents:"none", userSelect:"none" }}>
+                    {n.id.length > 20 ? n.id.slice(0, 18) + '…' : n.id.toUpperCase()}
+                  </text>
+                  {n.type === 'core' && !isDim && (
+                    <text dominantBaseline="middle" textAnchor="middle" fontSize={9} fill="#fff" fontWeight="900" style={{ pointerEvents:"none" }}>★</text>
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* SOBER LEGEND */}
+          <div style={{ position:"absolute", bottom:20, left:20, background:"rgba(5,8,16,.85)", border:"1px solid #0d1117", borderRadius:6, padding:"10px 14px", pointerEvents:"none" }}>
+            <div style={{ color:colors.muted, fontSize:7, letterSpacing:2, marginBottom:6 }}>SYSTEM_INDEX</div>
+            {["core", "pilar", "concept"].map(t => (
+              <div key={t} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                <div style={{ width:6, height:6, borderRadius:"50%", background:colors[t] }}/>
+                <span style={{ color:"#64748b", fontSize:8 }}>{t.toUpperCase()}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Estatísticas Flutuantes */}
-        <div style={{ position: "absolute", bottom: 30, right: selected ? 440 : 30, zIndex: 110, display: "flex", gap: "25px", padding: '20px 30px', background: 'rgba(5,7,15,0.85)', backdropFilter: 'blur(20px)', border: '1px solid var(--border)', borderRadius: '24px', transition: 'all 0.6s cubic-bezier(0.19, 1, 0.22, 1)' }}>
-            <div>
-              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: "900", letterSpacing: '2px', marginBottom: '8px' }}>CORE_NEXUS</div>
-              <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "var(--primary)", textShadow: '0 0 15px var(--primary)' }}>{stats.core}</div>
-            </div>
-            <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.06)' }} />
-            <div>
-              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: "900", letterSpacing: '2px', marginBottom: '8px' }}>CLUSTERS</div>
-              <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "#f59e0b", textShadow: '0 0 15px #f59e0b66' }}>{stats.pilar}</div>
-            </div>
-        </div>
-
-        {/* Área Svg D3 */}
-        <div ref={containerRef} style={{ height: '100%', width: '100%', cursor: 'crosshair' }}>
-          <svg 
-            ref={svgRef} 
-            width="100%" 
-            height="100%" 
-            style={{ display: 'block' }}
-            onClick={() => setSelected(null)}
-          />
-        </div>
-
-        {/* Legend Panel */}
-        <div style={{ position: "absolute", bottom: 30, left: 30, zIndex: 15, padding: '20px', background: 'rgba(5,7,15,0.7)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)', borderRadius: '20px', minWidth: '180px' }}>
-          <div style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '3px', marginBottom: '15px' }}>NEURAL_INDEX</div>
-          {[
-            { label: 'CORE_ENGINE', color: 'var(--primary)' },
-            { label: 'PILLAR_MODULE', color: '#f59e0b' },
-            { label: 'BASE_CONCEPT', color: '#4ade80' }
-          ].map(item => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color, boxShadow: `0 0 10px ${item.color}` }} />
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: '700' }}>{item.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Side Detail Panel (Premium Glassmorphism) */}
-        <div className={`graph-overlay-card`} style={{ 
-          position: "absolute", 
-          top: 0, 
-          right: 0, 
-          width: selected ? 400 : 0, 
-          height: '100%', 
-          zIndex: 1000, 
-          transition: 'all 0.7s cubic-bezier(0.19, 1, 0.22, 1)', 
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '-30px 0 60px rgba(0,0,0,0.4)',
-          opacity: selected ? 1 : 0
+        {/* Technical Side Panel */}
+        <div style={{ 
+          width:selected ? 300 : 0, flexShrink:0, background:"#05080e", borderLeft:"1px solid #0d1117", 
+          overflow:"hidden", transition:"width .25s cubic-bezier(0.19, 1, 0.22, 1)", display:"flex", flexDirection:"column" 
         }}>
           {selected && (
-            <div style={{ width: 400, padding: 40, animation: 'fadeIn 0.8s ease' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 40 }}>
-                <div>
-                  <div style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '4px', marginBottom: 10 }}>IDENTITY_HEX: #{selected.id.length}X</div>
-                  <h2 style={{ fontSize: '2.4rem', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{selected.id.toUpperCase()}</h2>
+            <div style={{ padding:25, flex:1, overflowY:"auto" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:15 }}>
+                <span style={{ color:colors[selected.type], fontSize:9, fontWeight:700, letterSpacing:2 }}>NODE_ID: {selected.id.slice(0,8)}</span>
+                <button onClick={() => setSelected(null)} style={{ background:"none", border:"none", color:"#1e293b", cursor:"pointer", fontSize:14 }}>✕</button>
+              </div>
+
+              <div style={{ color:"#e2e8f0", fontSize:16, fontWeight:900, lineHeight:1.2, marginBottom:15 }}>{selected.id.toUpperCase()}</div>
+
+              <div style={{ display:"flex", gap:10, marginBottom:25 }}>
+                <div style={{ flex:1, background:"#0a0f1a", border:"1px solid #0d1117", borderRadius:6, padding:10, textAlign:"center" }}>
+                   <div style={{ color:colors[selected.type], fontSize:18, fontWeight:900 }}>{visLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === selected.id || (typeof l.target === 'object' ? l.target.id : l.target) === selected.id).length}</div>
+                   <div style={{ color:colors.muted, fontSize:7, marginTop:2 }}>CONNECTIONS</div>
                 </div>
-                <button 
-                  onClick={() => setSelected(null)}
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', width: 45, height: 45, borderRadius: '50%', cursor: 'pointer', transition: '300ms' }}
-                  onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.1)'}
-                >✕</button>
+                <div style={{ flex:1, background:"#0a0f1a", border:"1px solid #0d1117", borderRadius:6, padding:10, textAlign:"center" }}>
+                   <div style={{ color:"#fff", fontSize:18, fontWeight:900 }}>100%</div>
+                   <div style={{ color:colors.muted, fontSize:7, marginTop:2 }}>RELIABILITY</div>
+                </div>
               </div>
 
-              <div style={{ padding: 25, background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 30 }}>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: 10, fontWeight: '800' }}>SEMANTIC_LAYER</div>
-                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
-                  {selected.type === 'core' ? 'Primary intelligence nexus of Flose AI. Controls all secondary pillar assignments and thematic clustering.' : 
-                   selected.type === 'pilar' ? 'Thematic pillar node. Groups multiple atomic concepts under a common technical expertise.' : 
-                   'Base atomic concept. Persistent knowledge node extracted from agent execution logs and episodic memory.'}
-                </p>
-              </div>
+              <div style={{ color:colors.muted, fontSize:7, letterSpacing:2, marginBottom:10, borderBottom:"1px solid #0d1117", paddingBottom:8 }}>SEMANTIC_LAYER</div>
+              <p style={{ color:"#94a3b8", fontSize:10, lineHeight:1.6, marginBottom:30 }}>
+                {selected.type === 'core' ? 'Primary intelligence nexus. Orchestrates and validates all subordinate technical pilots and atomic data nodes within the Flose framework.' : 
+                 selected.type === 'pilar' ? 'Technical vertical pillar. Aggregates specialized concept clusters to provide higher-order cognitive processing.' : 
+                 'Atomic intelligence concept. Fundamental persistent unit of knowledge extracted and verified during autonomous agent operations.'}
+              </p>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: 40 }}>
-                  <div style={{ padding: 20, background: 'rgba(0, 242, 255, 0.05)', borderRadius: '15px', border: '1px solid rgba(0, 242, 255, 0.1)' }}>
-                    <div style={{ fontSize: '0.5rem', color: 'var(--primary)', marginBottom: 5 }}>STATUS</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff' }}>STABLE</div>
-                  </div>
-                  <div style={{ padding: 20, background: 'rgba(245, 158, 11, 0.05)', borderRadius: '15px', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
-                    <div style={{ fontSize: '0.5rem', color: '#f59e0b', marginBottom: 5 }}>WEIGHT</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff' }}>0.98</div>
-                  </div>
-              </div>
-
-              <div style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '4px', marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 15 }}>NEURAL_CONNECTIONS</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {filteredLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === selected.id || (typeof l.target === 'object' ? l.target.id : l.target) === selected.id).slice(0, 6).map(l => {
+              <div style={{ color:colors.muted, fontSize:7, letterSpacing:2, marginBottom:12 }}>CONNECTED_DEPENDENCIES</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                {visLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === selected.id || (typeof l.target === 'object' ? l.target.id : l.target) === selected.id).map((l, i) => {
                   const other = (typeof l.source === 'object' ? l.source.id : l.source) === selected.id ? (typeof l.target === 'object' ? l.target.id : l.target) : (typeof l.source === 'object' ? l.source.id : l.source);
+                  const node = rawNodes.find(n => n.id === other);
                   return (
-                    <div 
-                      key={other} 
-                      onClick={() => setSelected(rawNodes.find(n => n.id === other))}
-                      style={{ padding: 18, background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: '300ms' }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
-                    >
-                      <div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: '800' }}>{other.toUpperCase()}</div>
-                      <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>RELATION: {l.relation?.toUpperCase() || 'CONNECTED'}</div>
+                    <div key={i} onClick={() => setSelected(node)} style={{ 
+                      background:"#0a0f1a", border:"1px solid #0d1117", borderRadius:6, padding:10, cursor:"pointer", transition:"border 0.2s" 
+                    }} onMouseEnter={e => e.currentTarget.style.borderColor = colors[node?.type] || "#fff"}>
+                      <div style={{ color:"#fff", fontSize:9, fontWeight:700 }}>{other.toUpperCase()}</div>
+                      <div style={{ color:colors[node?.type] || colors.muted, fontSize:7, marginTop:2 }}>RELATION: {l.relation?.toUpperCase() || "CONNECTED"}</div>
                     </div>
                   );
                 })}

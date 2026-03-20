@@ -1,0 +1,1311 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "type": "core",
+      "id": "Flose"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "AI Architecture"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "GCP Infrastructure"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "FinOps"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "Agent Systems"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "Terraform"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "Vector Databases"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "MVPs"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "Code"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "DataViz"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "Databases"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "AI Models"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "Integration"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "manus ia"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Adapta IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Intelig\u00eancia Artificial Adaptativa"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Adapta IA (Empresa)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "n8n"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "NotebookLM"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Genspark (Plataforma de Talentos em IA)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Littlebird"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "aixio.ai"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Intelig\u00eancia Artificial"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "SaaS"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "UXPilotAI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Intelig\u00eancia Artificial em UX"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Automa\u00e7\u00e3o de UX"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Design de Experi\u00eancia Assistido por IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Merlin AI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Speakly"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Genspark AI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Produto de IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Gera\u00e7\u00e3o de Fala por IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Adapta.org"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "IA Generativa"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Ecossistema de IA Generativa"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Inner AI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Otimiza\u00e7\u00e3o baseada em IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Insights profundos com IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Automa\u00e7\u00e3o inteligente"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Late - Social Media API"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "API de automa\u00e7\u00e3o de m\u00eddias sociais"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Agente precisa ter tarefa"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "GeneralMonitor"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Agente de Monitoramento Gen\u00e9rico"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Controle e Alerta Proativo"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Code Generation"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Programming Concepts"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "E-learning"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "EdTech"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Bubble (plataforma no-code)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Desenvolvimento no-code"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Bubble.io"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "OpenClaw (concorrente de seguran\u00e7a)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Notis.ai"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "AI Workspace para arquitetos"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Design Partner Pilot"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "AVOICE_Expert (novo agente)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Aniq-UI | Pro Templates (UI Toolkit)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "DemandApprover_Agent"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Workflow_Approval_Non_GCP"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "DemandCritic"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Prop\u00f3sito dos Agentes Flose AI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Agentes como Especialistas"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Prontid\u00e3o de Agentes"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Listagem de agentes sem TRD"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Agente Aurora"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Vis\u00e3o Computacional"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Processamento de Imagens"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "An\u00e1lise de V\u00eddeos"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "MBA em IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Educa\u00e7\u00e3o em Intelig\u00eancia Artificial"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Pesquisa de Escolas"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Programas de MBA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "MBA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "AI_MBA_Advisor (Contextualizado)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Pesquisa de Faculdades MBA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Educa\u00e7\u00e3o Superior em IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "An\u00e1lise de Curr\u00edculos MBA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Requisitos de Admiss\u00e3o MBA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Faculdade do Brasil"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "FAAP"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Processamento de \u00c1udio"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "An\u00e1lise Sonora"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Reconhecimento de Voz"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Looma (Aplicativo de IA)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Anote\u00a7\u00f5es Inteligentes"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Assistente de Reuni\u00f5es IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Sumariza\u00e7\u00e3o com IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Organiza\u00e7\u00e3o Autom\u00e1tica de Notas"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Smart Recall"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Looma AI Notetaker"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Pipefy AI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Automa\u00e7\u00e3o de Fluxos de Trabalho"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Otimiza\u00e7\u00e3o de Processos"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Gerenciamento de Workflow (BPM)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "AI Architech Careers (Perfil Social)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Carreiras em Arquitetura de IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Oportunidades de Carreira em IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Notis AI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Notion AI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Aquisi\u00e7\u00e3o de Software"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "gpai (Empresa)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Intelig\u00eancia Artificial (AI)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Algoritmos"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Matem\u00e1tica Computacional"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Solu\u00e7\u00f5es Inteligentes"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Jenni (IA de Escrita)"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Assistente de Escrita de IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Gera\u00e7\u00e3o de Texto IA"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Snowflake"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "MongoDB Atlas"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Cloud Database"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "NoSQL"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "AWS"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Azure"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "GCP"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Multi-cloud"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Database as a Service"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Runnable"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Plataforma de Desenvolvimento"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Execu\u00e7\u00e3o de C\u00f3digo"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "DevOps & IaC"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "C4 Model"
+    },
+    {
+      "type": "pilar",
+      "color": "#f59e0b",
+      "id": "Programming"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Arquitetura de Software"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "C4 model"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "TOGAF"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Arquitetura Corporativa"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Framework de TI"
+    },
+    {
+      "type": "concept",
+      "color": "green",
+      "id": "Framework de Arquitetura Corporativa"
+    }
+  ],
+  "edges": [
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "AI Architecture"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "GCP Infrastructure"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "FinOps"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Agent Systems"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Terraform"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Vector Databases"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "MVPs"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Code"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "DataViz"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Databases"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "AI Models"
+    },
+    {
+      "relation": "defined_by",
+      "source": "Flose",
+      "target": "Integration"
+    },
+    {
+      "source": "Flose",
+      "target": "DevOps & IaC"
+    },
+    {
+      "source": "Flose",
+      "target": "Programming"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "manus ia"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Adapta IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Intelig\u00eancia Artificial Adaptativa"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Adapta IA (Empresa)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "n8n"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "NotebookLM"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Genspark (Plataforma de Talentos em IA)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Littlebird"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "aixio.ai"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Intelig\u00eancia Artificial"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "SaaS"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "UXPilotAI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Intelig\u00eancia Artificial em UX"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Automa\u00e7\u00e3o de UX"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Design de Experi\u00eancia Assistido por IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Merlin AI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Speakly"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Genspark AI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Produto de IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Gera\u00e7\u00e3o de Fala por IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Adapta.org"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "IA Generativa"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Ecossistema de IA Generativa"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Inner AI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Otimiza\u00e7\u00e3o baseada em IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Insights profundos com IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Automa\u00e7\u00e3o inteligente"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Late - Social Media API"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "API de automa\u00e7\u00e3o de m\u00eddias sociais"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Agente precisa ter tarefa"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "GeneralMonitor"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Agente de Monitoramento Gen\u00e9rico"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Controle e Alerta Proativo"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Code Generation"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Programming Concepts"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "E-learning"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "EdTech"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Bubble (plataforma no-code)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Desenvolvimento no-code"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Bubble.io"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "OpenClaw (concorrente de seguran\u00e7a)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Notis.ai"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "AI Workspace para arquitetos"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Design Partner Pilot"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "AVOICE_Expert (novo agente)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Aniq-UI | Pro Templates (UI Toolkit)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "DemandApprover_Agent"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Workflow_Approval_Non_GCP"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "DemandCritic"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Prop\u00f3sito dos Agentes Flose AI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Agentes como Especialistas"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Prontid\u00e3o de Agentes"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Listagem de agentes sem TRD"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Agente Aurora"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Vis\u00e3o Computacional"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Processamento de Imagens"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "An\u00e1lise de V\u00eddeos"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "MBA em IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Educa\u00e7\u00e3o em Intelig\u00eancia Artificial"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Pesquisa de Escolas"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Programas de MBA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "MBA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "AI_MBA_Advisor (Contextualizado)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Pesquisa de Faculdades MBA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Educa\u00e7\u00e3o Superior em IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "An\u00e1lise de Curr\u00edculos MBA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Requisitos de Admiss\u00e3o MBA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Faculdade do Brasil"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "FAAP"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Processamento de \u00c1udio"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "An\u00e1lise Sonora"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Reconhecimento de Voz"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Looma (Aplicativo de IA)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Anote\u00a7\u00f5es Inteligentes"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Assistente de Reuni\u00f5es IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Sumariza\u00e7\u00e3o com IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Organiza\u00e7\u00e3o Autom\u00e1tica de Notas"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Smart Recall"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Looma AI Notetaker"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Pipefy AI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Automa\u00e7\u00e3o de Fluxos de Trabalho"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Otimiza\u00e7\u00e3o de Processos"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Gerenciamento de Workflow (BPM)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "AI Architech Careers (Perfil Social)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Carreiras em Arquitetura de IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Oportunidades de Carreira em IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Notis AI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Notion AI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Aquisi\u00e7\u00e3o de Software"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "gpai (Empresa)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Intelig\u00eancia Artificial (AI)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Algoritmos"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Matem\u00e1tica Computacional"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Solu\u00e7\u00f5es Inteligentes"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Jenni (IA de Escrita)"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Assistente de Escrita de IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Gera\u00e7\u00e3o de Texto IA"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Snowflake"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "MongoDB Atlas"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Cloud Database"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "NoSQL"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "AWS"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Azure"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "GCP"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Multi-cloud"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Database as a Service"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Runnable"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Plataforma de Desenvolvimento"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Execu\u00e7\u00e3o de C\u00f3digo"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "TOGAF"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Arquitetura Corporativa"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Framework de TI"
+    },
+    {
+      "relation": "groups",
+      "source": "AI Architecture",
+      "target": "Framework de Arquitetura Corporativa"
+    },
+    {
+      "relation": "groups",
+      "source": "DevOps & IaC",
+      "target": "C4 Model"
+    },
+    {
+      "relation": "groups",
+      "source": "DevOps & IaC",
+      "target": "C4 model"
+    },
+    {
+      "relation": "groups",
+      "source": "Programming",
+      "target": "Arquitetura de Software"
+    }
+  ]
+}
