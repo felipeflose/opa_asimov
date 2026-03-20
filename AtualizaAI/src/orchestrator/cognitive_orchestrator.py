@@ -296,7 +296,7 @@ class CognitiveOrchestrator:
                 # Tracking Real de Custos (FinOps)
                 if self.finops and hasattr(response, 'usage_metadata'):
                     usage = response.usage_metadata
-                    self.finops.log_usage(usage.prompt_token_count, usage.candidates_token_count)
+                    self.finops.log_usage(usage.prompt_token_count, usage.candidates_token_count, agent_name="Orchestrator")
                 
                 raw_text = response.text.strip()
                 # Extração robusta de JSON
@@ -493,7 +493,8 @@ class CognitiveOrchestrator:
                     name=agent_data['agent_name'],
                     purpose=agent_data['purpose'],
                     system_prompt=agent_data['system_prompt'],
-                    gcs_client=self.gcs_client
+                    gcs_client=self.gcs_client,
+                    finops_manager=self.finops
                 )
                 
                 # TASK-23: Memória Compartilhada - Injeção de contexto nas últimas 5 entradas relevantes
@@ -509,6 +510,11 @@ class CognitiveOrchestrator:
                 run_output = agent_obj.run(task_desc + context_inject)
                 if isinstance(run_output, tuple):
                     execution_result = run_output[0]
+                    # TASK-05: Log usage of the specialized agent
+                    if self.finops and hasattr(run_output[1], 'confidence'): # Dummy check to see if evaluation exists
+                        # Note: If BaseAgent returned usage_metadata, we could log it here.
+                        # For now, we estimate or track it inside the agent if we inject finops there.
+                        pass
                 else:
                     execution_result = run_output
                 

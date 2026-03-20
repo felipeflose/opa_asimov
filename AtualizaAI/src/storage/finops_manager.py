@@ -14,7 +14,7 @@ class FinOpsManager:
         self.price_input_1m = 0.075  # $0.075 por 1M tokens
         self.price_output_1m = 0.30   # $0.30 por 1M tokens
 
-    def log_usage(self, prompt_tokens, candidate_tokens):
+    def log_usage(self, prompt_tokens, candidate_tokens, agent_name="System"):
         input_cost = (prompt_tokens / 1_000_000) * self.price_input_1m
         output_cost = (candidate_tokens / 1_000_000) * self.price_output_1m
         total_cost = input_cost + output_cost
@@ -23,8 +23,17 @@ class FinOpsManager:
         today = datetime.now().strftime("%Y-%m-%d")
         
         if today not in data:
-            data[today] = {"tokens": 0, "cost": 0.0, "calls": 0}
+            data[today] = {"tokens": 0, "cost": 0.0, "calls": 0, "agents": {}}
         
+        # Breakdown por agente
+        agents = data[today].setdefault("agents", {})
+        if agent_name not in agents:
+            agents[agent_name] = {"tokens": 0, "cost": 0.0, "calls": 0}
+        
+        agents[agent_name]["tokens"] += (prompt_tokens + candidate_tokens)
+        agents[agent_name]["cost"] += total_cost
+        agents[agent_name]["calls"] += 1
+
         data[today]["tokens"] += (prompt_tokens + candidate_tokens)
         data[today]["cost"] += total_cost
         data[today]["calls"] += 1
