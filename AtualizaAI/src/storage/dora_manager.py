@@ -57,34 +57,6 @@ class DoraManager:
         })
         self._save_data(data)
 
-    def log_incident(self, incident_id, status="open"):
-        """Logs an incident. If status is 'resolved', calculates MTTR."""
-        data = self._get_data()
-        now = datetime.now(timezone.utc)
-        incidents = data.setdefault("incidents", [])
-        
-        if status == "open":
-            incidents.append({
-                "id": incident_id,
-                "status": "open",
-                "opened_at": now.isoformat(),
-                "resolved_at": None,
-                "mttr_hours": None
-            })
-        elif status == "resolved":
-            for inc in incidents:
-                if inc.get("id") == incident_id and inc.get("status") == "open":
-                    inc["status"] = "resolved"
-                    inc["resolved_at"] = now.isoformat()
-                    try:
-                        opened_ts = datetime.fromisoformat(inc.get("opened_at").replace('Z', '+00:00'))
-                        diff = now - opened_ts
-                        inc["mttr_hours"] = diff.total_seconds() / 3600.0
-                    except:
-                        pass
-                    break
-        self._save_data(data)
-
     def get_metrics_summary(self):
         """Calculates and returns the 4 DORA metrics."""
         data = self._get_data()
@@ -103,12 +75,12 @@ class DoraManager:
                 pass
         
         freq = len(recent_deploys)
-        freq_label = f"{freq}/mês" if freq > 0 else "N/A"
+        freq_label = f"{freq}/mês" if freq > 0 else "0/mês"
 
         # 2. Lead Time for Changes (Average of recent deploys)
         lead_times = [d.get("lead_time_hours", 0) for d in recent_deploys if d.get("lead_time_hours", 0) > 0]
         avg_lead_time = sum(lead_times) / len(lead_times) if lead_times else 0
-        lead_time_label = f"{avg_lead_time:.1f}h" if lead_times else "N/A"
+        lead_time_label = f"{avg_lead_time:.1f}h" if lead_times else "0.0h"
 
         # 3. Change Failure Rate
         failed_deploys = [d for d in recent_deploys if d.get("status") == "failed"]
@@ -119,7 +91,7 @@ class DoraManager:
         resolved_incidents = [i for i in incidents if i.get("status") == "resolved" and i.get("mttr_hours") is not None]
         mttr_times = [i.get("mttr_hours") for i in resolved_incidents]
         avg_mttr = sum(mttr_times) / len(mttr_times) if mttr_times else 0
-        mttr_label = f"{avg_mttr:.1f}h" if mttr_times else "N/A"
+        mttr_label = f"{avg_mttr:.1f}h" if mttr_times else "0.0h"
 
         return {
             "deployment_frequency": freq_label,

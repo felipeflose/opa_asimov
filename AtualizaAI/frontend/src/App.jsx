@@ -1073,18 +1073,33 @@ function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
               {marketTemplates.length > 0 ? marketTemplates.map(tpl => (
-                <div key={tpl.name} className="glass-card agent-card-edit" style={{ border: '1px solid rgba(0,255,128,0.2)' }}>
+                <div key={tpl.name} className="glass-card agent-card-edit" style={{ border: '1px solid rgba(0,255,128,0.2)', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.6rem', color: 'rgba(0,255,128,0.7)', fontWeight: '900', textTransform: 'uppercase', background: 'rgba(0,255,128,0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                    {tpl.category || 'General'}
+                  </div>
                   <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                     <div className="avatar" style={{ background: '#34d399', color: 'black' }}>{tpl.name[0]}</div>
                     <h4 style={{ color: '#34d399' }}>{tpl.name}</h4>
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minHeight: '40px' }}>{tpl.purpose}</p>
                   
+                  <p style={{ fontSize: '0.8rem', color: '#fff', marginBottom: '10px', fontWeight: '600' }}>{tpl.description || tpl.purpose}</p>
+                  
+                  {tpl.use_cases && (
+                    <div style={{ marginBottom: '15px' }}>
+                      <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 'bold' }}>USE CASES:</p>
+                      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                        {tpl.use_cases.map(uc => (
+                          <span key={uc} style={{ fontSize: '0.55rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '4px' }}>{uc}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <NapkinVisual visualUrl={tpl.napkin_visual_url} />
 
                   <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>By {tpl.author}</span>
-                    <button className="nav-item badge-online" style={{ padding: '5px 15px', fontSize: '0.6rem' }} onClick={() => handleImport(tpl.name)}>📥 IMPORT</button>
+                    <button className="nav-item badge-online" style={{ padding: '8px 20px', fontSize: '0.65rem', fontWeight: '900' }} onClick={() => handleImport(tpl.name)}>📥 IMPORT TEMPLATE</button>
                   </div>
                 </div>
               )) : (
