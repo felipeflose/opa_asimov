@@ -18,7 +18,7 @@ function App() {
   const [hoveredNode, setHoveredNode] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [activity, setActivity] = useState([]);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [agentList, setAgentList] = useState([]);
   const [executingAgent, setExecutingAgent] = useState('');
   const [viewingAgent, setViewingAgent] = useState(null);
@@ -28,53 +28,11 @@ function App() {
   const [marketTemplates, setMarketTemplates] = useState([]);
   const [isFixing, setIsFixing] = useState(false);
   const [viewingDelivery, setViewingDelivery] = useState(null);
-
-  // Helper to ensure we never try to render an object directly in JSX (prevents Error #31)
-  const safeRender = (val, fallback = '') => {
-    if (val === null || val === undefined) return fallback;
-    if (typeof val === 'object') {
-      try { return JSON.stringify(val); } catch(e) { return '[Object]'; }
-    }
-    return String(val);
-  };
-
-  const SlantButton = ({ children, onClick, active, color }) => (
-    <button 
-      onClick={onClick}
-      style={{
-        padding: '8px 18px',
-        background: active ? (color || 'var(--primary)') : 'rgba(255,255,255,0.03)',
-        color: active ? '#000' : '#fff',
-        border: 'none',
-        borderRadius: '4px',
-        fontSize: '0.65rem',
-        fontWeight: '900',
-        cursor: 'pointer',
-        clipPath: 'polygon(10% 0, 100% 0, 90% 100%, 0% 100%)',
-        transition: 'all 0.3s ease'
-      }}
-    >
-      {children}
-    </button>
-  );
-
-  const NapkinVisual = ({ visualUrl }) => {
-    if (!visualUrl) return null;
-    const proxied = `/api/marketplace/visual-proxy?url=${encodeURIComponent(visualUrl)}&token=${token}`;
-    return (
-      <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
-        <img 
-          src={proxied} 
-          style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }}
-          alt="Architectural Visual"
-        />
-      </div>
-    );
-  };
-
+  
   // QA Report State
   const [qaReport, setQaReport] = useState(null);
   const [qaLoading, setQaLoading] = useState(false);
+  const [doraData, setDoraData] = useState(null);
   const [expandedAgent, setExpandedAgent] = useState(null);
   const [enrichingAgent, setEnrichingAgent] = useState(null);
 
@@ -205,18 +163,10 @@ function App() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchData();
+      const interval = setInterval(fetchData, 30000); 
+      return () => clearInterval(interval);
     }
-  }, [isAuthenticated, activeTab]);
-
-  useEffect(() => {
-    let interval;
-    if (isAuthenticated && (activeTab === 'Dashboard' || activeTab === 'Task Manager')) {
-      interval = setInterval(fetchData, 30000); 
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isAuthenticated, activeTab]);
+  }, [isAuthenticated]);
 
   const handleUpdateStatus = async (taskId, newStatus) => {
     try {
@@ -268,10 +218,45 @@ function App() {
   };
 
   useEffect(() => {
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [isAuthenticated, activeTab]);
+
+  useEffect(() => {
+    let interval;
+    if (isAuthenticated && (activeTab === 'Dashboard' || activeTab === 'Task Manager')) {
+      interval = setInterval(fetchData, 30000); 
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isAuthenticated, activeTab]);
+
+  useEffect(() => {
     if (activeTab === 'Quality Inspector') {
       fetchQAReport();
     }
   }, [activeTab]);
+
+  const fetchDoraData = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/dora/summary', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.error) setDoraData(data);
+    } catch (err) {
+      console.error("DORA fetch error", err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'DORA Metrics') {
+      fetchDoraData();
+    }
+  }, [activeTab, isAuthenticated]);
 
   const handleEnrichAgent = async (agentName) => {
     setEnrichingAgent(agentName);
@@ -295,6 +280,56 @@ function App() {
       setEnrichingAgent(null);
     }
   };
+
+  // Hook de Física Avançado v4
+  // NapkinVisual: exibe diagrama via proxy autenticado (Napkin requer Bearer token)
+  const NapkinVisual = ({ visualUrl }) => {
+    if (!visualUrl) return null;
+    const proxied = `/api/marketplace/visual-proxy?url=${encodeURIComponent(visualUrl)}`;
+    return (
+      <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(52,211,153,0.3)', background: '#111' }}>
+        <img 
+          src={proxied} 
+          style={{ width: '100%', display: 'block', maxHeight: '200px', objectFit: 'contain' }}
+          alt="Diagram"
+          onError={(e) => { e.target.style.display = 'none'; }}
+          onLoad={(e) => {
+            // Se for SVG via Proxy, precisamos injetar o token no src se não estiver pegando do global (mas img src não manda header auth customizado fácil)
+            // Para imagens, mantemos query param por enquanto OU usamos fetch + blob URL
+          }}
+          // Melhorei a visão para ser via fetch e blob para suportar header auth
+        />
+      </div>
+    );
+  };
+
+  const SlantButton = ({ children, active, onClick, color = '#00f2ff' }) => (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "8px 22px",
+        fontSize: "11px",
+        fontWeight: "800",
+        cursor: "pointer",
+        border: "none",
+        background: active ? color : "rgba(255,255,255,0.03)",
+        color: active ? "#000" : "rgba(255,255,255,0.6)",
+        transform: "skew(-15deg)",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        boxShadow: active ? `0 0 20px ${color}66` : "none",
+        marginRight: "10px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minWidth: "100px",
+        textTransform: "uppercase",
+        letterSpacing: "1px",
+        border: active ? "none" : "1px solid rgba(255,255,255,0.1)"
+      }}
+    >
+      <span style={{ transform: "skew(15deg)" }}>{children}</span>
+    </button>
+  );
 
   const useForce = (nodes, links, width, height) => {
     const pos = useRef({});
@@ -690,14 +725,13 @@ function App() {
               <div style={{ height: '100%', width: '100%', background: 'radial-gradient(circle at center, #0a0e1a 0%, #050505 100%)' }}>
                 <svg width="100%" height="100%" viewBox="0 0 800 400">
                   {graphData.links && graphData.links.map((link, i) => {
-                    const sId = (link.source && typeof link.source === 'object') ? link.source.id : link.source;
-                    const tId = (link.target && typeof link.target === 'object') ? link.target.id : link.target;
-                    if (!sId || !tId) return null;
-
-                    const s = graphData.nodes.find(n => n.id === sId);
-                    const t = graphData.nodes.find(n => n.id === tId);
+                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                    const s = graphData.nodes.find(n => n.id === sourceId);
+                    const t = graphData.nodes.find(n => n.id === targetId);
                     if (!s || !t) return null;
                     
+                    // Layout simplificado para preview (circular)
                     const sIdx = graphData.nodes.indexOf(s);
                     const tIdx = graphData.nodes.indexOf(t);
                     const sx = s.type === 'core' ? 400 : 400 + Math.cos(sIdx) * 120;
@@ -705,7 +739,7 @@ function App() {
                     const tx = t.type === 'core' ? 400 : 400 + Math.cos(tIdx) * 120;
                     const ty = t.type === 'core' ? 200 : 200 + Math.sin(tIdx) * 100;
 
-                    return <line key={`l-${i}`} x1={sx} y1={sy} x2={tx} y2={ty} stroke="var(--primary)" strokeOpacity="0.15" />;
+                    return <line key={i} x1={sx} y1={sy} x2={tx} y2={ty} stroke="var(--primary)" strokeOpacity="0.15" />;
                   })}
                   {graphData.nodes && graphData.nodes.slice(0, 20).map((node, i) => {
                     const x = node.type === 'core' ? 400 : 400 + Math.cos(i) * 120;
@@ -725,9 +759,9 @@ function App() {
               <div className="audit-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {activity.length > 0 ? activity.map((act, i) => (
                   <div key={i} className="audit-item" style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>@{act.user || 'system'}</p>
-                    <p style={{ fontSize: '0.8rem', color: '#e0e0e0' }}>{safeRender(act.message, '[Signal received]')}</p>
-                    <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{act.timestamp ? new Date(act.timestamp).toLocaleTimeString() : '---'}</span>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>@{act.user}</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{act.message ? act.message.substring(0, 40) + '...' : '[Image/No Text]'}</p>
+                    <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{new Date(act.timestamp).toLocaleTimeString()}</span>
                   </div>
                 )) : (
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Waiting for incoming signals...</p>
@@ -803,12 +837,12 @@ function App() {
                     key={task.id} 
                     draggable 
                     onDragStart={(e) => onDragStart(e, task.id)}
-                    onClick={() => setSelectedTaskId(selectedTaskId === task.id ? null : task.id)}
-                    className={`glass-card ${selectedTaskId === task.id ? 'active' : ''}`}
+                    onClick={() => setSelectedTask(task)}
+                    className={`glass-card ${selectedTask?.id === task.id ? 'active' : ''}`}
                     style={{ 
                       padding: '18px', 
                       cursor: 'grab', 
-                      border: selectedTaskId === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
+                      border: selectedTask?.id === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
                       position: 'relative',
                       animation: 'fadeIn 0.4s ease'
                     }}
@@ -821,7 +855,7 @@ function App() {
                     <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
                     
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '15px', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {safeRender(task.objective, 'Objetivo não detalhado...')}
+                      {task.objective || 'Objetivo não detalhado...'}
                     </p>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
@@ -837,10 +871,10 @@ function App() {
                     </div>
 
                     {/* Mostra governança se selecionado */}
-                    {selectedTaskId === task.id && (
-                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}` }}>
+                    {selectedTask?.id === task.id && (
+                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}`, animation: 'slideDown 0.3s ease' }}>
                         <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '5px' }}>🛡️ GOVERNANÇA FINOPS</p>
-                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{safeRender(task.governance_finops, 'Aguardando auditoria FinOps...')}</p>
+                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{task.governance_finops || 'Aguardando auditoria FinOps...'}</p>
                         
                         {(task.governance_finops === 'Aguardando auditoria FinOps...' || !task.objective || task.objective === 'Geração pendente...') && (
                           <button 
@@ -854,17 +888,16 @@ function App() {
 
                         <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
                           {!task.budget_approved && col.id === 'Aberto' && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={(e) => { e.stopPropagation(); handleApprove(task.id); }}>👍 APROVAR</button>
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={() => handleApprove(task.id)}>👍 APROVAR</button>
                           )}
                           {task.status === 'Em Progresso' && task.budget_approved && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={(e) => {
-                              e.stopPropagation();
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={() => {
                               setExecutingAgent(task.responsible);
                               handleExecute(task.id);
                             }}>🚀 EXECUTAR</button>
                           )}
                           {task.status === 'Concluído' && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981' }} onClick={(e) => { e.stopPropagation(); handleViewDelivery(task.result_id); }}>📦 VER ENTREGA</button>
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981' }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER ENTREGA</button>
                           )}
                         </div>
                       </div>
@@ -959,7 +992,7 @@ function App() {
                     <div className="avatar" style={{ scale: '0.7', background: 'var(--primary)', color: 'black' }}>{idx + 1}</div>
                     <div>
                       <h4 style={{ color: 'var(--primary)' }}>{step.agent_name}</h4>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{safeRender(step.task, 'Generic processing...')}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{step.task || 'Generic processing...'}</p>
                     </div>
                   </div>
                   <button onClick={() => setPipeline(pipeline.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
@@ -1308,8 +1341,8 @@ function App() {
                                   <span style={{ fontSize: '0.65rem', fontWeight: '800', color: inter.type === 'execution' ? 'var(--primary)' : '#34d399' }}>{inter.type === 'execution' ? '⚡ Execução' : '📱 Telegram'}{inter.task_id ? ` • ${inter.task_id}` : ''}{inter.action ? ` • ${inter.action}` : ''}</span>
                                   <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{inter.timestamp ? new Date(inter.timestamp).toLocaleString() : '—'}</span>
                                 </div>
-                                {inter.input && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>📝 {safeRender(inter.input).substring(0, 150)}</p>}
-                                <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: '1.4' }}>{safeRender(inter.result).substring(0, 300)}</p>
+                                {inter.input && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>📝 {inter.input.substring(0, 150)}{inter.input.length > 150 ? '...' : ''}</p>}
+                                <p style={{ fontSize: '0.8rem', color: '#e2e8f0', lineHeight: '1.4' }}>{(inter.result || '').substring(0, 300)}{(inter.result || '').length > 300 ? '...' : ''}</p>
                               </div>
                             ))}
                           </div>
@@ -1355,6 +1388,74 @@ function App() {
               )}
             </div>
           )}
+        </div>
+      );
+    }
+
+    if (activeTab === 'DORA Metrics') {
+      return (
+        <div style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+            <div>
+              <h2 className="title-grad" style={{ fontSize: '2rem', margin: 0 }}>Engineering Metrics</h2>
+              <p style={{ color: 'var(--text-muted)' }}>DORA (DevOps Research and Assessment) Performance Dashboard</p>
+            </div>
+            <button onClick={fetchDoraData} className="glow-on-hover" style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--primary)', background: 'rgba(0,242,255,0.1)', color: 'var(--primary)', cursor: 'pointer', fontWeight: 'bold' }}>
+              RECARREGAR
+            </button>
+          </div>
+
+          {!doraData ? (
+            <div className="glass-card" style={{ textAlign: 'center', padding: '50px' }}>
+              <p style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>Loading DORA Telemetry...</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+              {/* Card 1: Deployment Frequency */}
+              <div className="glass-card" style={{ borderTop: '3px solid #00f2ff', background: 'linear-gradient(145deg, rgba(0,242,255,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>🚀 Deployment Frequency</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#00f2ff', textShadow: '0 0 20px rgba(0,242,255,0.4)', marginBottom: '10px' }}>
+                  {doraData.deployment_frequency}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Frequência de push/merge em produção nos últimos 30 dias.</p>
+              </div>
+
+              {/* Card 2: Lead Time for Changes */}
+              <div className="glass-card" style={{ borderTop: '3px solid #f59e0b', background: 'linear-gradient(145deg, rgba(245,158,11,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>⏱️ Lead Time for Changes</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#f59e0b', textShadow: '0 0 20px rgba(245,158,11,0.4)', marginBottom: '10px' }}>
+                  {doraData.lead_time}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Tempo médio entre o primeiro commit e o deploy (recibos recentes).</p>
+              </div>
+
+              {/* Card 3: MTTR */}
+              <div className="glass-card" style={{ borderTop: '3px solid #34d399', background: 'linear-gradient(145deg, rgba(52,211,153,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>🔧 Mean Time To Recovery (MTTR)</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#34d399', textShadow: '0 0 20px rgba(52,211,153,0.4)', marginBottom: '10px' }}>
+                  {doraData.mttr}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Tempo médio de recuperação de falhas ou incidentes abertos.</p>
+              </div>
+
+              {/* Card 4: Change Failure Rate */}
+              <div className="glass-card" style={{ borderTop: '3px solid #ff4d4d', background: 'linear-gradient(145deg, rgba(255,77,77,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>⚠️ Change Failure Rate</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#ff4d4d', textShadow: '0 0 20px rgba(255,77,77,0.4)', marginBottom: '10px' }}>
+                  {doraData.change_failure_rate}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Porcentagem de deploys recentes que causaram falhas em produção.</p>
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop: '30px' }} className="glass-card">
+            <h3 style={{ fontSize: '1rem', color: 'var(--primary)', marginBottom: '15px' }}>DORA Telemetry Feed</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Total Deploys (30d): <strong style={{color: '#fff'}}>{doraData?.raw?.total_deploys_30d || 0}</strong> | 
+              Incidentes Abertos: <strong style={{color: '#ff4d4d'}}>{doraData?.raw?.open_incidents || 0}</strong>
+            </p>
+          </div>
         </div>
       );
     }
@@ -1426,7 +1527,7 @@ function App() {
         </div>
         
         <nav className="nav-menu">
-          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'FinOps Guardian', 'Settings'].map(tab => (
+          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'FinOps Guardian', 'DORA Metrics', 'Settings'].map(tab => (
             <div 
               key={tab}
               className={`nav-item ${activeTab === tab ? 'active' : ''}`}

@@ -1,9 +1,5 @@
 import os, json, random
 from datetime import datetime
-from dotenv import load_dotenv
-
-load_dotenv()
-
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request
 
@@ -17,7 +13,6 @@ from src.storage.gcs_client import GCSClient
 from src.storage.finops_manager import FinOpsManager
 from src.graph.knowledge_graph import KnowledgeGraphManager
 from src.agents.vision_agent import VisionAgent
-from src.agents.audio_agent import AudioAgent
 
 app = FastAPI()
 API_TOKEN = os.getenv("MASTER_KEY", "fallback_token_change_immediately")
@@ -30,12 +25,10 @@ async def get_tg_agent():
         project_id = os.getenv("GCP_PROJECT_ID")
         bucket_name = f"flose-ai-platform-{project_id}"
         gcs = GCSClient(bucket_name, project_id=project_id)
-        finops = FinOpsManager(gcs_client=gcs)
-        orchestrator = CognitiveOrchestrator(gcs_client=gcs, finops_manager=finops)
+        orchestrator = CognitiveOrchestrator(gcs_client=gcs)
         kg = KnowledgeGraphManager(gcs_client=gcs)
         vision = VisionAgent(gcs_client=gcs)
-        audio = AudioAgent(gcs_client=gcs)
-        tg_agent = TelegramAgent(orchestrator, gcs_client=gcs, kg_manager=kg, vision_agent=vision, audio_agent=audio)
+        tg_agent = TelegramAgent(orchestrator, gcs_client=gcs, kg_manager=kg, vision_agent=vision)
         await tg_agent.setup()
     return tg_agent
 
@@ -137,6 +130,75 @@ async def get_stats(request: Request, token: str = None):
         "agents": agents_count,
         "calls": today_data["calls"]
     }
+
+@app.get("/api/dora/summary")
+async def get_dora_summary(request: Request, token: str = None):
+    """Retorna as métricas DORA formatadas para o Frontend."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    from src.storage.dora_manager import DoraManager
+    dora = DoraManager(gcs_client=gcs)
+    return dora.get_metrics_summary()
+
+@app.post("/api/webhook/github")
+async def github_webhook(request: Request):
+    """Recebe webhooks do GitHub para Push e PR merges."""
+    # Para validar a origem real em prod, verificar assinatura do payload X-Hub-Signature-256
+    
+    payload = await request.json()
+    action = payload.get("action")
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    from src.storage.dora_manager import DoraManager
+    dora = DoraManager(gcs_client=gcs)
+    
+    # Notificação do Telegram
+    import asyncio
+    agent = await get_tg_agent()
+    
+    # Se for um Push direto na main
+    if "commits" in payload and payload.get("ref") == "refs/heads/main":
+        for commit in payload.get("commits", []):
+            dora.log_commit(
+                commit_hash=commit.get("id"),
+                author=commit.get("author", {}).get("name", "Unknown"),
+                message=commit.get("message", "")
+            )
+            # Como é push direto na main, conta como deploy
+            dora.log_deployment(commit_hash=commit.get("id"))
+            
+            # Avisar no Telegram
+            msg = f"🚀 *Novo Push na Main!*\n**Commit**: {commit.get('id')[:7]}\n**Autor**: {commit.get('author', {}).get('name')}\n**Msg**: {commit.get('message')}"
+            asyncio.create_task(agent.bot.send_message(chat_id=agent.admin_chat_id, text=msg, parse_mode='Markdown'))
+            
+        return {"status": "commits_logged"}
+        
+    # Se for PR Merged
+    elif "pull_request" in payload and action == "closed" and payload["pull_request"].get("merged"):
+        pr = payload["pull_request"]
+        merge_commit = pr.get("merge_commit_sha")
+        title = pr.get("title")
+        user = pr.get("user", {}).get("login")
+        
+        # Considerando o merge commit como o deploy point
+        if merge_commit:
+            dora.log_commit(merge_commit, user, title)
+            dora.log_deployment(merge_commit)
+            
+            msg = f"🎉 *Pull Request Merged!*\n**PR**: {title}\n**Merge Hash**: {merge_commit[:7]}\n**Autor**: {user}\nAs métricas DORA foram atualizadas."
+            asyncio.create_task(agent.bot.send_message(chat_id=agent.admin_chat_id, text=msg, parse_mode='Markdown'))
+            
+        return {"status": "pr_merged_logged"}
+        
+    return {"status": "ignored"}
+
 
 @app.get("/api/graph")
 async def get_graph(request: Request, token: str = None):
