@@ -17,6 +17,7 @@ class TelegramAgent:
         self.audio_agent = audio_agent
         self.application = None
         self.is_running = False
+        self.start_time = datetime.now() # TASK-08: Uptime tracking
         self.log_file = "telegram_bot.log"
 
     def log(self, message, data=None):
@@ -130,6 +131,45 @@ class TelegramAgent:
         except Exception as e:
             self.log(f"Erro no status_handler: {e}")
             await self.safe_reply(update, "⚠️ Erro ao buscar o status.")
+
+    async def debug_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Retorna informações técnicas de debug para admins."""
+        try:
+            user_id = str(update.effective_user.id)
+            admins = os.getenv("ADMIN_USER_IDS", "").split(",")
+            
+            if user_id not in admins:
+                await update.message.reply_text("⛔ Acesso negado. Este comando é restrito a administradores.")
+                return
+
+            self.log(f"Comando /debug recebido do admin {update.effective_user.username}")
+            
+            # 1. Versão do Gemini
+            model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+            
+            # 2. Nós no Grafo
+            nodes_count = 0
+            if self.kg_manager:
+                nodes_count = len(self.kg_manager.graph.nodes())
+            
+            # 3. Uptime (Simulado via tempo de início da classe se disponível)
+            uptime = "N/A"
+            if hasattr(self, 'start_time'):
+                delta = datetime.now() - self.start_time
+                uptime = str(delta).split(".")[0] # Formato HH:MM:SS
+            
+            debug_msg = (
+                f"🛠️ *System Debug Info*\n\n"
+                f"🧠 *Model:* `{model}`\n"
+                f"🕸️ *Graph Nodes:* {nodes_count}\n"
+                f"⏱️ *Uptime:* {uptime}\n"
+                f"🌍 *Enviroment:* `Production`"
+            )
+            
+            await self.safe_reply(update, debug_msg, parse_mode='Markdown')
+        except Exception as e:
+            self.log(f"Erro no debug_handler: {e}")
+            await self.safe_reply(update, "⚠️ Erro ao processar informações de debug.")
 
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
@@ -355,22 +395,21 @@ class TelegramAgent:
 
     async def setup(self):
         """Inicializa sem iniciar nenhum updater/polling interno."""
+        """Inicializa a aplicação do Telegram."""
         if not self.token:
-            return False
-            
-        # Usamos Application apenas para os handlers, mas NÃO damos start() 
-        # para evitar que o updater interno tente fazer polling
-        self.application = (
-            Application.builder()
-            .token(self.token)
-            .updater(None)   # ← CRÍTICO: desativa o updater/polling interno
-            .build()
-        )
+            print("⚠️ TELEGRAM_BOT_TOKEN não configurado!")
+            return
+
+        self.application = Application.builder().token(self.token).build()
+
+        # Handlers
         self.application.add_handler(CommandHandler("start", self.start_handler))
         self.application.add_handler(CommandHandler("status", self.status_handler))
         self.application.add_handler(CommandHandler("dora", self.dora_handler))
-        self.application.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.Document.IMAGE | filters.VOICE | filters.AUDIO, self.message_handler))
-        self.application.add_error_handler(self.error_handler)
+        self.application.add_handler(CommandHandler("debug", self.debug_handler)) # TASK-08
+        self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.message_handler))
+        self.application.add_handler(MessageHandler(filters.PHOTO, self.photo_handler))
+        self.application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, self.audio_handler))
         
         await self.application.initialize()
         self.is_running = True

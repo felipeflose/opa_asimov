@@ -4,13 +4,14 @@ import os
 from datetime import datetime
 
 class BaseAgent:
-    def __init__(self, name, purpose, system_prompt=None, avatar=None, tools=None, gcs_client=None):
+    def __init__(self, name, purpose, system_prompt=None, avatar=None, tools=None, gcs_client=None, finops_manager=None):
         self.name = name
         self.purpose = purpose
         self.system_prompt = system_prompt or f"Você é o {self.name}, um agente especializado em {self.purpose}."
         self.avatar = avatar or "https://api.dicebear.com/7.x/bottts/svg?seed=" + self.name
         self.tools = tools or []
         self.gcs_client = gcs_client
+        self.finops = finops_manager
         self.memory_path = f"agents/memory/{self.name}/"
         
     def to_dict(self):
@@ -80,6 +81,11 @@ class BaseAgent:
             """
             response = model.generate_content(prompt)
             result = response.text.strip()
+            
+            # TASK-05: Log Usage
+            if self.finops and hasattr(response, 'usage_metadata'):
+                u = response.usage_metadata
+                self.finops.log_usage(u.prompt_token_count, u.candidates_token_count, agent_name=self.name)
             
             # Auto-avaliação (Ideia 2)
             eval_prompt = f"""
