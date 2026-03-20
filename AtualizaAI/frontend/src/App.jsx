@@ -918,7 +918,10 @@ function App() {
                             }}>🚀 EXECUTAR</button>
                           )}
                           {task.status === 'Concluído' && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981' }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER ENTREGA</button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981', flex: 1 }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER</button>
+                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', flex: 1 }} onClick={() => window.open(`/api/tasks/${task.id}/export?token=${token}`)}>💾 MD</button>
+                            </div>
                           )}
                         </div>
                       </div>

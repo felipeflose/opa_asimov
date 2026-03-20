@@ -752,6 +752,41 @@ async def execute_task(task_id: str, agent_name: str, request: Request, token: s
     
     return {"status": "success", "result": result}
 
+@app.get("/api/tasks/{task_id}/export")
+async def export_task_md(task_id: str, request: Request, token: str = None):
+    if not validate_token(request, token):
+        from fastapi.responses import Response
+        return Response(content="Unauthorized", status_code=401)
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    registry = gcs.read_json("demands/registry.json")
+    task = next((t for t in registry.get("demands", []) if t["id"] == task_id), None)
+    if not task: return {"error": "Task not found"}
+    
+    md_content = f"# TRD: {task['title']}\n\n"
+    md_content += f"**ID:** {task['id']}\n"
+    md_content += f"**Responsável:** {task.get('responsible', 'IA')}\n"
+    md_content += f"**Prioridade:** {task.get('priority', 'Normal')}\n"
+    md_content += f"**Status:** {task['status']}\n\n"
+    md_content += f"## Objetivo\n{task.get('objective', 'N/A')}\n\n"
+    md_content += f"## Governança FinOps\n{task.get('governance_finops', 'N/A')}\n\n"
+    
+    if task.get("result_id"):
+        exec_data = gcs.read_json(f"logs/executions/{task['result_id']}.json")
+        if exec_data:
+            md_content += f"## Entrega Final\n{exec_data.get('result', 'N/A')}\n"
+            md_content += f"**Data:** {exec_data.get('timestamp', 'N/A')}\n"
+
+    from fastapi.responses import Response
+    return Response(
+        content=md_content,
+        media_type="text/markdown",
+        headers={"Content-Disposition": f"attachment; filename=TRD_{task_id}.md"}
+    )
+
 @app.get("/api/tasks/delivery/{result_id}")
 async def get_delivery(result_id: str, request: Request, token: str = None):
     if not validate_token(request, token):
