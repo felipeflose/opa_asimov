@@ -32,6 +32,7 @@ function App() {
   // QA Report State
   const [qaReport, setQaReport] = useState(null);
   const [qaLoading, setQaLoading] = useState(false);
+  const [doraData, setDoraData] = useState(null);
   const [expandedAgent, setExpandedAgent] = useState(null);
   const [enrichingAgent, setEnrichingAgent] = useState(null);
 
@@ -237,6 +238,25 @@ function App() {
       fetchQAReport();
     }
   }, [activeTab]);
+
+  const fetchDoraData = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/dora/summary', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.error) setDoraData(data);
+    } catch (err) {
+      console.error("DORA fetch error", err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'DORA Metrics') {
+      fetchDoraData();
+    }
+  }, [activeTab, isAuthenticated]);
 
   const handleEnrichAgent = async (agentName) => {
     setEnrichingAgent(agentName);
@@ -1372,6 +1392,74 @@ function App() {
       );
     }
 
+    if (activeTab === 'DORA Metrics') {
+      return (
+        <div style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+            <div>
+              <h2 className="title-grad" style={{ fontSize: '2rem', margin: 0 }}>Engineering Metrics</h2>
+              <p style={{ color: 'var(--text-muted)' }}>DORA (DevOps Research and Assessment) Performance Dashboard</p>
+            </div>
+            <button onClick={fetchDoraData} className="glow-on-hover" style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--primary)', background: 'rgba(0,242,255,0.1)', color: 'var(--primary)', cursor: 'pointer', fontWeight: 'bold' }}>
+              RECARREGAR
+            </button>
+          </div>
+
+          {!doraData ? (
+            <div className="glass-card" style={{ textAlign: 'center', padding: '50px' }}>
+              <p style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>Loading DORA Telemetry...</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+              {/* Card 1: Deployment Frequency */}
+              <div className="glass-card" style={{ borderTop: '3px solid #00f2ff', background: 'linear-gradient(145deg, rgba(0,242,255,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>🚀 Deployment Frequency</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#00f2ff', textShadow: '0 0 20px rgba(0,242,255,0.4)', marginBottom: '10px' }}>
+                  {doraData.deployment_frequency}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Frequência de push/merge em produção nos últimos 30 dias.</p>
+              </div>
+
+              {/* Card 2: Lead Time for Changes */}
+              <div className="glass-card" style={{ borderTop: '3px solid #f59e0b', background: 'linear-gradient(145deg, rgba(245,158,11,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>⏱️ Lead Time for Changes</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#f59e0b', textShadow: '0 0 20px rgba(245,158,11,0.4)', marginBottom: '10px' }}>
+                  {doraData.lead_time}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Tempo médio entre o primeiro commit e o deploy (recibos recentes).</p>
+              </div>
+
+              {/* Card 3: MTTR */}
+              <div className="glass-card" style={{ borderTop: '3px solid #34d399', background: 'linear-gradient(145deg, rgba(52,211,153,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>🔧 Mean Time To Recovery (MTTR)</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#34d399', textShadow: '0 0 20px rgba(52,211,153,0.4)', marginBottom: '10px' }}>
+                  {doraData.mttr}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Tempo médio de recuperação de falhas ou incidentes abertos.</p>
+              </div>
+
+              {/* Card 4: Change Failure Rate */}
+              <div className="glass-card" style={{ borderTop: '3px solid #ff4d4d', background: 'linear-gradient(145deg, rgba(255,77,77,0.05) 0%, rgba(10,14,26,0.9) 100%)' }}>
+                <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>⚠️ Change Failure Rate</h3>
+                <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#ff4d4d', textShadow: '0 0 20px rgba(255,77,77,0.4)', marginBottom: '10px' }}>
+                  {doraData.change_failure_rate}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>Porcentagem de deploys recentes que causaram falhas em produção.</p>
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop: '30px' }} className="glass-card">
+            <h3 style={{ fontSize: '1rem', color: 'var(--primary)', marginBottom: '15px' }}>DORA Telemetry Feed</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Total Deploys (30d): <strong style={{color: '#fff'}}>{doraData?.raw?.total_deploys_30d || 0}</strong> | 
+              Incidentes Abertos: <strong style={{color: '#ff4d4d'}}>{doraData?.raw?.open_incidents || 0}</strong>
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="glass-card" style={{ textAlign: 'center', padding: '100px' }}>
         <h1 className="title-grad">{activeTab}</h1>
@@ -1439,7 +1527,7 @@ function App() {
         </div>
         
         <nav className="nav-menu">
-          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'FinOps Guardian', 'Settings'].map(tab => (
+          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'FinOps Guardian', 'DORA Metrics', 'Settings'].map(tab => (
             <div 
               key={tab}
               className={`nav-item ${activeTab === tab ? 'active' : ''}`}
