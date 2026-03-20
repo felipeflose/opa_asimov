@@ -21,6 +21,8 @@ function App() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [agentList, setAgentList] = useState([]);
   const [executingAgent, setExecutingAgent] = useState('');
+  const [executionPreview, setExecutionPreview] = useState(null); // TASK-06
+  const [visionAnalysis, setVisionAnalysis] = useState(null);
   const [viewingAgent, setViewingAgent] = useState(null);
   const [pipeline, setPipeline] = useState([]);
   const [pipelineResults, setPipelineResults] = useState([]);
@@ -892,8 +894,7 @@ function App() {
                           )}
                           {task.status === 'Em Progresso' && task.budget_approved && (
                             <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={() => {
-                              setExecutingAgent(task.responsible);
-                              handleExecute(task.id);
+                              setExecutionPreview(task);
                             }}>🚀 EXECUTAR</button>
                           )}
                           {task.status === 'Concluído' && (
@@ -1580,6 +1581,39 @@ function App() {
         </header>
 
         {renderContent()}
+        
+        {/* TASK-06: Execution Preview Modal */}
+        {executionPreview && (
+          <div className="modal-overlay" style={{ zIndex: 3000 }}>
+            <div className="glass-card modal-content" style={{ maxWidth: '500px', border: '1px solid var(--primary)', animation: 'scaleUp 0.3s ease' }}>
+              <h2 className="title-grad" style={{ marginBottom: '15px' }}>🚀 Confirmar Execução Agente</h2>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px' }}>TAREFA:</p>
+                <p style={{ fontWeight: 'bold', marginBottom: '15px' }}>{executionPreview.title}</p>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px' }}>RESPONSÁVEL:</p>
+                    <p style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{executionPreview.responsible || 'Standard'}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px' }}>ESTIMATIVA CUSTO:</p>
+                    <p style={{ color: '#f59e0b', fontWeight: 'bold' }}>~ 1.2k tokens ($0.001)</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <button className="refresh-btn" style={{ flex: 1 }} onClick={() => setExecutionPreview(null)}>CANCELAR</button>
+                <button className="login-button" style={{ flex: 2, background: 'var(--primary)', color: '#000' }} onClick={() => {
+                  setExecutingAgent(executionPreview.responsible);
+                  handleExecute(executionPreview.id);
+                  setExecutionPreview(null);
+                }}>INICIAR AGORA</button>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Agent Info Modal (Global) */}
         {viewingAgent && (
