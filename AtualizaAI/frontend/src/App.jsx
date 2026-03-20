@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import localGraph from './global_graph.json';
 import * as d3 from 'd3';
 import './App.css';
 
@@ -104,9 +105,9 @@ function BrokerDashboard({ token }) {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('flose_token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // FIXME: Set to false or use session check before production deploy
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [activeTab, setActiveTab] = useState('Cognitive Map');
   const [key, setKey] = useState('');
   const [error, setError] = useState(false);
   const [stats, setStats] = useState({
@@ -439,295 +440,219 @@ function App() {
     </button>
   );
 
+
+  // --- NANO FORCE ENGINE v5.3 (Knowledge Bubbles) ---
+  const useForceMap = (nodes, edges, w, h) => {
+    const pos = useRef({});
+    const vel = useRef({});
+    const iter = useRef(0);
+    const raf = useRef(null);
+    const [, tick] = useState(0);
+
+    const getParent = (nId, links) => {
+       const link = links.find(l => (typeof l.target === 'object' ? l.target.id : l.target) === nId);
+       return link ? (typeof l.source === 'object' ? l.source.id : l.source) : null;
+    };
+
+    useEffect(() => {
+      if (!w || !h || !nodes.length) return;
+      const cx = w / 2, cy = h / 2;
+      
+      const pilares = nodes.filter(n => n.type === 'pilar');
+      const pilarCenters = {};
+      const radius = Math.min(w, h) * 0.35;
+
+      pilares.forEach((p, i) => {
+        const angle = (2 * Math.PI * i) / pilares.length;
+        pilarCenters[p.id] = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+      });
+
+      nodes.forEach(n => {
+        if (!pos.current[n.id]) {
+          let ix = cx, iy = cy;
+          if (n.type === 'concept') {
+            const edge = edges.find(e => {
+                const target = typeof e.target === 'object' ? e.target.id : e.target;
+                return target === n.id;
+            });
+            const pId = edge ? (typeof edge.source === 'object' ? edge.source.id : edge.source) : null;
+            if (pId && pilarCenters[pId]) {
+                ix = pilarCenters[pId].x + (Math.random() - .5) * 50;
+                iy = pilarCenters[pId].y + (Math.random() - .5) * 50;
+            }
+          } else if (n.type === 'pilar' && pilarCenters[n.id]) {
+             ix = pilarCenters[n.id].x;
+             iy = pilarCenters[n.id].y;
+          }
+          pos.current[n.id] = { x: ix, y: iy };
+          vel.current[n.id] = { x: 0, y: 0 };
+        }
+      });
+
+      const step = () => {
+        iter.current++;
+        const a = Math.max(0.005, 0.7 * Math.exp(-iter.current * 0.02));
+        const p = pos.current, v = vel.current;
+        const ids = nodes.map(n => n.id);
+
+        for (let i = 0; i < ids.length; i++) {
+          for (let j = i + 1; j < ids.length; j++) {
+            const A = ids[i], B = ids[j];
+            const dx = p[B].x - p[A].x, dy = p[B].y - p[A].y;
+            const d = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = 80;
+            if (d < minDist) {
+                const f = ((minDist - d) / d) * 0.4 * a;
+                v[A].x -= dx * f; v[A].y -= dy * f;
+                v[B].x += dx * f; v[B].y += dy * f;
+            }
+          }
+        }
+
+        nodes.forEach(n => {
+          if (n.type === 'concept') {
+            const edge = edges.find(e => (typeof e.target === 'object' ? e.target.id : e.target) === n.id);
+            const pId = edge ? (typeof edge.source === 'object' ? edge.source.id : edge.source) : null;
+            if (pId && p[pId]) {
+              const dx = p[pId].x - p[n.id].x, dy = p[pId].y - p[n.id].y;
+              const d = Math.sqrt(dx * dx + dy * dy) || 1;
+              const maxR = 140; 
+              if (d > maxR) {
+                const f = ((d - maxR) / d) * 0.2 * a;
+                v[n.id].x += dx * f; v[n.id].y += dy * f;
+              }
+            }
+          } else if (n.type === 'pilar') {
+             const target = pilarCenters[n.id];
+             if (target) {
+                v[n.id].x += (target.x - p[n.id].x) * 0.05 * a;
+                v[n.id].y += (target.y - p[n.id].y) * 0.05 * a;
+             }
+          } else if (n.type === 'core') {
+            v[n.id].x += (cx - p[n.id].x) * 0.05 * a;
+            v[n.id].y += (cy - p[n.id].y) * 0.05 * a;
+          }
+        });
+
+        ids.forEach(id => {
+          v[id].x *= 0.8; v[id].y *= 0.8;
+          p[id].x = Math.max(80, Math.min(w - 80, p[id].x + v[id].x));
+          p[id].y = Math.max(80, Math.min(h - 80, p[id].y + v[id].y));
+        });
+
+        tick(t => t + 1);
+        if (a > 0.006) raf.current = requestAnimationFrame(step);
+      };
+
+      if (raf.current) cancelAnimationFrame(raf.current);
+      raf.current = requestAnimationFrame(step);
+      return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    }, [nodes.length, edges.length, w, h]);
+
+    return pos.current;
+  };
+
   const CognitiveMap = ({ data }) => {
     const rawNodes = data?.nodes || [];
-    const rawLinks = data?.links || [];
-    const svgRef = useRef(null);
+    const rawLinks = data?.links || data?.edges || [];
     const containerRef = useRef(null);
-    
-    // Estados do Grafo
+    const [dims, setDims] = useState({ w: 900, h: 640 });
     const [selected, setSelected] = useState(null);
     const [hovered, setHovered] = useState(null);
-    const [filterType, setFilterType] = useState("all");
-    const [searchTerm, setSearchTerm] = useState('');
-    const [stats, setStats] = useState({ core: 0, pilar: 0, concepts: 0 });
+    const [activeTabArea, setActiveTabArea] = useState("TODOS");
 
-    // 1. Filtragem reativa de dados
-    const filteredNodes = React.useMemo(() => {
-      let result = filterType === "all" ? rawNodes : rawNodes.filter(n => n.type === filterType);
-      if (searchTerm) {
-        result = result.filter(n => n.id.toLowerCase().includes(searchTerm.toLowerCase()));
-      }
-      return result.map(n => ({ ...n })); // Deep copy para o D3
-    }, [rawNodes, filterType, searchTerm]);
-
-    const filteredLinks = React.useMemo(() => {
-      const nodeIds = new Set(filteredNodes.map(n => n.id));
-      return rawLinks
-        .filter(l => {
-          const sId = typeof l.source === 'object' ? l.source.id : l.source;
-          const tId = typeof l.target === 'object' ? l.target.id : l.target;
-          return nodeIds.has(sId) && nodeIds.has(tId);
-        })
-        .map(l => ({ ...l }));
-    }, [rawLinks, filteredNodes]);
-
-    // 2. Efeito Principal: Simulação D3
     useEffect(() => {
-      if (!svgRef.current || !filteredNodes.length) return;
-
-      const width = containerRef.current.clientWidth;
-      const height = containerRef.current.clientHeight;
-      const svg = d3.select(svgRef.current);
-      svg.selectAll("*").remove(); // Limpeza para re-render
-
-      // Camadas do SVG
-      const gMain = svg.append("g").attr("class", "main-graph");
-      const gLinks = gMain.append("g").attr("class", "links-layer");
-      const gNodes = gMain.append("g").attr("class", "nodes-layer");
-
-      // Definição de Filtros (Glow Effects)
-      const defs = svg.append("defs");
-      const filter = defs.append("filter").attr("id", "glow").attr("x", "-50%").attr("y", "-50%").attr("width", "200%").attr("height", "200%");
-      filter.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "coloredBlur");
-      const feMerge = filter.append("feMerge");
-      feMerge.append("feMergeNode").attr("in", "coloredBlur");
-      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-
-      // Simulação
-      const simulation = d3.forceSimulation(filteredNodes)
-        .force("link", d3.forceLink(filteredLinks).id(d => d.id).distance(d => d.relation === 'defined_by' ? 180 : 250))
-        .force("charge", d3.forceManyBody().strength(d => d.type === 'core' ? -2000 : -800))
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collision", d3.forceCollide().radius(d => d.type === 'core' ? 60 : 40));
-
-      // Zoom & Pan
-      const zoom = d3.zoom()
-        .scaleExtent([0.1, 4])
-        .on("zoom", (event) => gMain.attr("transform", event.transform));
-      svg.call(zoom);
-
-      // Links
-      const link = gLinks.selectAll("line")
-        .data(filteredLinks)
-        .enter().append("line")
-        .attr("class", "link-glow")
-        .attr("stroke", "rgba(0, 242, 255, 0.15)")
-        .attr("stroke-width", 1.5);
-
-      // Grupos de Nós
-      const node = gNodes.selectAll(".node-group")
-        .data(filteredNodes)
-        .enter().append("g")
-        .attr("class", d => `node-group graph-node ${d.type}-node`)
-        .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended))
-        .on("mouseenter", (e, d) => setHovered(d))
-        .on("mouseleave", () => setHovered(null))
-        .on("click", (e, d) => { e.stopPropagation(); setSelected(d); });
-
-      // Desenho dos Nós
-      node.append("circle")
-        .attr("r", d => d.type === 'core' ? 35 : (d.type === 'pilar' ? 22 : 12))
-        .attr("class", "node-glow")
-        .attr("stroke", d => d.type === 'core' ? "var(--primary)" : (d.type === 'pilar' ? "#f59e0b" : "#4ade80"))
-        .attr("stroke-width", 2)
-        .attr("fill", "rgba(10, 15, 30, 0.95)");
-
-      node.append("text")
-        .attr("dy", d => d.type === 'core' ? 60 : 45)
-        .attr("text-anchor", "middle")
-        .attr("fill", "rgba(255,255,255,0.7)")
-        .attr("font-size", "10px")
-        .attr("font-weight", d => d.type === 'core' ? "900" : "500")
-        .style("letter-spacing", "1px")
-        .text(d => (d.type !== 'concept' || hovered?.id === d.id) ? d.id.toUpperCase() : "");
-
-      // Atualização da Simulação
-      simulation.on("tick", () => {
-        link
-          .attr("x1", d => d.source.x)
-          .attr("y1", d => d.source.y)
-          .attr("x2", d => d.target.x)
-          .attr("y2", d => d.target.y);
-
-        node.attr("transform", d => `translate(${d.x},${d.y})`);
+      const obs = new ResizeObserver(e => {
+        const { width, height } = e[0].contentRect;
+        setDims({ w: Math.max(800, width), h: Math.max(600, height) });
       });
+      if (containerRef.current) obs.observe(containerRef.current);
+      return () => obs.disconnect();
+    }, []);
 
-      // Drag Functions
-      function dragstarted(event, d) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x; d.fy = d.y;
-      }
-      function dragged(event, d) {
-        d.fx = event.x; d.fy = event.y;
-      }
-      function dragended(event, d) {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null; d.fy = null;
-      }
+    const pilares = rawNodes.filter(n => n.type === 'pilar');
+    const displayPilares = activeTabArea === "TODOS" ? pilares : pilares.filter(p => p.id === activeTabArea);
 
-      // Estatísticas
-      setStats({
-        core: filteredNodes.filter(n => n.type === 'core').length,
-        pilar: filteredNodes.filter(n => n.type === 'pilar').length,
-        concepts: filteredNodes.length
-      });
+    const visNodes = React.useMemo(() => {
+      if (activeTabArea === "TODOS") return rawNodes;
+      const filteredPilar = pilares.find(p => p.id === activeTabArea);
+      if (!filteredPilar) return rawNodes;
+      const childIds = new Set(rawLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === filteredPilar.id).map(l => (typeof l.target === 'object' ? l.target.id : l.target)));
+      return rawNodes.filter(n => n.id === filteredPilar.id || childIds.has(n.id) || n.type === 'core');
+    }, [rawNodes, activeTabArea, rawLinks]);
 
-      return () => simulation.stop();
-    }, [filteredNodes, filteredLinks]);
+    const visIds = new Set(visNodes.map(n => n.id));
+    const visLinks = rawLinks.filter(l => {
+      const sId = typeof l.source === 'object' ? l.source.id : l.source;
+      const tId = typeof l.target === 'object' ? l.target.id : l.target;
+      return visIds.has(sId) && visIds.has(tId);
+    });
+
+    const simPos = useForceMap(visNodes, visLinks, dims.w, dims.h);
+    const getP = id => simPos[id] || { x: dims.w / 2, y: dims.h / 2 };
+
+    const colors = { 
+        core: "rgba(59,130,246,0.8)", pilar: "rgba(245,158,11,0.8)", concept: "rgba(34,197,94,0.8)", 
+        bg: "#050810", text: "#94a3b8", accent: "#00f2ff"
+    };
+
+    const NodeIcon = ({ node, p, active }) => {
+        const c = node.type === 'pilar' ? colors.pilar : node.type === 'core' ? colors.core : colors.concept;
+        const r = node.type === 'pilar' ? 18 : 14;
+        return (
+            <g transform={`translate(${p.x},${p.y})`} style={{ cursor:"pointer" }} onMouseEnter={() => setHovered(node)} onMouseLeave={() => setHovered(null)} onClick={e => { e.stopPropagation(); setSelected(node); }}>
+                <circle r={r+4} fill="none" stroke={c} strokeWidth="1" strokeOpacity={active?1:0.2} />
+                <circle r={r} fill={colors.bg} stroke={c} strokeWidth="2" style={{ filter: active ? "drop-shadow(0 0 8px "+c+")" : "" }} />
+                <text dy="4" textAnchor="middle" fill={c} fontSize={9} fontWeight={900} style={{ pointerEvents:"none", fontFamily:"'JetBrains Mono', monospace" }}>{node.id.substring(0,1).toUpperCase()}</text>
+                <text y={r+18} textAnchor="middle" fill={active ? "#fff" : colors.text} fontSize={8} fontWeight={700} style={{ pointerEvents:"none", textTransform:"uppercase" }}>{node.id.length > 20 ? node.id.substring(0,18)+".." : node.id}</text>
+            </g>
+        );
+    };
 
     return (
-      <div className="glass-card" style={{ height: '75vh', position: 'relative', overflow: 'hidden', padding: 0, border: '1px solid var(--border)', background: '#02040a' }}>
-        {/* Header Superior */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '25px 35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(2,4,10,0.95), transparent)' }}>
-          <div>
-            <h2 className="title-grad" style={{ letterSpacing: '6px', fontSize: '1.2rem', marginBottom: '5px' }}>COGNITIVE_MAP_v5.0</h2>
-            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.65rem', color: '#00ffcc', fontWeight: 'bold', textShadow: '0 0 10px #00ffcc44' }}>● NEURAL_DYNAMIC_ACTIVE</span>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>L0 / GRID_X_449</span>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <div style={{ position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder="SEARCH_NODE..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '25px', padding: '10px 25px', color: 'white', fontSize: '10px', width: '220px', outline: 'none', transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)' }}
-                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
-              />
-              {searchTerm && <span onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '10px', color: 'var(--primary)' }}>✕</span>}
-            </div>
-            
-            <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.05)', margin: '0 10px' }} />
-            
-            <SlantButton active={filterType === 'all'} onClick={() => setFilterType('all')}>VIEW_ALL</SlantButton>
-            <SlantButton color="var(--primary)" active={filterType === 'core'} onClick={() => setFilterType('core')}>CORE</SlantButton>
-            <SlantButton color="#f59e0b" active={filterType === 'pilar'} onClick={() => setFilterType('pilar')}>PILARS</SlantButton>
-            <SlantButton color="#4ade80" active={filterType === 'concept'} onClick={() => setFilterType('concept')}>CONCEPTS</SlantButton>
-          </div>
+      <div style={{ width:"100%", height:"100%", background:colors.bg, display:"flex", flexDirection:"column" }}>
+        <div style={{ height:50, background:"rgba(255,255,255,0.02)", borderBottom:"1px solid #1e293b", display:"flex", alignItems:"center", padding:"0 20px", gap:15, overflowX:"auto" }}>
+            {["TODOS", ...pilares.map(p => p.id)].map(tab => (
+                <button key={tab} onClick={() => setActiveTabArea(tab)} style={{
+                    padding: "6px 16px", background: activeTabArea === tab ? "#fff" : "transparent",
+                    color: activeTabArea === tab ? "#000" : "#94a3b8", border: activeTabArea === tab ? "none" : "1px solid rgba(255,255,255,0.1)",
+                    borderRadius:4, fontSize:9, fontWeight:800, cursor:"pointer", transition:"all 0.2s", whiteSpace:"nowrap"
+                }}>{tab.toUpperCase()}</button>
+            ))}
         </div>
-
-        {/* Estatísticas Flutuantes */}
-        <div style={{ position: "absolute", bottom: 30, right: selected ? 440 : 30, zIndex: 110, display: "flex", gap: "25px", padding: '20px 30px', background: 'rgba(5,7,15,0.85)', backdropFilter: 'blur(20px)', border: '1px solid var(--border)', borderRadius: '24px', transition: 'all 0.6s cubic-bezier(0.19, 1, 0.22, 1)' }}>
-            <div>
-              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: "900", letterSpacing: '2px', marginBottom: '8px' }}>CORE_NEXUS</div>
-              <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "var(--primary)", textShadow: '0 0 15px var(--primary)' }}>{stats.core}</div>
-            </div>
-            <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.06)' }} />
-            <div>
-              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: "900", letterSpacing: '2px', marginBottom: '8px' }}>CLUSTERS</div>
-              <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "#f59e0b", textShadow: '0 0 15px #f59e0b66' }}>{stats.pilar}</div>
-            </div>
-        </div>
-
-        {/* Área Svg D3 */}
-        <div ref={containerRef} style={{ height: '100%', width: '100%', cursor: 'crosshair' }}>
-          <svg 
-            ref={svgRef} 
-            width="100%" 
-            height="100%" 
-            style={{ display: 'block' }}
-            onClick={() => setSelected(null)}
-          />
-        </div>
-
-        {/* Legend Panel */}
-        <div style={{ position: "absolute", bottom: 30, left: 30, zIndex: 15, padding: '20px', background: 'rgba(5,7,15,0.7)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)', borderRadius: '20px', minWidth: '180px' }}>
-          <div style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '3px', marginBottom: '15px' }}>NEURAL_INDEX</div>
-          {[
-            { label: 'CORE_ENGINE', color: 'var(--primary)' },
-            { label: 'PILLAR_MODULE', color: '#f59e0b' },
-            { label: 'BASE_CONCEPT', color: '#4ade80' }
-          ].map(item => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color, boxShadow: `0 0 10px ${item.color}` }} />
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: '700' }}>{item.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Side Detail Panel (Premium Glassmorphism) */}
-        <div className={`graph-overlay-card`} style={{ 
-          position: "absolute", 
-          top: 0, 
-          right: 0, 
-          width: selected ? 400 : 0, 
-          height: '100%', 
-          zIndex: 1000, 
-          transition: 'all 0.7s cubic-bezier(0.19, 1, 0.22, 1)', 
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '-30px 0 60px rgba(0,0,0,0.4)',
-          opacity: selected ? 1 : 0
-        }}>
-          {selected && (
-            <div style={{ width: 400, padding: 40, animation: 'fadeIn 0.8s ease' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 40 }}>
-                <div>
-                  <div style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '4px', marginBottom: 10 }}>IDENTITY_HEX: #{selected.id.length}X</div>
-                  <h2 style={{ fontSize: '2.4rem', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{selected.id.toUpperCase()}</h2>
-                </div>
-                <button 
-                  onClick={() => setSelected(null)}
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', width: 45, height: 45, borderRadius: '50%', cursor: 'pointer', transition: '300ms' }}
-                  onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.1)'}
-                >✕</button>
-              </div>
-
-              <div style={{ padding: 25, background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 30 }}>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: 10, fontWeight: '800' }}>SEMANTIC_LAYER</div>
-                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
-                  {selected.type === 'core' ? 'Primary intelligence nexus of Flose AI. Controls all secondary pillar assignments and thematic clustering.' : 
-                   selected.type === 'pilar' ? 'Thematic pillar node. Groups multiple atomic concepts under a common technical expertise.' : 
-                   'Base atomic concept. Persistent knowledge node extracted from agent execution logs and episodic memory.'}
-                </p>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: 40 }}>
-                  <div style={{ padding: 20, background: 'rgba(0, 242, 255, 0.05)', borderRadius: '15px', border: '1px solid rgba(0, 242, 255, 0.1)' }}>
-                    <div style={{ fontSize: '0.5rem', color: 'var(--primary)', marginBottom: 5 }}>STATUS</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff' }}>STABLE</div>
+        <div ref={containerRef} style={{ flex:1, position:"relative", overflow:"hidden" }} onClick={() => setSelected(null)}>
+          <svg width={dims.w} height={dims.h} style={{ display:"block" }}>
+            {displayPilares.map(pilar => {
+                const p = getP(pilar.id);
+                return (
+                    <g key={"bubble_"+pilar.id}>
+                        <circle cx={p.x} cy={p.y} r={160} fill="none" stroke="rgba(59,130,246,0.2)" strokeWidth="1" strokeDasharray="5,5" />
+                        <text x={p.x} y={p.y - 175} textAnchor="middle" fill="rgba(59,130,246,0.5)" fontSize={10} fontWeight={900}>{pilar.id.toUpperCase()}</text>
+                    </g>
+                );
+            })}
+            {visLinks.map((l, i) => {
+              const sP = getP(typeof l.source === 'object' ? l.source.id : l.source), tP = getP(typeof l.target === 'object' ? l.target.id : l.target);
+              const active = (selected?.id === l.source || selected?.id === l.target || hovered?.id === l.source || hovered?.id === l.target);
+              return <line key={i} x1={sP.x} y1={sP.y} x2={tP.x} y2={tP.y} stroke={active ? colors.accent : "rgba(255,255,255,0.05)"} strokeWidth={active ? 1.5 : 0.8} />;
+            })}
+            {visNodes.map(n => <NodeIcon key={n.id} node={n} p={getP(n.id)} active={selected?.id === n.id || hovered?.id === n.id} />)}
+          </svg>
+          <div style={{ position:"absolute", bottom:20, left:20, padding:15, background:"rgba(0,0,0,0.4)", borderRadius:8, border:"1px solid rgba(255,255,255,0.05)", fontSize:8 }}>
+              <div style={{ fontWeight:900, marginBottom:8, color:"#fff" }}>LEGENDA_SISTEMA</div>
+              {[{l:"CORE", c:colors.core}, {l:"PILAR", c:colors.pilar}, {l:"CONCEPT", c:colors.concept}].map(it => (
+                  <div key={it.l} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:it.c }} />
+                      <span style={{ color:colors.text }}>{it.l}</span>
                   </div>
-                  <div style={{ padding: 20, background: 'rgba(245, 158, 11, 0.05)', borderRadius: '15px', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
-                    <div style={{ fontSize: '0.5rem', color: '#f59e0b', marginBottom: 5 }}>WEIGHT</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff' }}>0.98</div>
-                  </div>
-              </div>
-
-              <div style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '4px', marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 15 }}>NEURAL_CONNECTIONS</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {filteredLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === selected.id || (typeof l.target === 'object' ? l.target.id : l.target) === selected.id).slice(0, 6).map(l => {
-                  const other = (typeof l.source === 'object' ? l.source.id : l.source) === selected.id ? (typeof l.target === 'object' ? l.target.id : l.target) : (typeof l.source === 'object' ? l.source.id : l.source);
-                  return (
-                    <div 
-                      key={other} 
-                      onClick={() => setSelected(rawNodes.find(n => n.id === other))}
-                      style={{ padding: 18, background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: '300ms' }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
-                    >
-                      <div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: '800' }}>{other.toUpperCase()}</div>
-                      <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>RELATION: {l.relation?.toUpperCase() || 'CONNECTED'}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+              ))}
+          </div>
         </div>
       </div>
     );
   };
 
-
+  // --- LAYOUT ENGINE: Main Module Selection ---
   const renderContent = () => {
     if (activeTab === 'Dashboard') {
       return (
@@ -1531,6 +1456,19 @@ function App() {
           </div>
         </div>
       );
+    }
+
+    if (activeTab === 'Broker') {
+       return <BrokerDashboard token={token} />;
+    }
+
+    if (activeTab === 'Settings') {
+       return (
+         <div className="glass-card" style={{ padding: '40px' }}>
+           <h2 className="title-grad">System Settings</h2>
+           <p style={{ color: 'var(--text-muted)' }}>Configure seu ambiente de Agentes e parâmetros de Curadoria.</p>
+         </div>
+       );
     }
 
     return (
