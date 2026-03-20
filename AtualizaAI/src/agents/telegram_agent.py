@@ -171,6 +171,20 @@ class TelegramAgent:
             self.log(f"Erro no debug_handler: {e}")
             await self.safe_reply(update, "⚠️ Erro ao processar informações de debug.")
 
+    async def incident_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Registra um incidente via Telegram."""
+        try:
+            from src.storage.dora_manager import DoraManager
+            dora = DoraManager(gcs_client=self.gcs_client)
+            
+            text = " ".join(context.args) if context.args else "Incidente reportado via Telegram"
+            dora.log_incident(title=text, description=f"Reportado por @{update.effective_user.username}")
+            
+            await update.message.reply_text(f"🛑 *Incidente Registrado*\nO MTTR e a taxa de falha serão calculados no painel DORA.\nMsg: {text}", parse_mode='Markdown')
+        except Exception as e:
+            self.log(f"Erro no incident_handler: {e}")
+            await update.message.reply_text("⚠️ Erro ao registrar incidente.")
+
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if not update.message:
@@ -409,6 +423,7 @@ class TelegramAgent:
         self.application.add_handler(CommandHandler("status", self.status_handler))
         self.application.add_handler(CommandHandler("dora", self.dora_handler))
         self.application.add_handler(CommandHandler("debug", self.debug_handler)) # TASK-08
+        self.application.add_handler(CommandHandler("incidente", self.incident_handler)) # DORA Refinement
         self.application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, self.message_handler))
         
         await self.application.initialize()

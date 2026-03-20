@@ -57,6 +57,36 @@ class DoraManager:
         })
         self._save_data(data)
 
+    def log_incident(self, title, description="", severity="baixa"):
+        """Registra um incidente e marca para MTTR (Mean Time To Recovery)."""
+        data = self._get_data()
+        data.setdefault("incidents", []).append({
+            "id": f"INC_{os.urandom(2).hex()}",
+            "title": title,
+            "description": description,
+            "severity": severity,
+            "status": "open",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "resolved_at": None,
+            "mttr_hours": None
+        })
+        self._save_data(data)
+
+    def resolve_incident(self, incident_id):
+        """Marca incidente como resolvido e calcula o tempo de reparo."""
+        data = self._get_data()
+        now = datetime.now(timezone.utc)
+        for inc in data.get("incidents", []):
+            if inc.get("id") == incident_id and inc.get("status") == "open":
+                inc["status"] = "resolved"
+                inc["resolved_at"] = now.isoformat()
+                
+                # Calcular MTTR
+                start = datetime.fromisoformat(inc["timestamp"].replace('Z', '+00:00'))
+                inc["mttr_hours"] = (now - start).total_seconds() / 3600.0
+                break
+        self._save_data(data)
+
     def get_metrics_summary(self):
         """Calculates and returns the 4 DORA metrics."""
         data = self._get_data()
