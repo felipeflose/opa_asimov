@@ -797,6 +797,11 @@ function App() {
               </div>
               
               <div style={{ flex: 1, padding: '15px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {getTasksByStatus(col.id).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', opacity: 0.3, fontSize: '0.8rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '12px' }}>
+                    Nenhuma tarefa {col.id.toLowerCase()}
+                  </div>
+                )}
                 {getTasksByStatus(col.id).map(task => (
                   <div 
                     key={task.id} 
