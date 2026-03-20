@@ -145,3 +145,52 @@
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* Premium Cognitive Map Enhancements */
+.node-glow {
+  filter: drop-shadow(0 0 5px currentColor);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.node-glow:hover {
+  filter: drop-shadow(0 0 12px currentColor);
+  transform: scale(1.1);
+}
+
+.link-glow {
+  stroke-opacity: 0.3;
+  transition: all 0.3s ease;
+}
+
+.link-active {
+  stroke-opacity: 0.8 !important;
+  stroke: var(--primary) !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 4px var(--primary));
+}
+
+.graph-overlay-card {
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(0, 242, 255, 0.05);
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.pilar-node {
+  stroke: #f59e0b;
+  fill: rgba(245, 158, 11, 0.1);
+}
+
+.core-node {
+  stroke: var(--primary);
+  fill: rgba(0, 242, 255, 0.15);
+  animation: core-pulse 4s infinite ease-in-out;
+}
+
+@keyframes core-pulse {
+  0% { filter: drop-shadow(0 0 5px var(--primary)); }
+  50% { filter: drop-shadow(0 0 20px var(--primary)); }
+  100% { filter: drop-shadow(0 0 5px var(--primary)); }
+}
