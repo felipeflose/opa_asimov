@@ -439,362 +439,294 @@ function App() {
     </button>
   );
 
-  const useForce = (nodes, links, width, height) => {
-    const pos = useRef({});
-    const vel = useRef({});
-    const iter = useRef(0);
-    const raf = useRef(null);
-    const [, tick] = useState(0);
-
-    useEffect(() => {
-      if (!width || !height || !nodes.length) return;
-      
-      const cx = width / 2;
-      const cy = height / 2;
-
-      nodes.forEach((n, i) => {
-        if (pos.current[n.id]) return;
-        
-        if (n.type === 'core') {
-          pos.current[n.id] = { x: cx, y: cy };
-        } else if (n.type === 'pilar') {
-          const angle = (i / 8) * Math.PI * 2;
-          pos.current[n.id] = { x: cx + Math.cos(angle) * 250, y: cy + Math.sin(angle) * 250 };
-        } else {
-          const angle = Math.random() * Math.PI * 2;
-          pos.current[n.id] = { x: cx + Math.cos(angle) * 450, y: cy + Math.sin(angle) * 450 };
-        }
-        vel.current[n.id] = { x: 0, y: 0 };
-      });
-      
-      iter.current = 0;
-
-      const step = () => {
-        iter.current++;
-        const a = Math.max(0.005, 0.8 * Math.exp(-iter.current * 0.01));
-        const p = pos.current, v = vel.current;
-        const ids = nodes.map(n => n.id);
-
-        for (let i = 0; i < ids.length; i++) {
-          for (let j = i + 1; j < ids.length; j++) {
-            const A = ids[i], B = ids[j];
-            const dx = p[B].x - p[A].x, dy = p[B].y - p[A].y;
-            const distSq = dx * dx + dy * dy || 1;
-            const dist = Math.sqrt(distSq);
-            
-            const nA = nodes.find(n => n.id === A);
-            const nB = nodes.find(n => n.id === B);
-            if (!nA || !nB) continue;
-
-            const charge = (nA.type === 'core' || nB.type === 'core') ? 120000 : 
-                           (nA.type === 'pilar' || nB.type === 'pilar') ? 40000 : 10000;
-
-            if (dist < 500) {
-              const f = (charge / distSq) * a;
-              v[A].x -= dx / dist * f; v[A].y -= dy / dist * f;
-              v[B].x += dx / dist * f; v[B].y += dy / dist * f;
-            }
-          }
-        }
-
-        links.forEach(l => {
-          const sId = typeof l.source === 'object' ? l.source.id : l.source;
-          const tId = typeof l.target === 'object' ? l.target.id : l.target;
-          if (!p[sId] || !p[tId]) return;
-          
-          const dx = p[tId].x - p[sId].x, dy = p[tId].y - p[sId].y;
-          const d = Math.sqrt(dx * dx + dy * dy) || 1;
-          const ideal = l.relation === 'groups' ? 120 : 250;
-          const strength = (l.relation === 'groups' ? 0.15 : 0.05) * a;
-          const f = (d - ideal) * strength;
-          
-          v[sId].x += dx / d * f; v[sId].y += dy / d * f;
-          v[tId].x -= dx / d * f; v[tId].y -= dy / d * f;
-        });
-
-        nodes.forEach(n => {
-          v[n.id].x += (cx - p[n.id].x) * (n.type === 'core' ? 0.1 : 0.01) * a;
-          v[n.id].y += (cy - p[n.id].y) * (n.type === 'core' ? 0.1 : 0.01) * a;
-          
-          v[n.id].x *= 0.8; v[n.id].y *= 0.8;
-          p[n.id].x = Math.max(50, Math.min(width - 50, p[n.id].x + v[n.id].x));
-          p[n.id].y = Math.max(50, Math.min(height - 50, p[n.id].y + v[n.id].y));
-        });
-
-        tick(t => t + 1);
-        if (a > 0.006) raf.current = requestAnimationFrame(step);
-      };
-
-      if (raf.current) cancelAnimationFrame(raf.current);
-      raf.current = requestAnimationFrame(step);
-      return () => { if (raf.current) cancelAnimationFrame(raf.current); };
-    }, [nodes.length, links.length, width, height]);
-
-    return pos.current;
-  };
-
   const CognitiveMap = ({ data }) => {
-    const nodes = data?.nodes || [];
-    const links = data?.links || [];
+    const rawNodes = data?.nodes || [];
+    const rawLinks = data?.links || [];
+    const svgRef = useRef(null);
     const containerRef = useRef(null);
-    const [dims, setDims] = useState({ w: 1200, h: 800 });
+    
+    // Estados do Grafo
     const [selected, setSelected] = useState(null);
     const [hovered, setHovered] = useState(null);
     const [filterType, setFilterType] = useState("all");
-    const [dragging, setDragging] = useState(null);
-    const dragOff = useRef({ x: 0, y: 0 });
-    const posOverride = useRef({});
-    const [, forceRender] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isSaved, setIsSaved] = useState(false);
+    const [stats, setStats] = useState({ core: 0, pilar: 0, concepts: 0 });
 
-    useEffect(() => {
-      const saved = localStorage.getItem("flose_cognitive_map_v2");
-      if (saved) {
-        try {
-          posOverride.current = JSON.parse(saved);
-          forceRender(v => v + 1);
-        } catch (e) {
-          console.error("Erro ao carregar layout", e);
-        }
+    // 1. Filtragem reativa de dados
+    const filteredNodes = React.useMemo(() => {
+      let result = filterType === "all" ? rawNodes : rawNodes.filter(n => n.type === filterType);
+      if (searchTerm) {
+        result = result.filter(n => n.id.toLowerCase().includes(searchTerm.toLowerCase()));
       }
-    }, []);
+      return result.map(n => ({ ...n })); // Deep copy para o D3
+    }, [rawNodes, filterType, searchTerm]);
 
-    const handleSave = () => {
-      const current = { ...posOverride.current };
-      visNodes.forEach(n => {
-        if (!current[n.id] && simPos[n.id]) current[n.id] = simPos[n.id];
+    const filteredLinks = React.useMemo(() => {
+      const nodeIds = new Set(filteredNodes.map(n => n.id));
+      return rawLinks
+        .filter(l => {
+          const sId = typeof l.source === 'object' ? l.source.id : l.source;
+          const tId = typeof l.target === 'object' ? l.target.id : l.target;
+          return nodeIds.has(sId) && nodeIds.has(tId);
+        })
+        .map(l => ({ ...l }));
+    }, [rawLinks, filteredNodes]);
+
+    // 2. Efeito Principal: Simulação D3
+    useEffect(() => {
+      if (!svgRef.current || !filteredNodes.length) return;
+
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
+      const svg = d3.select(svgRef.current);
+      svg.selectAll("*").remove(); // Limpeza para re-render
+
+      // Camadas do SVG
+      const gMain = svg.append("g").attr("class", "main-graph");
+      const gLinks = gMain.append("g").attr("class", "links-layer");
+      const gNodes = gMain.append("g").attr("class", "nodes-layer");
+
+      // Definição de Filtros (Glow Effects)
+      const defs = svg.append("defs");
+      const filter = defs.append("filter").attr("id", "glow").attr("x", "-50%").attr("y", "-50%").attr("width", "200%").attr("height", "200%");
+      filter.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "coloredBlur");
+      const feMerge = filter.append("feMerge");
+      feMerge.append("feMergeNode").attr("in", "coloredBlur");
+      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+      // Simulação
+      const simulation = d3.forceSimulation(filteredNodes)
+        .force("link", d3.forceLink(filteredLinks).id(d => d.id).distance(d => d.relation === 'defined_by' ? 180 : 250))
+        .force("charge", d3.forceManyBody().strength(d => d.type === 'core' ? -2000 : -800))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collision", d3.forceCollide().radius(d => d.type === 'core' ? 60 : 40));
+
+      // Zoom & Pan
+      const zoom = d3.zoom()
+        .scaleExtent([0.1, 4])
+        .on("zoom", (event) => gMain.attr("transform", event.transform));
+      svg.call(zoom);
+
+      // Links
+      const link = gLinks.selectAll("line")
+        .data(filteredLinks)
+        .enter().append("line")
+        .attr("class", "link-glow")
+        .attr("stroke", "rgba(0, 242, 255, 0.15)")
+        .attr("stroke-width", 1.5);
+
+      // Grupos de Nós
+      const node = gNodes.selectAll(".node-group")
+        .data(filteredNodes)
+        .enter().append("g")
+        .attr("class", d => `node-group graph-node ${d.type}-node`)
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended))
+        .on("mouseenter", (e, d) => setHovered(d))
+        .on("mouseleave", () => setHovered(null))
+        .on("click", (e, d) => { e.stopPropagation(); setSelected(d); });
+
+      // Desenho dos Nós
+      node.append("circle")
+        .attr("r", d => d.type === 'core' ? 35 : (d.type === 'pilar' ? 22 : 12))
+        .attr("class", "node-glow")
+        .attr("stroke", d => d.type === 'core' ? "var(--primary)" : (d.type === 'pilar' ? "#f59e0b" : "#4ade80"))
+        .attr("stroke-width", 2)
+        .attr("fill", "rgba(10, 15, 30, 0.95)");
+
+      node.append("text")
+        .attr("dy", d => d.type === 'core' ? 60 : 45)
+        .attr("text-anchor", "middle")
+        .attr("fill", "rgba(255,255,255,0.7)")
+        .attr("font-size", "10px")
+        .attr("font-weight", d => d.type === 'core' ? "900" : "500")
+        .style("letter-spacing", "1px")
+        .text(d => (d.type !== 'concept' || hovered?.id === d.id) ? d.id.toUpperCase() : "");
+
+      // Atualização da Simulação
+      simulation.on("tick", () => {
+        link
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+
+        node.attr("transform", d => `translate(${d.x},${d.y})`);
       });
-      localStorage.setItem("flose_cognitive_map_v2", JSON.stringify(current));
-      posOverride.current = current;
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
-    };
 
-    const handleReset = () => {
-      if (window.confirm("Reseta o layout cognitivo?")) {
-        localStorage.removeItem("flose_cognitive_map_v2");
-        posOverride.current = {};
-        window.location.reload();
+      // Drag Functions
+      function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x; d.fy = d.y;
       }
-    };
+      function dragged(event, d) {
+        d.fx = event.x; d.fy = event.y;
+      }
+      function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null; d.fy = null;
+      }
 
-    useEffect(() => {
-      const obs = new ResizeObserver(e => {
-        if (!e[0]) return;
-        const { width, height } = e[0].contentRect;
-        setDims({ w: Math.max(800, width), h: Math.max(500, height) });
+      // Estatísticas
+      setStats({
+        core: filteredNodes.filter(n => n.type === 'core').length,
+        pilar: filteredNodes.filter(n => n.type === 'pilar').length,
+        concepts: filteredNodes.length
       });
-      if (containerRef.current) obs.observe(containerRef.current);
-      return () => obs.disconnect();
-    }, []);
 
-    const visNodes = filterType === "all" ? nodes : nodes.filter(n => n.type === filterType);
-    const filteredNodes = searchTerm 
-      ? visNodes.filter(n => n.id.toLowerCase().includes(searchTerm.toLowerCase())) 
-      : visNodes;
-
-    const visIds = new Set(filteredNodes.map(n => n.id));
-    const visLinks = links.filter(l => {
-      const sId = typeof l.source === 'object' ? l.source.id : l.source;
-      const tId = typeof l.target === 'object' ? l.target.id : l.target;
-      return visIds.has(sId) && visIds.has(tId);
-    });
-
-    const simPos = useForce(filteredNodes, visLinks, dims.w, dims.h);
-    const getP = id => posOverride.current[id] || simPos[id] || { x: dims.w / 2, y: dims.h / 2 };
-
-    const activeNode = selected || hovered;
-    const activeLinks = activeNode ? visLinks.filter(l => {
-      const sId = typeof l.source === 'object' ? l.source.id : l.source;
-      const tId = typeof l.target === 'object' ? l.target.id : l.target;
-      return sId === activeNode?.id || tId === activeNode?.id;
-    }) : [];
-    
-    const activeIds = new Set(activeLinks.flatMap(l => [
-      typeof l.source === 'object' ? l.source.id : l.source,
-      typeof l.target === 'object' ? l.target.id : l.target
-    ]));
-
-    const onMD = (e, id) => {
-      e.stopPropagation();
-      const p = getP(id), svg = e.currentTarget.closest("svg"), r = svg.getBoundingClientRect();
-      dragOff.current = { x: e.clientX - r.left - p.x, y: e.clientY - r.top - p.y };
-      setDragging(id); setSelected(nodes.find(n => n.id === id));
-    };
-
-    useEffect(() => {
-      if (!dragging) return;
-      const mv = e => {
-        const svg = containerRef.current?.querySelector("svg");
-        if (!svg) return;
-        const r = svg.getBoundingClientRect();
-        posOverride.current[dragging] = {
-          x: Math.max(50, Math.min(dims.w - 50, e.clientX - r.left - dragOff.current.x)),
-          y: Math.max(50, Math.min(dims.h - 50, e.clientY - r.top - dragOff.current.y)),
-        };
-        forceRender(v => v + 1);
-      };
-      const up = () => setDragging(null);
-      window.addEventListener("mousemove", mv); window.addEventListener("mouseup", up);
-      return () => { window.removeEventListener("mousemove", mv); window.removeEventListener("mouseup", up); };
-    }, [dragging, dims]);
-
-    if (!nodes.length) return <div className="loading">LOADING COGNITIVE_DATA...</div>;
+      return () => simulation.stop();
+    }, [filteredNodes, filteredLinks]);
 
     return (
       <div className="glass-card" style={{ height: '75vh', position: 'relative', overflow: 'hidden', padding: 0, border: '1px solid var(--border)', background: '#02040a' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(2,4,10,0.9), transparent)' }}>
-          <div style={{ pointerEvents: 'none' }}>
-            <h2 className="title-grad" style={{ letterSpacing: '4px', fontSize: '1.1rem', marginBottom: '5px' }}>COGNITIVE_NEXUS_v4.5</h2>
+        {/* Header Superior */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '25px 35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(to bottom, rgba(2,4,10,0.95), transparent)' }}>
+          <div>
+            <h2 className="title-grad" style={{ letterSpacing: '6px', fontSize: '1.2rem', marginBottom: '5px' }}>COGNITIVE_MAP_v5.0</h2>
             <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.6rem', color: '#00ff80', fontWeight: 'bold' }}>● SYSTEM_OPERATIONAL</span>
-              <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>{visNodes.length} NODES_IN_VIEW</span>
+              <span style={{ fontSize: '0.65rem', color: '#00ffcc', fontWeight: 'bold', textShadow: '0 0 10px #00ffcc44' }}>● NEURAL_DYNAMIC_ACTIVE</span>
+              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>L0 / GRID_X_449</span>
             </div>
           </div>
+          
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <div style={{ position: 'relative' }}>
               <input 
                 type="text" 
-                placeholder="SEARCH_COGNITIVE_NODE..." 
+                placeholder="SEARCH_NODE..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ 
-                  background: 'rgba(255,255,255,0.05)', 
-                  border: '1px solid rgba(0,242,255,0.3)', 
-                  borderRadius: '20px', 
-                  padding: '8px 20px', 
-                  color: 'white', 
-                  fontSize: '10px', 
-                  width: '200px',
-                  outline: 'none',
-                  transition: 'all 0.3s'
-                }}
-                onFocus={(e) => e.target.style.border = '1px solid var(--primary)'}
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '25px', padding: '10px 25px', color: 'white', fontSize: '10px', width: '220px', outline: 'none', transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)' }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
               />
-              {searchTerm && <span onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '10px', opacity: 0.5 }}>✕</span>}
+              {searchTerm && <span onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '10px', color: 'var(--primary)' }}>✕</span>}
             </div>
-             <button onClick={handleSave} style={{ padding: "8px 16px", background: isSaved ? "var(--secondary)" : "rgba(255,255,255,0.05)", color: isSaved ? "#000" : "#fff", border: isSaved ? "none" : "1px solid var(--primary)", borderRadius: "4px", fontSize: "10px", fontWeight: "900", cursor: "pointer", transition: "all 0.3s" }}>
-              {isSaved ? "LAYOUT_SAVED" : "SAVE_SNAPSHOT"}
-            </button>
-            <button onClick={handleReset} style={{ padding: "8px 16px", background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", fontSize: "10px", fontWeight: "900", cursor: "pointer" }}>
-              RESET
-            </button>
-            <div style={{ width: '1px', height: '25px', background: 'rgba(255,255,255,0.1)', margin: '0 5px' }} />
-            <SlantButton active={filterType === 'all'} onClick={() => setFilterType('all')}>ALL_NODES</SlantButton>
+            
+            <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.05)', margin: '0 10px' }} />
+            
+            <SlantButton active={filterType === 'all'} onClick={() => setFilterType('all')}>VIEW_ALL</SlantButton>
             <SlantButton color="var(--primary)" active={filterType === 'core'} onClick={() => setFilterType('core')}>CORE</SlantButton>
-            <SlantButton color="#f59e0b" active={filterType === 'pilar'} onClick={() => setFilterType('pilar')}>PILLARS</SlantButton>
-            <SlantButton color="#34d399" active={filterType === 'concept'} onClick={() => setFilterType('concept')}>CONCEPTS</SlantButton>
+            <SlantButton color="#f59e0b" active={filterType === 'pilar'} onClick={() => setFilterType('pilar')}>PILARS</SlantButton>
+            <SlantButton color="#4ade80" active={filterType === 'concept'} onClick={() => setFilterType('concept')}>CONCEPTS</SlantButton>
           </div>
         </div>
-        <div style={{ position: "absolute", bottom: 30, right: selected ? 420 : 30, zIndex: 15, background: "rgba(5, 8, 18, 0.9)", backdropFilter: "blur(10px)", border: `1px solid var(--border)`, borderRadius: 12, padding: "15px 25px", boxShadow: "0 0 40px rgba(0,0,0,0.5)", transition: "all 0.4s cubic-bezier(0.19, 1, 0.22, 1)", display: "flex", gap: "30px", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: "800", textTransform: "uppercase", letterSpacing: '1px', marginBottom: '4px' }}>CORE_ENGINES</div>
-            <div style={{ fontSize: "22px", fontWeight: "900", color: "var(--primary)", textShadow: '0 0 10px var(--primary)' }}>{nodes.filter(n => n.type === 'core').length}</div>
-          </div>
-          <div style={{ width: "1px", height: "35px", background: "rgba(255,255,255,0.1)" }} />
-          <div>
-            <div style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: "800", textTransform: "uppercase", letterSpacing: '1px', marginBottom: '4px' }}>PILLAR_MODULES</div>
-            <div style={{ fontSize: "22px", fontWeight: "900", color: "#f59e0b", textShadow: '0 0 10px #f59e0b66' }}>{nodes.filter(n => n.type === 'pilar').length}</div>
-          </div>
-          <div style={{ width: "1px", height: "35px", background: "rgba(255,255,255,0.1)" }} />
-          <div>
-            <div style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: "800", textTransform: "uppercase", letterSpacing: '1px', marginBottom: '4px' }}>TOTAL_CONCEPTS</div>
-            <div style={{ fontSize: "22px", fontWeight: "900", color: "#34d399", textShadow: '0 0 10px #34d39966' }}>{nodes.length}</div>
-          </div>
+
+        {/* Estatísticas Flutuantes */}
+        <div style={{ position: "absolute", bottom: 30, right: selected ? 440 : 30, zIndex: 110, display: "flex", gap: "25px", padding: '20px 30px', background: 'rgba(5,7,15,0.85)', backdropFilter: 'blur(20px)', border: '1px solid var(--border)', borderRadius: '24px', transition: 'all 0.6s cubic-bezier(0.19, 1, 0.22, 1)' }}>
+            <div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: "900", letterSpacing: '2px', marginBottom: '8px' }}>CORE_NEXUS</div>
+              <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "var(--primary)", textShadow: '0 0 15px var(--primary)' }}>{stats.core}</div>
+            </div>
+            <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.06)' }} />
+            <div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: "900", letterSpacing: '2px', marginBottom: '8px' }}>CLUSTERS</div>
+              <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "#f59e0b", textShadow: '0 0 15px #f59e0b66' }}>{stats.pilar}</div>
+            </div>
         </div>
-        <div ref={containerRef} style={{ height: '100%', width: '100%', position: "relative" }} onClick={() => setSelected(null)}>
-          <svg width={dims.w} height={dims.h} style={{ background: 'radial-gradient(circle at center, #0a0e1a 0%, #010101 100%)' }}>
-            <defs>
-              <filter id="floseGlow" x="-100%" y="-100%" width="300%" height="300%">
-                <feGaussianBlur stdDeviation="5" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-            {filterType === "all" && nodes.filter(n => n.type === 'pilar').map(pnode => {
-              const p = getP(pnode.id);
-              return <circle key={`cluster-${pnode.id}`} cx={p.x} cy={p.y} r={120} fill="none" stroke="#f59e0b" strokeWidth={0.5} strokeDasharray="5,10" opacity={0.15} />;
-            })}
-            {visLinks.map((l, i) => {
-              const sId = typeof l.source === 'object' ? l.source.id : l.source;
-              const tId = typeof l.target === 'object' ? l.target.id : l.target;
-              const sp = getP(sId), tp = getP(tId);
-              if (!sp || !tp) return null;
-              const isAct = activeLinks.includes(l);
-              return <line key={`l-${i}`} x1={sp.x} y1={sp.y} x2={tp.x} y2={tp.y} stroke={isAct ? "var(--primary)" : "rgba(255,255,255,0.06)"} strokeWidth={isAct ? 2 : 1} filter={isAct ? "url(#floseGlow)" : ""} style={{ transition: "all 0.3s" }} />;
-            })}
-            {visNodes.map(n => {
-              const p = getP(n.id); if (!p) return null;
-              const isSel = selected?.id === n.id, isHov = hovered?.id === n.id;
-              const isDim = activeNode && !activeIds.has(n.id) && activeNode.id !== n.id;
-              const radius = n.type === 'core' ? 35 : (n.type === 'pilar' ? 20 : 10);
-              const isMatch = searchTerm && n.id.toLowerCase().includes(searchTerm.toLowerCase());
-              const col = isMatch ? "#ff00ff" : (n.type === 'core' ? "var(--primary)" : (n.type === 'pilar' ? "var(--secondary)" : "var(--accent)"));
-              return (
-                <g key={n.id} transform={`translate(${p.x},${p.y})`} style={{ cursor: "grab" }} onMouseDown={ev => onMD(ev, n.id)} onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(null)} onClick={ev => { ev.stopPropagation(); setSelected(n); }}>
-                  {(isSel || isHov) && <circle r={radius + 8} fill="none" stroke={col} strokeWidth={2} strokeDasharray="4,4" opacity={0.6} filter="url(#floseGlow)" className="rotate" />}
-                  {(n.type === 'core' || isSel || isHov) && <circle r={radius + 5} fill={col} opacity={isDim ? 0.05 : 0.15} filter="url(#floseGlow)" />}
-                  <circle r={radius} fill={isDim ? "rgba(255,255,255,0.05)" : (isSel || isHov ? col : "rgba(10,14,26,0.9)")} stroke={col} strokeWidth={isSel ? 3 : 1.5} style={{ transition: "all 0.2s" }} />
-                  {(n.type !== 'concept' || isSel || isHov) && !isDim && <text y={radius + 20} textAnchor="middle" fontSize={radius < 15 ? 9 : 11} fill={isSel || isHov ? "#fff" : "rgba(255,255,255,0.6)"} fontWeight={isSel ? 900 : 700} style={{ pointerEvents: "none", userSelect: "none" }}>{n.id.toUpperCase()}</text>}
-                </g>
-              );
-            })}
-          </svg>
 
-          {/* Legend Card (Jamef Style) */}
-          <div style={{ position: "absolute", bottom: 24, left: 24, background: "rgba(5, 8, 18, 0.8)", backdropFilter: "blur(10px)", border: `1px solid var(--border)`, borderRadius: 12, padding: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", minWidth: "160px", zIndex: 15 }}>
-            <div style={{ color: "var(--primary)", fontSize: 10, fontWeight: 900, marginBottom: 12, borderBottom: `2px solid var(--primary)`, display: "inline-block", letterSpacing: '1px' }}>SYSTEM_MAP_LEGEND</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--primary)", boxShadow: "0 0 10px var(--primary)" }} />
-              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 9, fontWeight: 800 }}>CORE_ENGINE</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--secondary)", boxShadow: "0 0 10px var(--secondary)" }} />
-              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 9, fontWeight: 800 }}>PILLAR_CLUSTER</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--accent)", boxShadow: "0 0 10px var(--accent)" }} />
-              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 9, fontWeight: 800 }}>DEEP_CONCEPT</span>
-            </div>
-          </div>
+        {/* Área Svg D3 */}
+        <div ref={containerRef} style={{ height: '100%', width: '100%', cursor: 'crosshair' }}>
+          <svg 
+            ref={svgRef} 
+            width="100%" 
+            height="100%" 
+            style={{ display: 'block' }}
+            onClick={() => setSelected(null)}
+          />
+        </div>
 
-          <div style={{ position: "absolute", top: 0, right: 0, width: selected ? 400 : 0, height: '100%', background: "rgba(2,4,10,0.95)", borderLeft: `1px solid var(--border)`, overflow: "hidden", transition: "width .4s cubic-bezier(0.19, 1, 0.22, 1)", display: "flex", flexDirection: "column", boxShadow: "-20px 0 50px rgba(0,0,0,0.8)", zIndex: 100, backdropFilter: 'blur(20px)' }}>
-            {selected && (
-              <div style={{ padding: 40, overflowY: "auto", flex: 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30 }}>
-                  <div>
-                    <div style={{ color: "var(--primary)", fontSize: "0.6rem", fontWeight: "900", letterSpacing: '5px', marginBottom: "10px" }}>NEURAL_NODE_ID: {selected.type === 'core' ? '0XFF' : '0XBC'}</div>
-                    <h2 style={{ color: "#fff", fontSize: "2rem", fontWeight: "900", lineHeight: 1.1 }}>{selected.id.toUpperCase()}</h2>
-                  </div>
-                  <button onClick={() => setSelected(null)} style={{ background: "rgba(255,255,255,0.05)", border: "none", borderRadius: "50%", width: 40, height: 40, color: "#fff", cursor: "pointer" }}>✕</button>
+        {/* Legend Panel */}
+        <div style={{ position: "absolute", bottom: 30, left: 30, zIndex: 15, padding: '20px', background: 'rgba(5,7,15,0.7)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)', borderRadius: '20px', minWidth: '180px' }}>
+          <div style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '3px', marginBottom: '15px' }}>NEURAL_INDEX</div>
+          {[
+            { label: 'CORE_ENGINE', color: 'var(--primary)' },
+            { label: 'PILLAR_MODULE', color: '#f59e0b' },
+            { label: 'BASE_CONCEPT', color: '#4ade80' }
+          ].map(item => (
+            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color, boxShadow: `0 0 10px ${item.color}` }} />
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: '700' }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Side Detail Panel (Premium Glassmorphism) */}
+        <div className={`graph-overlay-card`} style={{ 
+          position: "absolute", 
+          top: 0, 
+          right: 0, 
+          width: selected ? 400 : 0, 
+          height: '100%', 
+          zIndex: 1000, 
+          transition: 'all 0.7s cubic-bezier(0.19, 1, 0.22, 1)', 
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '-30px 0 60px rgba(0,0,0,0.4)',
+          opacity: selected ? 1 : 0
+        }}>
+          {selected && (
+            <div style={{ width: 400, padding: 40, animation: 'fadeIn 0.8s ease' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 40 }}>
+                <div>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '4px', marginBottom: 10 }}>IDENTITY_HEX: #{selected.id.length}X</div>
+                  <h2 style={{ fontSize: '2.4rem', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{selected.id.toUpperCase()}</h2>
                 </div>
-                <div style={{ background: "rgba(0,242,255,0.03)", border: "1px solid var(--border)", borderRadius: 12, padding: 25, marginBottom: 30, borderLeft: '4px solid var(--primary)' }}>
-                  <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.95rem", lineHeight: 1.6 }}>{selected.type === 'core' ? 'Primary Nexus. Managing all cognitive orchestration and coordination.' : selected.type === 'pilar' ? 'Thematic Cluster. Higher order organization of related modules.' : 'Deep Intelligence Concept. Atomic memory unit validated by system.'}</p>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: '1fr 1fr', gap: 15, marginBottom: 30 }}>
-                  <div style={{ border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 12, padding: 15, background: 'rgba(255,255,255,0.02)' }}>
-                    <div style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)", fontWeight: "800", marginBottom: '5px' }}>HEALTH</div>
-                    <div style={{ fontSize: "1rem", fontWeight: "900", color: "#00ff80" }}>100% ONLINE</div>
-                  </div>
-                  <div style={{ border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 12, padding: 15, background: 'rgba(255,255,255,0.02)' }}>
-                    <div style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)", fontWeight: "800", marginBottom: '5px' }}>LATENCY</div>
-                    <div style={{ fontSize: "1rem", fontWeight: "900", color: "var(--primary)" }}>24MS</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", fontWeight: "900", letterSpacing: '2px', marginBottom: "15px", borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>CONNECTED_NODES ({activeLinks.length})</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {activeLinks.map((l, idx) => {
-                    const otherId = (typeof l.source === 'object' ? l.source.id : l.source) === selected.id ? (typeof l.target === 'object' ? l.target.id : l.target) : (typeof l.source === 'object' ? l.source.id : l.source);
-                    return <div key={idx} onClick={() => setSelected(nodes.find(n => n.id === otherId))} style={{ padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}><div style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '700' }}>{otherId}</div></div>;
-                  })}
-                </div>
+                <button 
+                  onClick={() => setSelected(null)}
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', width: 45, height: 45, borderRadius: '50%', cursor: 'pointer', transition: '300ms' }}
+                  onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                >✕</button>
               </div>
-            )}
-          </div>
+
+              <div style={{ padding: 25, background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 30 }}>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: 10, fontWeight: '800' }}>SEMANTIC_LAYER</div>
+                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
+                  {selected.type === 'core' ? 'Primary intelligence nexus of Flose AI. Controls all secondary pillar assignments and thematic clustering.' : 
+                   selected.type === 'pilar' ? 'Thematic pillar node. Groups multiple atomic concepts under a common technical expertise.' : 
+                   'Base atomic concept. Persistent knowledge node extracted from agent execution logs and episodic memory.'}
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: 40 }}>
+                  <div style={{ padding: 20, background: 'rgba(0, 242, 255, 0.05)', borderRadius: '15px', border: '1px solid rgba(0, 242, 255, 0.1)' }}>
+                    <div style={{ fontSize: '0.5rem', color: 'var(--primary)', marginBottom: 5 }}>STATUS</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff' }}>STABLE</div>
+                  </div>
+                  <div style={{ padding: 20, background: 'rgba(245, 158, 11, 0.05)', borderRadius: '15px', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
+                    <div style={{ fontSize: '0.5rem', color: '#f59e0b', marginBottom: 5 }}>WEIGHT</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#fff' }}>0.98</div>
+                  </div>
+              </div>
+
+              <div style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: '900', letterSpacing: '4px', marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 15 }}>NEURAL_CONNECTIONS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {filteredLinks.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === selected.id || (typeof l.target === 'object' ? l.target.id : l.target) === selected.id).slice(0, 6).map(l => {
+                  const other = (typeof l.source === 'object' ? l.source.id : l.source) === selected.id ? (typeof l.target === 'object' ? l.target.id : l.target) : (typeof l.source === 'object' ? l.source.id : l.source);
+                  return (
+                    <div 
+                      key={other} 
+                      onClick={() => setSelected(rawNodes.find(n => n.id === other))}
+                      style={{ padding: 18, background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: '300ms' }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
+                    >
+                      <div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: '800' }}>{other.toUpperCase()}</div>
+                      <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>RELATION: {l.relation?.toUpperCase() || 'CONNECTED'}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
   };
+
 
   const renderContent = () => {
     if (activeTab === 'Dashboard') {
