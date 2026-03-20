@@ -19,5 +19,3 @@ timestamp. O `TELEGRAM_CHAT_ID` deve ser lido da variável
 de ambiente.
 ```
 
-## Arquivos Envolvidos
-- `deploy_gcp.ps1`

@@ -268,7 +268,7 @@ async def get_tasks(request: Request, token: str = None):
     return registry.get("demands", [])
 
 @app.post("/api/tasks/update-status")
-async def update_task_status(request: Request, task_id: str, new_status: str, token: str = None):
+async def update_task_status(request: Request, task_id: str, new_status: str = None, new_priority: str = None, token: str = None):
     """Atualiza o status de uma tarefa e aprova o orçamento se movido para 'Em Progresso'."""
     if not validate_token(request, token):
         return {"error": "Unauthorized"}
@@ -284,10 +284,15 @@ async def update_task_status(request: Request, task_id: str, new_status: str, to
     found = False
     for task in registry["demands"]:
         if task["id"] == task_id:
-            task["status"] = new_status
-            # Lógica solicitada pelo usuário: Arrastar para a próxima raia = aprovado
-            if new_status in ["Em Progresso", "IN_PROGRESS"]:
-                task["budget_approved"] = True
+            if new_status:
+                task["status"] = new_status
+                # Lógica solicitada pelo usuário: Arrastar para a próxima raia = aprovado
+                if new_status in ["Em Progresso", "IN_PROGRESS"]:
+                    task["budget_approved"] = True
+            
+            if new_priority:
+                task["priority"] = new_priority
+                
             found = True
             break
             

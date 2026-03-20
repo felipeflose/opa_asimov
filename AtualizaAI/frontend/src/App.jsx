@@ -170,9 +170,13 @@ function App() {
     }
   }, [isAuthenticated]);
 
-  const handleUpdateStatus = async (taskId, newStatus) => {
+  const handleUpdateStatus = async (taskId, newStatus, newPriority = null) => {
     try {
-      const res = await fetch(`/api/tasks/update-status?task_id=${taskId}&new_status=${newStatus}`, {
+      let url = `/api/tasks/update-status?task_id=${taskId}`;
+      if (newStatus) url += `&new_status=${newStatus}`;
+      if (newPriority) url += `&new_priority=${newPriority}`;
+      
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -867,9 +871,25 @@ function App() {
                         </div>
                         <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{task.responsible || 'IA'}</span>
                       </div>
-                      <span style={{ fontSize: '0.55rem', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: '4px' }}>
-                        {task.priority || 'Normal'}
-                      </span>
+                      <select 
+                        value={task.priority || 'Média'}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => handleUpdateStatus(task.id, null, e.target.value)}
+                        style={{ 
+                          fontSize: '0.55rem', 
+                          background: 'rgba(255,255,255,0.08)', 
+                          padding: '3px 8px', 
+                          borderRadius: '4px',
+                          border: 'none',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value="Alta">Alta</option>
+                        <option value="Média">Média</option>
+                        <option value="Baixa">Baixa</option>
+                      </select>
                     </div>
 
                     {/* Mostra governança se selecionado */}
