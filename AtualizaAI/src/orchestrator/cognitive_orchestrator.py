@@ -521,7 +521,28 @@ class CognitiveOrchestrator:
                 else:
                     combined_responses.append(f"⚠️ Agente '{agent_name}' não localizado para o painel.")
             
-            final_result = "\n\n---\n\n".join(combined_responses)
+            # --- FAPA (Flose Agent Panel Aggregator) ---
+            # Depois de coletar as visões individuais, o Orquestrador sintetiza em uma resposta única e fluida
+            synthesis_prompt = f"""
+            Você é o Orquestrador Cognitivo da Flose AI. 
+            Abaixo estão as respostas técnicas de {len(panel_agents)} especialistas sobre a mesma pergunta: "{task_desc}"
+            
+            RESPOSTAS DO PAINEL:
+            {" ".join(combined_responses)}
+            
+            SUA TAREFA:
+            Crie uma resposta ÚNICA, FLUIDA e INTEGRADA. 
+            Não use listas. Não use cabeçalhos de nomes de agentes. 
+            Faça com que eles "falem na mesma frase", combinando os termos técnicos do UCP com a realidade do Google Merchant Center.
+            Limite a resposta a no máximo 5 frases. Linguagem direta e profissional em PT-BR.
+            """
+            try:
+                print("🧠 Sintetizando respostas do painel...")
+                synthesis_resp = self.model.generate_content(synthesis_prompt)
+                final_result = synthesis_resp.text.strip()
+            except Exception as e:
+                print(f"Erro na síntese: {e}")
+                final_result = "\n\n---\n\n".join(combined_responses)
 
         elif action == "execute":
             agent_name = decision.get("agent_involved") or decision.get("agent_name", "Unknown")
