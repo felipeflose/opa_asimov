@@ -7,7 +7,7 @@
 | Grupo | Ideias Novas |
 | Prioridade | Média |
 | Responsável | ReportAgent |
-| Status | Aberto |
+| Status | Conclu�do |
 
 ## Prompt para Antigravity
 

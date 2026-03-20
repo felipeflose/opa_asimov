@@ -26,9 +26,10 @@ async def get_tg_agent():
         bucket_name = f"flose-ai-platform-{project_id}"
         gcs = GCSClient(bucket_name, project_id=project_id)
         orchestrator = CognitiveOrchestrator(gcs_client=gcs)
-        kg = KnowledgeGraphManager(gcs_client=gcs)
-        vision = VisionAgent(gcs_client=gcs)
-        tg_agent = TelegramAgent(orchestrator, gcs_client=gcs, kg_manager=kg, vision_agent=vision)
+        from src.agents.audio_agent import AudioAgent
+        audio = AudioAgent(gcs_client=gcs)
+        
+        tg_agent = TelegramAgent(orchestrator, gcs_client=gcs, kg_manager=kg, vision_agent=vision, audio_agent=audio)
         await tg_agent.setup()
     return tg_agent
 
@@ -837,7 +838,25 @@ async def get_marketplace(request: Request, token: str = None):
     
     from src.agents.marketplace import AgentMarketplace
     market = AgentMarketplace(gcs)
-    return market.list_templates()
+    templates = market.list_templates()
+    
+    # TRD-P05: Enrich templates with curated metadata
+    for t in templates:
+        name = t.get("name", "").lower()
+        if "finops" in name:
+            t["description"] = "Guardião especializado em otimização de custos GCP e FinOps."
+            t["use_cases"] = ["Redução de custos", "Análise de faturamento", "Previsão de gastos"]
+            t["category"] = "Gêrencia de Cloud"
+        elif "task" in name:
+            t["description"] = "Gerenciador autônomo de tarefas e demandas TRD."
+            t["use_cases"] = ["Organização de backlog", "Track de progresso", "Kanban Automático"]
+            t["category"] = "Productivity"
+        else:
+            t["description"] = t.get("purpose", "Agente especialista customizado.")
+            t["use_cases"] = ["Automação de processos", "Análise de dados"]
+            t["category"] = "General"
+            
+    return templates
 
 @app.post("/api/marketplace/export/{agent_name}")
 async def export_to_marketplace(agent_name: str, request: Request, token: str = None):

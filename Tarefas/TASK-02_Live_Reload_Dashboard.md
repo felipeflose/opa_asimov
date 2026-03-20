@@ -7,7 +7,7 @@
 | Grupo | Ideias Novas |
 | Prioridade | Média |
 | Responsável | FrontendAgent |
-| Status | Aberto |
+| Status | Conclu�do |
 
 ## Prompt para Antigravity
 
