@@ -144,26 +144,41 @@ class TelegramAgent:
 
             self.log(f"Comando /debug recebido do admin {update.effective_user.username}")
             
-            # 1. Versão do Gemini
-            model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+            # 1. Status dos Serviços
+            gcs_status = "✅ Online" if self.gcs_client and self.gcs_client.bucket else "❌ Offline"
+            gemini_status = "✅ Online" if self.orchestrator and self.orchestrator.model else "❌ Offline"
             
-            # 2. Nós no Grafo
-            nodes_count = 0
-            if self.kg_manager:
-                nodes_count = len(self.kg_manager.graph.nodes())
-            
-            # 3. Uptime (Simulado via tempo de início da classe se disponível)
+            # 2. Última Execução Registrada
+            last_exec = "Nenhuma encontrada"
+            if self.gcs_client:
+                try:
+                    prefix = f"users/{self.gcs_client.user_id}/logs/executions/"
+                    blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix, max_results=5))
+                    if blobs:
+                        blobs.sort(key=lambda x: x.updated, reverse=True)
+                        data = self.gcs_client.read_json(blobs[0].name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                        if data:
+                            last_exec = f"{data.get('agent', 'Unknown')} @ {data.get('timestamp', 'N/A')[:16]}"
+                except: pass
+
+            # 3. FinOps Consolidado de Hoje
+            finops_today = "Sem dados"
+            if hasattr(self.orchestrator, 'finops'):
+                finops_today = self.orchestrator.finops.get_finops_report()
+
+            # 4. Uptime e Contexto
             uptime = "N/A"
             if hasattr(self, 'start_time'):
                 delta = datetime.now() - self.start_time
-                uptime = str(delta).split(".")[0] # Formato HH:MM:SS
-            
+                uptime = str(delta).split(".")[0]
+
             debug_msg = (
                 f"🛠️ *System Debug Info*\n\n"
-                f"🧠 *Model:* `{model}`\n"
-                f"🕸️ *Graph Nodes:* {nodes_count}\n"
-                f"⏱️ *Uptime:* {uptime}\n"
-                f"🌍 *Enviroment:* `Production`"
+                f"🗄️ *GCS:* {gcs_status}\n"
+                f"🧠 *Gemini:* {gemini_status}\n"
+                f"⏱️ *Uptime:* `{uptime}`\n"
+                f"🚀 *Última Exec:* `{last_exec}`\n\n"
+                f"💰 *FinOps Today:* \n`{finops_today}`"
             )
             
             await self.safe_reply(update, debug_msg, parse_mode='Markdown')
