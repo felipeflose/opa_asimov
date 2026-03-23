@@ -186,9 +186,10 @@ function App() {
     fetchData();
   };
 
-  const handleExecute = async (taskId) => {
-    if (!executingAgent) return alert("Selecione um agente!");
-    const res = await fetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${executingAgent}`, { 
+  const handleExecute = async (taskId, agentName = null) => {
+    const finalAgent = agentName || executingAgent;
+    if (!finalAgent) return alert("Selecione um agente!");
+    const res = await fetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${finalAgent}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -1670,8 +1671,7 @@ function App() {
               <div style={{ display: 'flex', gap: '15px' }}>
                 <button className="refresh-btn" style={{ flex: 1 }} onClick={() => setExecutionPreview(null)}>CANCELAR</button>
                 <button className="login-button" style={{ flex: 2, background: 'var(--primary)', color: '#000' }} onClick={() => {
-                  setExecutingAgent(executionPreview.responsible);
-                  handleExecute(executionPreview.id);
+                  handleExecute(executionPreview.id, executionPreview.responsible);
                   setExecutionPreview(null);
                 }}>INICIAR AGORA</button>
               </div>
