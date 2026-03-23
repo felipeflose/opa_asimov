@@ -904,6 +904,40 @@ async def get_delivery(result_id: str, request: Request, token: str = None):
         return {"error": f"Artifact {result_id} not found in path {file_path}"}
     return data
 
+@app.post("/api/agents/upload-avatar")
+async def upload_agent_avatar(request: Request, agent_name: str, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    form = await request.form()
+    file = form.get("file")
+    if not file: return {"error": "No file provided"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    # 1. Upload para o GCS
+    ext = file.filename.split('.')[-1]
+    gcs_path = f"agents/avatars/{agent_name.lower()}_{os.urandom(2).hex()}.{ext}"
+    content = await file.read()
+    
+    blob = gcs.bucket.blob(gcs._full_path(gcs_path))
+    blob.upload_from_string(content, content_type=file.content_type)
+    
+    avatar_url = f"https://storage.googleapis.com/{bucket_name}/{gcs._full_path(gcs_path)}"
+    
+    # 2. Atualizar Registry
+    registry = gcs.read_json("agents/registry.json")
+    if registry and "agents" in registry:
+        for agent in registry["agents"]:
+            if agent["agent_name"] == agent_name:
+                agent["avatar"] = avatar_url
+                break
+        gcs.upload_json(registry, "agents/registry.json")
+        
+    return {"status": "success", "avatar_url": avatar_url}
+
 @app.get("/api/agents")
 async def get_agents(request: Request, token: str = None):
     if not validate_token(request, token):

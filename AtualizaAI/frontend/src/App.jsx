@@ -3,6 +3,67 @@ import localGraph from './global_graph.json';
 import * as d3 from 'd3';
 import './App.css';
 
+function AgentAvatar({ agent, size = 60 }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const initial = agent.agent_name.substring(0,2).toUpperCase();
+  const avatarUrl = agent.avatar;
+
+  const gradient = "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)";
+
+  return (
+    <div 
+      className="avatar" 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => fileInputRef.current?.click()}
+      style={{ 
+        width: size, 
+        height: size, 
+        background: avatarUrl ? 'transparent' : gradient,
+        borderRadius: size < 30 ? '30%' : '15px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        position: 'relative'
+      }}
+    >
+      {avatarUrl ? (
+        <img src={avatarUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={agent.agent_name} />
+      ) : (
+        <span style={{ fontSize: size/2.5 }}>{initial}</span>
+      )}
+      
+      {isHovered && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem' }}>
+          📤 NEW
+        </div>
+      )}
+      
+      {/* Input de arquivo invisível para o upload */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept="image/*"
+        onChange={async (e) => {
+           const file = e.target.files[0];
+           if (!file) return;
+           const formData = new FormData();
+           formData.append('file', file);
+           // Como estamos fora do escopo do 'App', precisaremos passar o token via props ou capturar do localStorage
+           const token = sessionStorage.getItem('flose_token');
+           await fetch(`/api/agents/upload-avatar?agent_name=${agent.agent_name}&token=${token}`, {
+             method: 'POST',
+             body: formData
+           });
+           window.location.reload(); // Recarga simples para atualizar todos os avatares
+        }}
+      />
+    </div>
+  );
+}
+
 function BrokerDashboard({ token }) {
     const [data, setData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
@@ -906,9 +967,7 @@ function App() {
           <div className="agent-library-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: '20px' }}>
             {agentList.map(agent => (
               <div key={agent.agent_name} className="glass-card agent-card-edit" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 200px', gap: '20px', alignItems: 'center' }}>
-                <div className="avatar" style={{ background: 'var(--primary)', color: 'black', width: '60px', height: '60px' }}>
-                  {agent.agent_name.substring(0,2).toUpperCase()}
-                </div>
+                <AgentAvatar agent={agent} />
                 <div>
                   <h3 style={{ color: 'var(--primary)' }}>{agent.agent_name}</h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>{agent.purpose}</p>
@@ -1685,9 +1744,7 @@ function App() {
             <div className="glass-card modal-content" onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                  <div className="avatar" style={{ width: '60px', height: '60px', fontSize: '1.5rem' }}>
-                    {viewingAgent.agent_name.substring(0,2).toUpperCase()}
-                  </div>
+                  <AgentAvatar agent={viewingAgent} />
                   <div>
                     <h2 className="title-grad" style={{ fontSize: '1.8rem' }}>{viewingAgent.agent_name}</h2>
                     <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>{viewingAgent.purpose}</p>
