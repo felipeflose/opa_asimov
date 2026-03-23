@@ -203,7 +203,8 @@ async def get_stats(request: Request, token: str = None):
         "cost": f"${today_data.get('total_cost', today_data['cost']):.2f}",
         "tasks": tasks_count,
         "agents": agents_count,
-        "calls": today_data["calls"]
+        "calls": today_data["calls"],
+        "agent_breakdown": today_data.get("agents", {})
     }
 
 @app.get("/api/dora/summary")

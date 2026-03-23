@@ -1467,6 +1467,70 @@ function App() {
        return <BrokerDashboard token={token} />;
     }
 
+    if (activeTab === 'FinOps Guardian') {
+      const breakdown = stats.agent_breakdown || {};
+      const agents = Object.keys(breakdown);
+      const maxCost = Math.max(...agents.map(a => breakdown[a].cost), 0.01);
+
+      return (
+        <div className="glass-card" style={{ padding: '40px' }}>
+          <header style={{ marginBottom: '30px' }}>
+            <h2 className="title-grad" style={{ fontSize: '2rem', margin: 0 }}>🛡️ FinOps Guardian</h2>
+            <p style={{ color: 'var(--text-muted)' }}>Breakdown de custo real por Agente Especialista.</p>
+          </header>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+            <div className="glass-card" style={{ background: 'rgba(0,0,0,0.2)' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '20px', color: 'var(--primary)' }}>Custo Diário por Agente</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {agents.length > 0 ? agents.map(agent => (
+                  <div key={agent}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px' }}>
+                      <span>{agent}</span>
+                      <span style={{ fontWeight: 'bold' }}>${breakdown[agent].cost.toFixed(4)}</span>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div 
+                        style={{ 
+                          width: `${(breakdown[agent].cost / maxCost) * 100}%`, 
+                          height: '100%', 
+                          background: 'var(--primary)', 
+                          boxShadow: '0 0 10px var(--primary)',
+                          transition: 'width 1s ease-out'
+                        }} 
+                      />
+                    </div>
+                  </div>
+                )) : <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Nenhum dado de uso registrado hoje.</p>}
+              </div>
+            </div>
+
+            <div className="glass-card" style={{ background: 'rgba(0,0,0,0.2)' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '20px', color: '#f59e0b' }}>Tokens & Chamadas</h3>
+              <table style={{ width: '100%', fontSize: '0.8rem', textAlign: 'left' }}>
+                <thead style={{ color: 'var(--text-muted)' }}>
+                  <tr>
+                    <th style={{ paddingBottom: '10px' }}>Agente</th>
+                    <th style={{ paddingBottom: '10px' }}>Tokens</th>
+                    <th style={{ paddingBottom: '10px' }}>Calls</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {agents.map(agent => (
+                    <tr key={agent} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '8px 0' }}>{agent}</td>
+                      <td style={{ padding: '8px 0' }}>{(breakdown[agent].tokens / 1000).toFixed(1)}k</td>
+                      <td style={{ padding: '8px 0' }}>{breakdown[agent].calls}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (activeTab === 'Settings') {
        return (
          <div className="glass-card" style={{ padding: '40px' }}>
