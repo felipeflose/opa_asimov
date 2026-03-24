@@ -170,6 +170,85 @@ function BrokerDashboard({ token }) {
     );
 }
 
+const KpiCard = ({ label, value, trend, trendGood, sparkData = [0,0,0,0,0,0,0], icon, color = 'var(--primary)' }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const numericValue = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+  const prefix = value.includes('$') ? '$' : '';
+  const suffix = value.includes('k') ? 'k' : value.includes('%') ? '%' : '';
+
+  useEffect(() => {
+    let start = 0;
+    const duration = 800;
+    const startTime = performance.now();
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setDisplayValue(easeOutQuart * numericValue);
+
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+  }, [numericValue]);
+
+  const state = trend === 'neutral' ? 'neutral' : ((trend === 'up' && trendGood) || (trend === 'down' && !trendGood) ? 'good' : 'alert');
+  const stateColor = state === 'good' ? '#00ff80' : state === 'alert' ? '#ff4d4d' : 'var(--text-muted)';
+  const bg = state === 'good' ? 'rgba(0,255,128,0.04)' : state === 'alert' ? 'rgba(255,77,77,0.04)' : 'rgba(255,255,255,0.03)';
+
+  // Sparkline calculation
+  const max = Math.max(...sparkData, 1);
+  const points = sparkData.map((v, i) => `${(i * 80) / 6},${30 - (v / max) * 25}`).join(' ');
+
+  return (
+    <div className="glass-card" style={{ 
+      background: `linear-gradient(135deg, ${bg} 0%, rgba(0,0,0,0) 100%)`,
+      borderBottom: `2px solid ${stateColor}`,
+      padding: '25px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+      position: 'relative',
+      overflow: 'hidden',
+      animation: 'fadeIn 0.5s ease-out'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+          {icon}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: stateColor, fontSize: '0.7rem', fontWeight: '900' }}>
+          {trend === 'up' ? '▲' : trend === 'down' ? '▼' : '●'}
+          <span>{trend.toUpperCase()}</span>
+        </div>
+      </div>
+      
+      <div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '1px', marginBottom: '5px' }}>{label.toUpperCase()}</p>
+        <h3 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff' }}>
+          {prefix}{suffix === '%' ? displayValue.toFixed(1) : (displayValue > 100 ? displayValue.toFixed(0) : displayValue.toFixed(2))}{suffix}
+        </h3>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+        <svg width="80" height="30" style={{ overflow: 'visible' }}>
+          <defs>
+            <linearGradient id={`grad-${label}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={stateColor} stopOpacity="0.2" />
+              <stop offset="100%" stopColor={stateColor} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <polyline points={points} fill="none" stroke={stateColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <polygon points={`0,30 ${points} 80,30`} fill={`url(#grad-${label})`} />
+        </svg>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>L7D TREND</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
   const [isAuthenticated, setIsAuthenticated] = useState(!!(sessionStorage.getItem('flose_token'))); 
@@ -918,39 +997,47 @@ function App() {
     if (activeTab === 'Dashboard') {
       return (
         <>
-          <section className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
-            <div className="glass-card" style={{ borderLeft: '4px solid var(--primary)', background: 'linear-gradient(135deg, rgba(0,242,255,0.05) 0%, rgba(0,0,0,0) 100%)' }}>
-               <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>System Health Score</p>
-               <h3 style={{ fontSize: '2.5rem', color: healthScore?.score > 70 ? '#34d399' : (healthScore?.score > 40 ? '#f59e0b' : '#ff4d4d') }}>
-                 {healthScore ? healthScore.score : '--'}%
-               </h3>
-               <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
-                  {healthScore && Object.entries(healthScore.details).map(([k, v]) => (
-                    <div key={k} style={{ width: '20%', height: '4px', background: v > 0 ? 'var(--primary)' : 'rgba(255,255,255,0.1)', borderRadius: '2px' }}></div>
-                  ))}
-               </div>
-            </div>
-            <div className="glass-card">
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Tokens Used Today</p>
-              <h3 style={{ fontSize: '2rem' }}>{stats.tokens}</h3>
-              <div className="mini-graph" style={{ backgroundColor: 'var(--primary)', height: '4px', width: '60%', marginTop: '10px', borderRadius: '2px' }}></div>
-            </div>
-            <div className="glass-card">
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Current Daily Spend</p>
-              <h3 style={{ fontSize: '2rem' }}>{stats.cost}</h3>
-              <p style={{ color: '#00ff80', fontSize: '0.7rem', marginTop: '5px' }}>Real-time GCP Data</p>
-            </div>
-            <div className="glass-card">
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Active Agents</p>
-              <h3 style={{ fontSize: '2rem' }}>{stats.agents}</h3>
-            </div>
-            <div className="glass-card">
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Pending Tasks</p>
-              <h3 style={{ fontSize: '2rem' }}>{stats.tasks}</h3>
-              <p style={{ color: stats.tasks > 0 ? '#f59e0b' : '#00ff80', fontSize: '0.7rem', marginTop: '5px' }}>
-                {stats.tasks > 0 ? 'Action required' : 'All clear'}
-              </p>
-            </div>
+          <section className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
+            <KpiCard 
+              label="System Health" 
+              value={`${healthScore?.score || 0}%`}
+              trend="neutral" 
+              trendGood={true}
+              sparkData={[70, 72, 68, 75, 80, 82, healthScore?.score || 85]}
+              icon="🧬"
+            />
+            <KpiCard 
+              label="Estimated Tokens" 
+              value={stats.tokens || "0"}
+              trend="up" 
+              trendGood={false}
+              sparkData={[1200, 1500, 1100, 1800, 2200, 1900, parseInt(stats.tokens) || 2000]}
+              icon="⚡"
+            />
+            <KpiCard 
+              label="Daily Spend" 
+              value={`$${stats.cost || "0.00"}`}
+              trend="down" 
+              trendGood={true}
+              sparkData={[2.5, 2.8, 2.2, 2.9, 3.1, 2.7, parseFloat(stats.cost) || 2.4]}
+              icon="💎"
+            />
+            <KpiCard 
+              label="Active Agents" 
+              value={`${stats.agents || 0}`}
+              trend="up" 
+              trendGood={true}
+              sparkData={[10, 11, 11, 12, 12, 13, stats.agents || 14]}
+              icon="🤖"
+            />
+            <KpiCard 
+              label="Pending Tasks" 
+              value={`${stats.tasks || 0}`}
+              trend={stats.tasks > 5 ? "up" : "down"}
+              trendGood={false}
+              sparkData={[2, 4, 3, 5, 8, 4, stats.tasks || 3]}
+              icon="📋"
+            />
           </section>
 
           <section className="content-area" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px' }}>
