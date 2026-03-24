@@ -317,6 +317,68 @@ async def get_graph(request: Request, token: str = None):
     
     return graph_data or {"nodes": [], "links": []}
 
+@app.get("/api/health-score")
+async def get_health_score(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        score = 0
+        # 1. % de tarefas concluídas (Máx 25)
+        total_tasks = 0
+        completed_tasks = 0
+        if os.path.exists(REGISTRY_PATH):
+            with open(REGISTRY_PATH, "r") as f:
+                tasks = json.load(f)
+                total_tasks = len(tasks)
+                completed_tasks = len([t for t in tasks if t.get("status") in ["Concluído", "COMPLETED", "done"]])
+        
+        task_score = (completed_tasks / total_tasks * 25) if total_tasks > 0 else 25
+        score += task_score
+        
+        # 2. Custo abaixo do budget (Máx 25)
+        budget_score = 25
+        if hasattr(orchestrator, 'finops'):
+             report = orchestrator.finops.get_finops_report()
+             if "Error" in str(report) or "Exeeded" in str(report): 
+                 budget_score = 0
+        score += budget_score
+        
+        # 3. Agentes configurados (Máx 25)
+        # O orquestrador tem um atributo 'agents' que é um dicionário
+        total_agents = len(orchestrator.agents) if hasattr(orchestrator, 'agents') else 0
+        ready_agents = 0
+        if total_agents > 0:
+            for name, agent in orchestrator.agents.items():
+                # Verificar se o agente tem uma personalidade ou algo preenchido
+                if hasattr(agent, 'personality') and agent.personality:
+                    ready_agents += 1
+                elif hasattr(agent, 'purpose') and agent.purpose:
+                    ready_agents += 1
+            agent_score = (ready_agents / total_agents * 25)
+        else:
+            agent_score = 25
+        score += agent_score
+        
+        # 4. Knowledge Graph (Máx 25)
+        kg_score = 0
+        graph_data = gcs.read_json("knowledge/global_graph.json")
+        if graph_data:
+             node_count = len(graph_data.get("nodes", []))
+             if node_count >= 10:
+                  kg_score = 25
+             else:
+                  kg_score = (node_count / 10 * 25)
+        score += kg_score
+        
+        return {"score": round(score, 1), "details": {
+            "tasks": task_score,
+            "budget": budget_score,
+            "agents": agent_score,
+            "kg": kg_score
+        }}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/docs")
 def get_documentation():
     import os

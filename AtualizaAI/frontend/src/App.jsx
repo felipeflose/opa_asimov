@@ -196,6 +196,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState(''); // TASK-17
   const [visionAnalysis, setVisionAnalysis] = useState(null);
   const [viewingAgent, setViewingAgent] = useState(null);
+  const [healthScore, setHealthScore] = useState(null); // TASK-13
   const [pipeline, setPipeline] = useState([]);
   const [pipelineResults, setPipelineResults] = useState([]);
   const [isRunningPipeline, setIsRunningPipeline] = useState(false);
@@ -255,6 +256,10 @@ function App() {
       const marketRes = await authFetch(`/api/marketplace`, options);
       const marketD = await marketRes.json();
       if (!marketD.error) setMarketTemplates(marketD);
+
+      const healthRes = await authFetch(`/api/health-score`, options);
+      const healthD = await healthRes.json();
+      if (!healthD.error) setHealthScore(healthD);
     } catch (err) {
       console.error("Fetch error", err);
     }
@@ -778,7 +783,18 @@ function App() {
     if (activeTab === 'Dashboard') {
       return (
         <>
-          <section className="kpi-grid">
+          <section className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+            <div className="glass-card" style={{ borderLeft: '4px solid var(--primary)', background: 'linear-gradient(135deg, rgba(0,242,255,0.05) 0%, rgba(0,0,0,0) 100%)' }}>
+               <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>System Health Score</p>
+               <h3 style={{ fontSize: '2.5rem', color: healthScore?.score > 70 ? '#34d399' : (healthScore?.score > 40 ? '#f59e0b' : '#ff4d4d') }}>
+                 {healthScore ? healthScore.score : '--'}%
+               </h3>
+               <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                  {healthScore && Object.entries(healthScore.details).map(([k, v]) => (
+                    <div key={k} style={{ width: '20%', height: '4px', background: v > 0 ? 'var(--primary)' : 'rgba(255,255,255,0.1)', borderRadius: '2px' }}></div>
+                  ))}
+               </div>
+            </div>
             <div className="glass-card">
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Tokens Used Today</p>
               <h3 style={{ fontSize: '2rem' }}>{stats.tokens}</h3>
