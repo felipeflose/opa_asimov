@@ -229,6 +229,24 @@ class TelegramAgent:
             self.log(f"Erro no silence_handler: {e}")
             await update.message.reply_text("⚠️ Erro ao configurar modo silencioso.")
 
+    async def conselho_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Convoca o conselho de especialistas para uma pergunta estratégica."""
+        try:
+            user = update.effective_user.username or update.effective_user.first_name
+            question = " ".join(context.args) if context.args else "Qual a melhor estratégia para o projeto hoje?"
+            self.log(f"Comando /conselho recebido de @{user}: {question}")
+            
+            await update.message.reply_text("🏛️ *Convocando o Conselho de Especialistas da Flose AI...*", parse_mode='Markdown')
+            await update.message.reply_chat_action(action="typing")
+            
+            # Chama o orquestrador para rodar em paralelo
+            result = await self.orchestrator.run_conselho(question)
+            
+            await self.safe_reply(update, f"🏛️ *Veredito do Conselho*\n\n{result}", parse_mode='Markdown')
+        except Exception as e:
+            self.log(f"Erro no conselho_handler: {e}")
+            await self.safe_reply(update, "⚠️ Erro ao buscar o conselho.")
+
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if not update.message:
@@ -498,6 +516,7 @@ class TelegramAgent:
         self.application.add_handler(CommandHandler("debug", self.debug_handler)) # TASK-08
         self.application.add_handler(CommandHandler("incidente", self.incident_handler)) # DORA Refinement
         self.application.add_handler(CommandHandler("silencio", self.silence_handler)) # TASK-12
+        self.application.add_handler(CommandHandler("conselho", self.conselho_handler)) # TASK-20
         self.application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, self.message_handler))
         
         await self.application.initialize()

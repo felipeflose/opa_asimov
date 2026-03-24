@@ -735,3 +735,53 @@ class CognitiveOrchestrator:
         except Exception as e:
             print(f"Erro na pipeline: {e}")
             return f"⚠️ Erro ao executar pipeline: {str(e)}"
+
+    async def run_conselho(self, question: str):
+        """Convocação de conselho de especialistas em paralelo (TASK-20)."""
+        if not self.gcs_client: return "Erro: GCS Client offline."
+        
+        try:
+            registry = self.gcs_client.read_json("agents/registry.json") or {"agents": []}
+            agents_to_call = registry.get("agents", [])[:5] # Limite de 5 para não estourar tokens/limites
+            
+            async def call_agent_task(agent_data):
+                try:
+                    agent_obj = AgentCore(
+                        name=agent_data['agent_name'],
+                        purpose=agent_data['purpose'],
+                        system_prompt=agent_data['system_prompt'],
+                        gcs_client=self.gcs_client,
+                        finops_manager=self.finops
+                    )
+                    # Força resposta curta de 1 frase
+                    short_question = f"{question}\n(RESPONDA EM APENAS 1 FRASE CURTA FOCADA NA SUA ESPECIALIDADE)"
+                    run_output = agent_obj.run(short_question)
+                    resp = run_output[0] if isinstance(run_output, tuple) else run_output
+                    return {"name": agent_data['agent_name'], "response": resp}
+                except:
+                    return {"name": agent_data['agent_name'], "response": "Não disponível."}
+
+            tasks = [call_agent_task(a) for a in agents_to_call]
+            responses = await asyncio.gather(*tasks)
+            
+            # Síntese Final
+            synthesis_prompt = f"""
+            Você é o Moderador do Conselho Flose AI. 
+            Abaixo estão os conselhos de nossos especialistas sobre: "{question}"
+            
+            CONSELHOS:
+            {json.dumps(responses)}
+            
+            SUA TAREFA:
+            Crie um veredito consolidado. 
+            Comece com uma frase de introdução e depois liste as perspectivas de cada agente (1 frase por agente).
+            Finalize com uma recomendação final da marca Flose AI.
+            Formato: Markdown elegance. Max 10 linhas.
+            """
+            
+            synthesis_resp = self.model.generate_content(synthesis_prompt)
+            return synthesis_resp.text.strip()
+            
+        except Exception as e:
+            print(f"Erro no conselho: {e}")
+            return f"⚠️ Erro ao convocar conselho: {str(e)}"
