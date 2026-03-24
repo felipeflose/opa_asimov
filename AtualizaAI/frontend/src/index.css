@@ -238,3 +238,70 @@ body {
   transform-origin: center;
   animation: rotate 10s linear infinite;
 }
+
+/* --- SplashScreen Animations --- */
+.splash-container {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.splash-logo {
+  font-size: 3.5rem;
+  font-weight: 900;
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: splashPulse 2s ease-in-out infinite;
+  z-index: 10;
+}
+
+.orbital-system {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 242, 255, 0.1);
+}
+
+.orbit-1 { width: 150px; height: 150px; animation: rotate 3s linear infinite; border-top: 2px solid var(--primary); }
+.orbit-2 { width: 250px; height: 250px; animation: rotate 7s linear reverse infinite; border-left: 1px solid var(--secondary); }
+.orbit-3 { width: 350px; height: 350px; animation: rotate 12s linear infinite; border-bottom: 1px solid var(--accent); }
+
+.splash-text {
+  margin-top: 300px;
+  font-size: 0.7rem;
+  letter-spacing: 4px;
+  color: var(--primary);
+  opacity: 0.6;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes splashPulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+}
+
+.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s;
+}

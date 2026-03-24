@@ -174,6 +174,21 @@ function App() {
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
   const [isAuthenticated, setIsAuthenticated] = useState(!!(sessionStorage.getItem('flose_token'))); 
   const [activeTab, setActiveTab] = useState('Dashboard'); // Better default than Cognitive Map
+  const [isBooting, setIsBooting] = useState(false);
+  const [authForm, setAuthForm] = useState({ username: '', password: '' });
+
+  // --- TASK-33: SplashScreen Component ---
+  const SplashScreen = () => (
+    <div className="splash-container">
+      <div className="orbital-system">
+        <div className="orbit orbit-1"></div>
+        <div className="orbit orbit-2"></div>
+        <div className="orbit orbit-3"></div>
+      </div>
+      <h1 className="splash-logo">Flose AI</h1>
+      <div className="splash-text">INITIALIZING COGNITIVE SYSTEMS...</div>
+    </div>
+  );
   const [key, setKey] = useState('');
   const [error, setError] = useState(false);
   const [stats, setStats] = useState({
@@ -1907,16 +1922,20 @@ function App() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth', {
+      const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key })
+        body: JSON.stringify(authForm)
       });
-      const data = await response.json();
-      if (data.status === 'authorized') {
+      const data = await res.json();
+      if (data.token) {
         sessionStorage.setItem('flose_token', data.token);
         setToken(data.token);
         setIsAuthenticated(true);
+        setIsBooting(true);
+        fetchData(data.token).finally(() => {
+          setTimeout(() => setIsBooting(false), 2000);
+        });
       } else {
         setError(true);
         setTimeout(() => setError(false), 2000);
@@ -1952,6 +1971,10 @@ function App() {
         </div>
       </div>
     );
+  }
+
+  if (isBooting) {
+    return <SplashScreen />;
   }
 
   return (
