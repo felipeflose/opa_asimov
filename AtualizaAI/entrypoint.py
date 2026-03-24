@@ -330,6 +330,23 @@ def get_documentation():
     except Exception as e:
         return {"error": str(e)}
 
+@app.delete("/api/tasks/cleanup")
+async def cleanup_tasks(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    import shutil
+    import json
+    from datetime import datetime
+    try:
+        if os.path.exists(REGISTRY_PATH):
+            backup_path = f"registry_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            shutil.copy2(REGISTRY_PATH, backup_path)
+            with open(REGISTRY_PATH, "w") as f:
+                json.dump([], f)
+        return {"status": "success", "message": "Backend cleaned and backup created."}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/tasks")
 async def get_tasks(request: Request, token: str = None):
     if not validate_token(request, token):

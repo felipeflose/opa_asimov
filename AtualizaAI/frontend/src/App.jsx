@@ -479,6 +479,25 @@ function App() {
     }
   };
 
+  const handleCleanupTasks = async () => {
+    if (!window.confirm("🔴 PERIGO: Isso irá deletar todas as tarefas atuais. Deseja continuar?")) return;
+    try {
+      const res = await fetch(`/api/tasks/cleanup`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+          alert("Backup criado e registry limpo com sucesso!");
+          fetchData();
+      } else {
+          alert("Erro ao limpar: " + (data.error || "Erro desconhecido"));
+      }
+    } catch (err) {
+      console.error("Cleanup error", err);
+    }
+  };
+
   // Hook de Física Avançado v4
   // NapkinVisual: exibe diagrama via proxy autenticado (Napkin requer Bearer token)
   const NapkinVisual = ({ visualUrl }) => {
