@@ -1139,6 +1139,22 @@ function App() {
                       <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{((agent.metrics?.total_tokens || 0)/1000).toFixed(1)}k</p>
                     </div>
                   </div>
+                  
+                  {/* TASK-22: Complementary Badges */}
+                  {agent.complementary_agents && agent.complementary_agents.length > 0 && (
+                    <div style={{ marginTop: '15px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>🤝 SINERGIA:</span>
+                      {agent.complementary_agents.map(comp => (
+                        <span 
+                          key={comp} 
+                          className="status-badge" 
+                          style={{ fontSize: '0.6rem', padding: '3px 8px', background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)', cursor: 'default' }}
+                        >
+                          {comp}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <button 

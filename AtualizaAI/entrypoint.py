@@ -1096,7 +1096,24 @@ async def get_agents(request: Request, token: str = None):
     gcs = GCSClient(bucket_name, project_id=project_id)
     
     registry = gcs.read_json("agents/registry.json")
-    return registry.get("agents", []) if registry else []
+    agents = registry.get("agents", []) if registry else []
+    
+    # TASK-22: Complementaridade baseada em Afinidade
+    try:
+        matrix = gcs.read_json("agents/affinity_matrix.json") or {"interactions": {}}
+        interactions = matrix.get("interactions", {})
+        for agent in agents:
+            name = agent["agent_name"]
+            comp = []
+            for pair, data in interactions.items():
+                if name in pair:
+                    other = pair.replace(name, "").replace("<->", "").strip()
+                    if other: comp.append({"name": other, "count": data.get("count", 0)})
+            comp.sort(key=lambda x: x["count"], reverse=True)
+            agent["complementary_agents"] = [c["name"] for c in comp[:2]]
+    except: pass
+    
+    return agents
 
 @app.post("/api/agents/update")
 async def update_agent(agent_data: dict, request: Request, token: str = None):
