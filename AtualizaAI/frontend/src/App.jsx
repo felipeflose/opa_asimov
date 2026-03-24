@@ -1005,6 +1005,7 @@ function App() {
                             <div style={{ display: 'flex', gap: '8px' }}>
                               <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981', flex: 1 }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER</button>
                               <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', flex: 1 }} onClick={() => window.open(`/api/tasks/${task.id}/export?token=${token}`)}>💾 MD</button>
+                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', flex: 1 }} onClick={() => handleAuditFinOps(task.id)}>🛡️ AUDIT</button>
                             </div>
                           )}
                         </div>
