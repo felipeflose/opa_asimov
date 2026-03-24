@@ -1497,23 +1497,23 @@ function App() {
 
           <div className="glass-card chat-side">
             <h3 className="title-grad" style={{ fontSize: '1.4rem' }}>Registry Assistant</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>Ask history or request prompt edits via natural language.</p>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "20px" }}>Ask history or request prompt edits via natural language.</p>
             
-            <div className="chat-bubble-area" style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', marginBottom: '15px', padding: '15px', overflowY: 'auto' }}>
-              <div className="ai-msg" style={{ fontSize: '0.85rem', color: '#e0e0e0', background: 'var(--glass)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
+            <div className="chat-bubble-area" style={{ height: "300px", background: "rgba(0,0,0,0.2)", borderRadius: "15px", marginBottom: "15px", padding: "15px", overflowY: "auto" }}>
+              <div className="ai-msg" style={{ fontSize: "0.85rem", color: "#e0e0e0", background: "var(--glass)", padding: "10px", borderRadius: "12px", marginBottom: "10px" }}>
                 "Hi Felipe! I can help you update any agent. Just say: 'Change FinOps purpose to focus on GCP billing' or 'Who is the TaskManager?'"
               </div>
             </div>
             
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: "relative" }}>
               <input 
                 type="text" 
                 placeholder="Type your registry command..." 
-                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '15px', color: 'white' }}
+                style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "12px", padding: "15px", color: "white" }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleAgentQuery(e.target.value);
-                    e.target.value = ''; // Clear input after sending
+                    e.target.value = ""; // Clear input after sending
                   }
                 }}
               />
