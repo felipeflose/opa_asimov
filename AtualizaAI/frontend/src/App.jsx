@@ -2079,7 +2079,7 @@ function App() {
             <div className="glass-card">
               <h3 style={{ marginBottom: '25px', fontSize: '1.1rem' }}>🔌 Codebase API Explorer</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {endpoints.map(ep => (
+                {cozinhaEndpoints.map(ep => (
                   <div key={ep.path} className="glass-card" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px 25px', display: 'grid', gridTemplateColumns: '80px 1fr 120px', alignItems: 'center', gap: '20px' }}>
                     <span style={{ fontSize: '0.7rem', fontWeight: '900', color: ep.method === 'GET' ? '#00ff80' : '#a855f7', background: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '6px', textAlign: 'center' }}>{ep.method}</span>
                     <div>
@@ -2093,14 +2093,14 @@ function App() {
                     >
                       ⚡ TESTAR
                     </button>
-                    {testResults[ep.path] && (
+                    {cozinhaTestResults[ep.path] && (
                       <div style={{ gridColumn: '1 / -1', marginTop: '15px', padding: '15px', background: 'rgba(0,0,0,0.4)', borderRadius: '10px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--text-muted)' }}>
-                          <span>Status: <b style={{ color: testResults[ep.path].status === 200 ? '#00ff80' : '#ff4444' }}>{testResults[ep.path].status}</b></span>
-                          <span>Latência: <b>{testResults[ep.path].time}ms</b></span>
+                          <span>Status: <b style={{ color: cozinhaTestResults[ep.path].status === 200 ? '#00ff80' : '#ff4444' }}>{cozinhaTestResults[ep.path].status}</b></span>
+                          <span>Latência: <b>{cozinhaTestResults[ep.path].time}ms</b></span>
                         </div>
                         <pre style={{ overflowX: 'auto', color: '#aaa', fontSize: '0.7rem' }}>
-                          {JSON.stringify(testResults[ep.path].data, null, 2).substring(0, 500)}...
+                          {JSON.stringify(cozinhaTestResults[ep.path].data, null, 2).substring(0, 500)}...
                         </pre>
                       </div>
                     )}
