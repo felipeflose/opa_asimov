@@ -175,7 +175,102 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!(sessionStorage.getItem('flose_token'))); 
   const [activeTab, setActiveTab] = useState('Dashboard'); // Better default than Cognitive Map
   const [isBooting, setIsBooting] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [authForm, setAuthForm] = useState({ username: '', password: '' });
+
+  // --- TASK-35: Keyboard Shortcut Listener ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setPaletteOpen(prev => !prev);
+      }
+      if (e.key === 'Escape') setPaletteOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const CommandPalette = () => {
+    const inputRef = useRef(null);
+    useEffect(() => {
+      if (paletteOpen && inputRef.current) inputRef.current.focus();
+    }, [paletteOpen]);
+
+    const tabs = [
+      { id: 'Dashboard', icon: '📊', type: 'NAV' },
+      { id: 'Cognitive Map', icon: '🧬', type: 'NAV' },
+      { id: 'Task Manager', icon: '📋', type: 'NAV' },
+      { id: 'Agent Library', icon: '🤖', type: 'NAV' },
+      { id: 'Pipeline', icon: '🏗️', type: 'NAV' },
+      { id: 'Marketplace', icon: '🛒', type: 'NAV' },
+      { id: 'Quality Inspector', icon: '🔍', type: 'NAV' },
+      { id: 'Broker', icon: '🤝', type: 'NAV' },
+      { id: 'FinOps Guardian', icon: '💎', type: 'NAV' },
+      { id: 'DORA Metrics', icon: '📈', type: 'NAV' },
+      { id: 'Cozinha', icon: '🔧', type: 'NAV' },
+      { id: 'Settings', icon: '⚙️', type: 'NAV' },
+    ];
+
+    const actions = [
+      { id: 'Refresh Data', icon: '🔄', type: 'ACT', run: () => fetchData() },
+      { id: 'QA Auto-Fix', icon: '🛠️', type: 'ACT', run: () => handleQAAutoFix() },
+      { id: 'Logout', icon: '🚪', type: 'ACT', run: () => handleLogout() }
+    ];
+
+    const filtered = [
+      ...tabs.map(t => ({ ...t, display: t.id })),
+      ...agentList.slice(0, 5).map(a => ({ id: a.agent_name, icon: '🤖', type: 'AGENT', display: `Agent: ${a.agent_name}` })),
+      ...tasks.slice(0, 5).map(t => ({ id: t.id, icon: '📋', type: 'TASK', display: `Task: ${t.title}` })),
+      ...actions.map(a => ({ ...a, display: a.id }))
+    ].filter(i => i.display.toLowerCase().includes(paletteQuery.toLowerCase()));
+
+    const handleSelect = (item) => {
+      if (item.type === 'NAV') setActiveTab(item.id);
+      if (item.type === 'ACT') item.run();
+      if (item.type === 'AGENT') { setActiveTab('Agent Library'); setViewingAgent(agentList.find(a => a.agent_name === item.id)); }
+      if (item.type === 'TASK') { setActiveTab('Task Manager'); setSelectedTask(tasks.find(t => t.id === item.id)); }
+      setPaletteOpen(false);
+      setPaletteQuery('');
+    };
+
+    if (!paletteOpen) return null;
+
+    return (
+      <div className="cmdk-overlay" onClick={() => setPaletteOpen(false)}>
+        <div className="cmdk-box" onClick={(e) => e.stopPropagation()}>
+          <input 
+            ref={inputRef}
+            className="cmdk-input" 
+            placeholder="Search agents, tasks or navigation..." 
+            value={paletteQuery}
+            onChange={(e) => { setPaletteQuery(e.target.value); setSelectedIndex(0); }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown') setSelectedIndex(s => Math.min(s + 1, filtered.length - 1));
+              if (e.key === 'ArrowUp') setSelectedIndex(s => Math.max(s - 1, 0));
+              if (e.key === 'Enter' && filtered[selectedIndex]) handleSelect(filtered[selectedIndex]);
+            }}
+          />
+          <div className="cmdk-list">
+            {filtered.map((item, i) => (
+              <div 
+                key={item.id + item.type} // Use a more robust key
+                className={`cmdk-item ${i === selectedIndex ? 'active' : ''}`}
+                onMouseEnter={() => setSelectedIndex(i)}
+                onClick={() => handleSelect(item)}
+              >
+                <span className="cmdk-item-icon">{item.icon}</span>
+                <span>{item.display}</span>
+                <span className="cmdk-kbd">{item.type}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // --- TASK-33: SplashScreen Component ---
   const SplashScreen = () => (
@@ -1979,6 +2074,7 @@ function App() {
 
   return (
     <div className="app-container">
+      <CommandPalette />
       <div className="sidebar">
         <div className="logo" style={{ marginBottom: '60px' }}>
           <h1 className="title-grad">Flose IA</h1>
