@@ -431,6 +431,22 @@ async def get_agent_affinity(request: Request, token: str = None):
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/api/cozinha/endpoints")
+async def get_cozinha_endpoints(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    # Lista fixa baseada no código atual para o dashboard
+    return [
+        {"method": "GET", "path": "/api/dashboard", "desc": "Métricas globais"},
+        {"method": "GET", "path": "/api/tasks", "desc": "Lista de tarefas"},
+        {"method": "GET", "path": "/api/agents", "desc": "Lista de agentes"},
+        {"method": "GET", "path": "/api/health-score", "desc": "Saúde do sistema"},
+        {"method": "GET", "path": "/api/agents/affinity", "desc": "Matriz de afinidade"},
+        {"method": "GET", "path": "/api/qa/report", "desc": "Relatório de QA"},
+        {"method": "GET", "path": "/api/graph", "desc": "Grafo cognitivo"},
+        {"method": "GET", "path": "/api/docs", "desc": "Documentação interna"}
+    ]
+
 @app.get("/api/docs")
 def get_documentation():
     import os

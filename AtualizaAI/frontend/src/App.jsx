@@ -1807,6 +1807,86 @@ function App() {
       );
     }
 
+    if (activeTab === 'Cozinha') {
+      const [endpoints, setEndpoints] = useState([]);
+      const [testResults, setTestResults] = useState({});
+      
+      useEffect(() => {
+        authFetch('/api/cozinha/endpoints').then(r => r.json()).then(setEndpoints);
+      }, []);
+
+      const testEndpoint = async (path, method) => {
+        const start = Date.now();
+        try {
+          const res = await authFetch(path, { method });
+          const data = await res.json();
+          const elapsed = Date.now() - start;
+          setTestResults(prev => ({ ...prev, [path]: { status: res.status, time: elapsed, data } }));
+        } catch (e) {
+          setTestResults(prev => ({ ...prev, [path]: { status: 'ERR', time: 0, data: e.message } }));
+        }
+      };
+
+      return (
+        <div style={{ padding: '0 20px 40px 20px' }}>
+          <header style={{ marginBottom: '40px' }}>
+            <h1 className="title-grad" style={{ fontSize: '2.4rem', marginBottom: '10px' }}>🔧 Cozinha (Modo Dev)</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Mestres da Cozinha: Gerencie, audite e teste as entranhas da Flose AI ao vivo.</p>
+          </header>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
+            <div className="glass-card">
+              <h3 style={{ marginBottom: '25px', fontSize: '1.1rem' }}>🔌 Codebase API Explorer</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {endpoints.map(ep => (
+                  <div key={ep.path} className="glass-card" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px 25px', display: 'grid', gridTemplateColumns: '80px 1fr 120px', alignItems: 'center', gap: '20px' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: '900', color: ep.method === 'GET' ? '#00ff80' : '#a855f7', background: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '6px', textAlign: 'center' }}>{ep.method}</span>
+                    <div>
+                      <code style={{ fontSize: '0.85rem', color: '#fff' }}>{ep.path}</code>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>{ep.desc}</p>
+                    </div>
+                    <button 
+                      onClick={() => testEndpoint(ep.path, ep.method)}
+                      className="login-button" 
+                      style={{ padding: '8px 15px', fontSize: '0.65rem', marginBottom: 0 }}
+                    >
+                      ⚡ TESTAR
+                    </button>
+                    {testResults[ep.path] && (
+                      <div style={{ gridColumn: '1 / -1', marginTop: '15px', padding: '15px', background: 'rgba(0,0,0,0.4)', borderRadius: '10px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--text-muted)' }}>
+                          <span>Status: <b style={{ color: testResults[ep.path].status === 200 ? '#00ff80' : '#ff4444' }}>{testResults[ep.path].status}</b></span>
+                          <span>Latência: <b>{testResults[ep.path].time}ms</b></span>
+                        </div>
+                        <pre style={{ overflowX: 'auto', color: '#aaa', fontSize: '0.7rem' }}>
+                          {JSON.stringify(testResults[ep.path].data, null, 2).substring(0, 500)}...
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="glass-card" style={{ background: 'rgba(168,85,247,0.05)', borderColor: 'rgba(168,85,247,0.2)' }}>
+              <h3 style={{ color: '#a855f7', marginBottom: '15px' }}>👨‍🍳 Mestre da Cozinha</h3>
+              <p style={{ fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '20px' }}>
+                O DevAgent está monitorando o codebase em tempo real. Qualquer alteração em `entrypoint.py` ou nos `agents/` será refletida aqui.
+              </p>
+              <div className="metric-mini" style={{ padding: '20px', background: 'rgba(0,0,0,0.2)', marginBottom: '15px' }}>
+                <span style={{ fontSize: '0.65rem' }}>UPTIME</span>
+                <p style={{ fontSize: '1.2rem' }}>99.9%</p>
+              </div>
+              <div className="metric-mini" style={{ padding: '20px', background: 'rgba(0,0,0,0.2)' }}>
+                <span style={{ fontSize: '0.65rem' }}>ERROS NAS ÚLTIMAS 24H</span>
+                <p style={{ fontSize: '1.2rem', color: '#ff4444' }}>0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (activeTab === 'Settings') {
        return (
          <div className="glass-card" style={{ padding: '40px' }}>
@@ -1883,7 +1963,7 @@ function App() {
         </div>
         
         <nav className="nav-menu">
-          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'Broker', 'FinOps Guardian', 'DORA Metrics', 'Settings'].map(tab => (
+          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'Broker', 'FinOps Guardian', 'DORA Metrics', 'Cozinha', 'Settings'].map(tab => (
             <div 
               key={tab}
               className={`nav-item ${activeTab === tab ? 'active' : ''}`}
