@@ -31,6 +31,10 @@ class DevAgent:
         # TASK-30: Custo por Agente
         if "custo" in query.lower():
             return self.get_agent_cost(query)
+            
+        # TASK-31: Testar Endpoint
+        if "endpoint " in query.lower():
+            return self.test_endpoint(query)
 
         # Contexto estático de arquitetura
         project_context = """
@@ -242,3 +246,31 @@ class DevAgent:
             return report
         except Exception as e:
             return f"❌ Erro ao calcular custo: {e}"
+
+    def test_endpoint(self, query: str):
+        """Testa um endpoint local e retorna o resultado (TASK-31)."""
+        import httpx
+        import time
+        endpoint = query.lower().replace("endpoint", "").strip()
+        if endpoint.startswith("/"): endpoint = endpoint[1:]
+        
+        url = f"http://localhost:8080/api/{endpoint}"
+        master_key = os.getenv("MASTER_KEY", "flose-dev-key")
+        
+        start_time = time.time()
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                r = client.get(url, params={"token": master_key})
+                elapsed = int((time.time() - start_time) * 1000)
+                
+                status_emoji = "✅" if r.status_code == 200 else "⚠️"
+                res_text = r.text[:200]
+                
+                return (
+                    f"🔌 **Teste de Endpoint: /api/{endpoint}**\n\n"
+                    f"{status_emoji} **Status:** {r.status_code}\n"
+                    f"⏱️ **Latência:** {elapsed}ms\n"
+                    f"📦 **Resposta:** `{res_text}...`"
+                )
+        except Exception as e:
+            return f"❌ Falha ao conectar em {url}: {e}"
