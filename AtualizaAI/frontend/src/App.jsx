@@ -1985,14 +1985,44 @@ function App() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Command Center v2.0</p>
         </div>
         
-        <nav className="nav-menu">
-          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'Broker', 'FinOps Guardian', 'DORA Metrics', 'Cozinha', 'Settings'].map(tab => (
+        <nav className="nav-menu" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          {[
+            { id: 'Dashboard', icon: '📊', badge: null },
+            { id: 'Cognitive Map', icon: '🧬', badge: null },
+            { id: 'Task Manager', icon: '📋', badge: stats.open > 0 ? stats.open : null, badgeColor: '#f59e0b' },
+            { id: 'Agent Library', icon: '🤖', badge: stats.agents },
+            { id: 'Pipeline', icon: '🏗️', badge: null },
+            { id: 'Marketplace', icon: '🛒', badge: null },
+            { id: 'Quality Inspector', icon: '🔍', badge: (qaReport?.summary?.avg_accuracy < 60) ? '!' : null, badgeColor: '#ff4d4d' },
+            { id: 'Broker', icon: '🤝', badge: null },
+            { id: 'FinOps Guardian', icon: '💎', badge: health.cost_today > 0 ? `$${health.cost_today}` : null, badgeColor: '#00ff80' },
+            { id: 'DORA Metrics', icon: '📈', badge: null },
+            { id: 'Cozinha', icon: '🔧', badge: null },
+            { id: 'Settings', icon: '⚙️', badge: null },
+          ].map(tab => (
             <div 
-              key={tab}
-              className={`nav-item ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab)}
+              key={tab.id}
+              className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px' }}
             >
-              {tab}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '1rem' }}>{tab.icon}</span>
+                <span style={{ fontSize: '0.85rem' }}>{tab.id}</span>
+              </div>
+              {tab.badge && (
+                <span style={{ 
+                  background: tab.badgeColor || 'rgba(255,255,255,0.1)', 
+                  color: tab.badgeColor ? '#000' : '#fff',
+                  fontSize: '0.6rem', padding: '2px 8px', borderRadius: '10px', fontWeight: '900',
+                  minWidth: '20px', textAlign: 'center'
+                }}>
+                  {tab.badge}
+                </span>
+              )}
+              {tab.id === 'Quality Inspector' && (qaReport?.summary?.avg_accuracy < 60) && (
+                <div className="pulse-red"></div>
+              )}
             </div>
           ))}
         </nav>
