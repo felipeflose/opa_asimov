@@ -387,27 +387,59 @@ function App() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [agentList, setAgentList] = useState([]);
   const [executingAgent, setExecutingAgent] = useState('');
-  const [executionPreview, setExecutionPreview] = useState(null); // TASK-06
-  const [taskModel, setTaskModel] = useState('gemini-2.0-flash'); // TASK-12
-  const [newTaskCommand, setNewTaskCommand] = useState(''); // TASK-12
-  const [searchTerm, setSearchTerm] = useState(''); // TASK-17
+  const [executionPreview, setExecutionPreview] = useState(null);
+  const [taskModel, setTaskModel] = useState('gemini-2.0-flash');
+  const [newTaskCommand, setNewTaskCommand] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [visionAnalysis, setVisionAnalysis] = useState(null);
   const [viewingAgent, setViewingAgent] = useState(null);
-  const [healthScore, setHealthScore] = useState(null); // TASK-13
+  const [healthScore, setHealthScore] = useState(null);
   const [pipeline, setPipeline] = useState([]);
   const [pipelineResults, setPipelineResults] = useState([]);
   const [isRunningPipeline, setIsRunningPipeline] = useState(false);
-  const [affinityMatrix, setAffinityMatrix] = useState({ interactions: {} }); // TASK-16
+  const [affinityMatrix, setAffinityMatrix] = useState({ interactions: {} });
   const [marketTemplates, setMarketTemplates] = useState([]);
   const [isFixing, setIsFixing] = useState(false);
   const [viewingDelivery, setViewingDelivery] = useState(null);
-  
-  // QA Report State
   const [qaReport, setQaReport] = useState(null);
   const [qaLoading, setQaLoading] = useState(false);
   const [doraData, setDoraData] = useState(null);
   const [expandedAgent, setExpandedAgent] = useState(null);
   const [enrichingAgent, setEnrichingAgent] = useState(null);
+  const [newActivityIds, setNewActivityIds] = useState(new Set());
+
+  // --- TASK-38: Live Activity Helper ---
+  const formatRelativeTime = (ts) => {
+    const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
+    if (diff < 10) return "just now";
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return new Date(ts).toLocaleDateString();
+  };
+
+  const fetchActivity = async () => {
+    if (!token) return;
+    try {
+      const res = await authFetch('/api/activity');
+      const data = await res.json();
+      if (data.error) return;
+
+      const currentFirst = activity[0]?.timestamp + activity[0]?.user;
+      const newFirst = data[0]?.timestamp + data[0]?.user;
+
+      if (newFirst !== currentFirst && activity.length > 0) {
+        const newIds = new Set(data.slice(0, 3).map(a => a.timestamp + a.user));
+        setNewActivityIds(newIds);
+        setActivity(data);
+        setTimeout(() => setNewActivityIds(new Set()), 2000);
+      } else if (activity.length === 0) {
+        setActivity(data);
+      }
+    } catch (err) {
+      console.error("Live activity feed error", err);
+    }
+  };
 
   const authFetch = async (url, options = {}) => {
     const headers = {
@@ -655,11 +687,18 @@ function App() {
 
   useEffect(() => {
     let interval;
-    if (isAuthenticated && (activeTab === 'Dashboard' || activeTab === 'Task Manager')) {
-      interval = setInterval(fetchData, 30000); 
+    let activityInterval;
+    if (isAuthenticated) {
+      if (activeTab === 'Dashboard' || activeTab === 'Task Manager') {
+        interval = setInterval(fetchData, 30000); 
+      }
+      if (activeTab === 'Dashboard') {
+        activityInterval = setInterval(fetchActivity, 5000);
+      }
     }
     return () => {
       if (interval) clearInterval(interval);
+      if (activityInterval) clearInterval(activityInterval);
     };
   }, [isAuthenticated, activeTab]);
 
@@ -1079,16 +1118,35 @@ function App() {
               </div>
             </div>
             <div className="glass-card">
-              <h4 style={{ marginBottom: '20px' }}>Recent Activity (Telegram)</h4>
-              <div className="audit-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {activity.length > 0 ? activity.map((act, i) => (
-                  <div key={i} className="audit-item" style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>@{act.user}</p>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{act.message ? act.message.substring(0, 40) + '...' : '[Image/No Text]'}</p>
-                    <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{new Date(act.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                )) : (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Waiting for incoming signals...</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h4 style={{ margin: 0 }}>System Activity</h4>
+                <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#00ff80' }}>
+                  <span className="live-dot" /> LIVE
+                </div>
+              </div>
+              <div className="audit-list" style={{ maxHeight: '310px', overflowY: 'auto', paddingRight: '5px' }}>
+                {activity.length > 0 ? activity.map((act, i) => {
+                  const isNew = newActivityIds.has(act.timestamp + act.user);
+                  const icon = (act.agent || "").includes("Telegram") ? "📱" : (act.agent || "").includes("Vision") ? "👁️" : "🤖";
+                  
+                  return (
+                    <div key={i} className={`audit-item ${isNew ? 'new-item' : ''}`} style={{ padding: '12px 0', borderBottom: '1px solid var(--border)', transition: 'all 0.3s' }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '1.1rem' }}>{icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--primary)' }}>@{act.user || 'system'}</p>
+                            <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{formatRelativeTime(act.timestamp)}</span>
+                          </div>
+                          <p style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '4px', lineHeight: '1.4' }}>
+                            {act.message ? (act.message.length > 60 ? act.message.substring(0, 60) + '...' : act.message) : '[Signal Processing]'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', marginTop: '100px' }}>Waiting for signals...</p>
                 )}
               </div>
             </div>
