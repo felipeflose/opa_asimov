@@ -30,6 +30,8 @@ class BaseAgent:
             "tools": self.tools,
             "memory": self.memory_path,
             "token_cost_profile": "standard",
+            "certified": False, # TASK-55
+            "status": "Draft",   # Status inicial (Draft -> Certified)
             "metrics": metrics,
             "created_at": datetime.now().isoformat()
         }
@@ -68,8 +70,14 @@ class BaseAgent:
             return "Erro: GEMINI_API_KEY não configurada.", {}
             
         try:
-            model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-            model = genai.GenerativeModel(model_name)
+            model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+            
+            # Grounding com Google Search (TASK-55)
+            gen_tools = []
+            if self.tools and ("google_search" in self.tools or "google_search_retrieval" in self.tools):
+                gen_tools.append({"google_search_retrieval": {}})
+            
+            model = genai.GenerativeModel(model_name, tools=gen_tools if gen_tools else None)
             prompt = f"""
             {self.system_prompt}
             

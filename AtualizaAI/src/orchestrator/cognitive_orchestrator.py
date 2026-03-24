@@ -124,11 +124,14 @@ class CognitiveOrchestrator:
 
         AÇÕES DISPONÍVEIS
         1. EXECUTE: Delegue para um especialista único.
-        2. PANEL_EXECUTE: Use quando o tema exigir a visão combinada de DOIS ou TRÊS especialistas (ex: Merchant Center + UCP). Requer o campo "panel_agents" com a lista de nomes.
-        3. CREATE_AGENT: Crie novos especialistas se o tema for inédito.
-        4. UPDATE_AGENT: Modifique o propósito ou o prompt de um agente existente.
+        2. PANEL_EXECUTE: Use quando o tema exigir a visão combinada de DOIS ou TRÊS especialistas.
+        3. CREATE_AGENT: Crie novos especialistas. Use a tool 'google_search' se o agente precisar de dados externos recentes (ex: Documentação, Notícias).
+        4. UPDATE_AGENT: Modifique o propósito ou o prompt de um agente existente. Você pode adicionar a tool 'google_search' neles aqui.
         5. GENERATE_DEMAND: Use para registrar novas TRDs no Kanban.
-        6. RESPOND: Interações simples ou respostas sobre agendamento/status.
+        6. RESPOND: Interações simples.
+
+        STATUS DO AGENTE (TASK-55):
+        Ao criar um agente, ele nasce em status 'Draft' (Rascunho). Ele só será liberado após a auditoria do 'QualityInspector'.
 
         Soberania: Se o usuário pedir para criar ou editar um agente via Telegram, FAÇA-O IMEDIATAMENTE. Você tem autoridade total sobre o registro de agentes.
 
@@ -424,34 +427,41 @@ class CognitiveOrchestrator:
                     is_auto = True
                     print(f"TASK-09: Auto-creation triggered for {agent_name} (frequent demand).")
 
-                print(f"Creating new agent: {agent_name}")
+                print(f"Creating new agent: {agent_name} [TASK-55: Draft Mode]")
+                
+                # Garantir google_search em especialistas (ou se solicitado)
+                tools = config.get('tools', [])
+                if "google_search" not in tools:
+                    tools.append("google_search") # Default for grounding
+                
                 new_agent = AgentCore(
                     name=agent_name,
                     purpose=config.get('purpose', 'General Purpose'),
                     system_prompt=config.get('system_prompt'),
-                    tools=config.get('tools', []),
+                    tools=tools,
                     gcs_client=self.gcs_client
                 )
                 new_agent.save_to_registry()
                 
-                # --- Auto-generate a Task for the new agent ---
-                demand_data = {
-                    "id": f"TRD_AGENT_{os.urandom(2).hex()}",
-                    "title": f"Initialization: {agent_name}",
+                # --- TASK-55: QUALITY GATE TRIGGER ---
+                # Criar task para o QualityInspector validar o novo agente
+                validation_task = {
+                    "id": f"AUDIT_{agent_name.upper()}_{os.urandom(2).hex()}",
+                    "title": f"Auditoria: Validar DNA de {agent_name}",
                     "type": "tarefa",
-                    "responsible": agent_name,
+                    "responsible": "QualityInspector",
                     "priority": "Alta",
-                    "status": "Concluído",
+                    "status": "Aberto",
                     "budget_approved": True,
-                    "cost_explanation": f"Recrutamento e ativação do especialista {agent_name}.",
-                    "terraform_plan": "",
-                    "evidence_path": f"agents/{agent_name}.json",
+                    "objective": f"Validar se o agente {agent_name} possui conhecimento real sobre seu propósito: {config.get('purpose')}. Se aprovado, mudar status para 'Certified'.",
+                    "governance_finops": "Auditoria de qualidade mandatória (TASK-55).",
                     "created_at": datetime.now().isoformat()
                 }
+                
                 if self.gcs_client:
-                    registry = self.gcs_client.read_json("demands/registry.json") or {"demands": []}
-                    registry['demands'].append(demand_data)
-                    self.gcs_client.upload_json(registry, "demands/registry.json")
+                    reg = self.gcs_client.read_json("demands/registry.json") or {"demands": []}
+                    reg['demands'].append(validation_task)
+                    self.gcs_client.upload_json(reg, "demands/registry.json")
 
                 final_result = decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
                 if is_auto:
