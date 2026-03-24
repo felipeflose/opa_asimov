@@ -379,6 +379,25 @@ function App() {
     }
   };
 
+  const handleRegenerate = async (taskId) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/regenerate`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+          alert("Regeneração iniciada com sucesso!");
+          setViewingDelivery(null);
+          fetchData();
+      } else {
+          alert("Erro ao regenerar: " + (data.error || "Erro desconhecido"));
+      }
+    } catch (err) {
+      console.error("Regenerate error", err);
+    }
+  };
+
   const fetchQAReport = async () => {
     if (!token) return;
     setQaLoading(true);
@@ -1884,7 +1903,10 @@ function App() {
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                   {viewingDelivery.timestamp ? `Verified by Flose AI Platform • ${new Date(viewingDelivery.timestamp).toLocaleString()}` : "System Log Analysis"}
                 </span>
-                <button className="login-button" style={{ width: 'auto', padding: '12px 35px' }} onClick={() => setViewingDelivery(null)}>CLOSE</button>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                  <button className="login-button" style={{ width: 'auto', padding: '12px 30px', background: 'rgba(0,242,255,0.1)', color: 'var(--primary)', border: '1px solid var(--primary)' }} onClick={() => handleRegenerate(viewingDelivery.task_id)}>♻️ REGENERATE</button>
+                  <button className="login-button" style={{ width: 'auto', padding: '12px 35px' }} onClick={() => setViewingDelivery(null)}>CLOSE</button>
+                </div>
               </div>
             </div>
           </div>
