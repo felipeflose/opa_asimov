@@ -12,6 +12,10 @@ class DevAgent:
 
     def respond(self, query: str):
         """Responde perguntas sobre o codebase da Flose AI."""
+        # TASK-26: Atalho para logs de erro
+        if "logs" in query.lower():
+            return self.get_error_logs()
+
         # Contexto estático de arquitetura
         project_context = """
         ARQUITETURA FLORE AI:
@@ -57,3 +61,31 @@ class DevAgent:
             return response.text.strip()
         except Exception as e:
             return f"❌ Erro na Cozinha: {str(e)}"
+
+    def get_error_logs(self):
+        """Busca os últimos 20 logs de execução e filtra erros (TASK-26)."""
+        if not self.gcs_client: return "GCS Client indisponível."
+        try:
+            prefix = f"users/{self.gcs_client.user_id}/logs/executions/"
+            blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix, max_results=50))
+            if not blobs: return "Nenhum log de execução encontrado."
+            
+            # Ordenar por data decoescente
+            blobs.sort(key=lambda x: x.updated, reverse=True)
+            
+            error_list = []
+            for blob in blobs[:20]:
+                data = self.gcs_client.read_json(blob.name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                if data and ("error" in data or data.get("status") == "error"):
+                    ts = data.get("timestamp", "N/A")[11:16]
+                    agent = data.get("agent", "Unknown")
+                    err_msg = data.get("error") or data.get("message") or "Erro não detalhado"
+                    error_list.append(f"⏱️ {ts} | 🤖 {agent} | ❌ {err_msg[:100]}")
+            
+            if not error_list:
+                return "✅ Nenhum erro crítico encontrado nos últimos 20 logs de execução."
+            
+            header = "🚨 **Últimos Erros Detectados na Cozinha:**\n\n"
+            return header + "\n".join(error_list)
+        except Exception as e:
+            return f"⚠️ Falha ao ler logs no GCS: {e}"
