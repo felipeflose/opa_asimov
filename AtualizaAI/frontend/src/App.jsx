@@ -126,7 +126,12 @@ function BrokerDashboard({ token }) {
                                         <td className="p-4">
                                             {a.certified ? 
                                                 <span className="text-emerald-400 flex items-center gap-1">✅ Certificado</span> : 
-                                                (a.certified === false ? <span className="text-red-400 flex items-center gap-1">❌ Reprovado</span> : <span className="text-gray-500">⏳ Pendente</span>)}
+                                                (a.certified === false ? (
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-red-400 flex items-center gap-1">❌ Reprovado</span>
+                                                        {a.improvement_report && <span style={{ fontSize: '10px', color: '#9ca3af', fontStyle: 'italic', maxWidth: '250px', lineHeight: '1.2' }}>{a.improvement_report}</span>}
+                                                    </div>
+                                                ) : <span className="text-gray-500">⏳ Pendente</span>)}
                                         </td>
                                         <td className="p-4 text-gray-500">{a.certified_at?.split('T')[0] || '-'}</td>
                                         <td className="p-4 text-gray-500 font-mono">{a.certification_attempts || 0}</td>
