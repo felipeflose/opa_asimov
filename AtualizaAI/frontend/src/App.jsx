@@ -3,7 +3,7 @@ import localGraph from './global_graph.json';
 import * as d3 from 'd3';
 import './App.css';
 
-function AgentAvatar({ agent, size = 60 }) {
+function AgentAvatar({ agent, size = 60, authFetch = fetch }) {
   const [isHovered, setIsHovered] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -53,7 +53,7 @@ function AgentAvatar({ agent, size = 60 }) {
            formData.append('file', file);
            // Como estamos fora do escopo do 'App', precisaremos passar o token via props ou capturar do localStorage
            const token = sessionStorage.getItem('flose_token');
-           await fetch(`/api/agents/upload-avatar?agent_name=${agent.agent_name}&token=${token}`, {
+           await authFetch(`/api/agents/upload-avatar?agent_name=${agent.agent_name}&token=${token}`, {
              method: 'POST',
              body: formData
            });
@@ -210,6 +210,19 @@ function App() {
   const [expandedAgent, setExpandedAgent] = useState(null);
   const [enrichingAgent, setEnrichingAgent] = useState(null);
 
+  const authFetch = async (url, options = {}) => {
+    const headers = {
+      ...(options.headers || {}),
+      'Authorization': `Bearer ${token}`
+    };
+    const res = await fetch(url, { ...options, headers });
+    if (res.status === 401) {
+      handleLogout();
+      return null;
+    }
+    return res;
+  };
+
   // Buscar dados reais da API
   const fetchData = async () => {
     if (!token) return;
@@ -219,11 +232,11 @@ function App() {
       };
       
       const [statsRes, graphRes, tasksRes, activityRes, agentsRes] = await Promise.all([
-        fetch(`/api/stats`, options),
-        fetch(`/api/graph`, options),
-        fetch(`/api/tasks`, options),
-        fetch(`/api/activity`, options),
-        fetch(`/api/agents`, options)
+        authFetch(`/api/stats`, options),
+        authFetch(`/api/graph`, options),
+        authFetch(`/api/tasks`, options),
+        authFetch(`/api/activity`, options),
+        authFetch(`/api/agents`, options)
       ]);
       
       const statsData = await statsRes.json();
@@ -239,7 +252,7 @@ function App() {
       const agentsD = await agentsRes.json();
       if (!agentsD.error) setAgentList(agentsD);
 
-      const marketRes = await fetch(`/api/marketplace`, options);
+      const marketRes = await authFetch(`/api/marketplace`, options);
       const marketD = await marketRes.json();
       if (!marketD.error) setMarketTemplates(marketD);
     } catch (err) {
@@ -248,7 +261,7 @@ function App() {
   };
 
   const handleApprove = async (taskId) => {
-    await fetch(`/api/tasks/approve?task_id=${taskId}`, { 
+    await authFetch(`/api/tasks/approve?task_id=${taskId}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -258,7 +271,7 @@ function App() {
   const handleExecute = async (taskId, agentName = null) => {
     const finalAgent = agentName || executingAgent;
     if (!finalAgent) return alert("Selecione um agente!");
-    const res = await fetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${finalAgent}`, { 
+    const res = await authFetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${finalAgent}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -269,7 +282,7 @@ function App() {
 
   const handleViewDelivery = async (resultId) => {
     try {
-      const res = await fetch(`/api/tasks/delivery/${resultId}`, {
+      const res = await authFetch(`/api/tasks/delivery/${resultId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -281,7 +294,7 @@ function App() {
   };
 
   const handleAgentQuery = async (query) => {
-    const res = await fetch(`/api/agents/chat`, {
+    const res = await authFetch(`/api/agents/chat`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -295,7 +308,7 @@ function App() {
   };
 
   const handleExport = async (name) => {
-    const res = await fetch(`/api/marketplace/export/${name}`, { 
+    const res = await authFetch(`/api/marketplace/export/${name}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -305,7 +318,7 @@ function App() {
   };
 
   const handleImport = async (templateName) => {
-    const res = await fetch(`/api/marketplace/import`, { 
+    const res = await authFetch(`/api/marketplace/import`, { 
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -321,7 +334,7 @@ function App() {
   const handleQAAutoFix = async () => {
     setIsFixing(true);
     try {
-      const resp = await fetch(`/api/qa/auto-fix`, { 
+      const resp = await authFetch(`/api/qa/auto-fix`, { 
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -363,7 +376,7 @@ function App() {
   const handleAuditFinOps = async (taskId) => {
     try {
       console.log("Starting audit for", taskId);
-      const res = await fetch(`/api/tasks/audit-finops?task_id=${taskId}`, {
+      const res = await authFetch(`/api/tasks/audit-finops?task_id=${taskId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -382,7 +395,7 @@ function App() {
 
   const handleRegenerate = async (taskId) => {
     try {
-      const res = await fetch(`/api/tasks/${taskId}/regenerate`, {
+      const res = await authFetch(`/api/tasks/${taskId}/regenerate`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -459,7 +472,7 @@ function App() {
   const handleEnrichAgent = async (agentName) => {
     setEnrichingAgent(agentName);
     try {
-      const resp = await fetch(`/api/qa/enrich-agent?agent_name=${encodeURIComponent(agentName)}`, {
+      const resp = await authFetch(`/api/qa/enrich-agent?agent_name=${encodeURIComponent(agentName)}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -482,7 +495,7 @@ function App() {
   const handleCleanupTasks = async () => {
     if (!window.confirm("🔴 PERIGO: Isso irá deletar todas as tarefas atuais. Deseja continuar?")) return;
     try {
-      const res = await fetch(`/api/tasks/cleanup`, {
+      const res = await authFetch(`/api/tasks/cleanup`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1090,7 +1103,7 @@ function App() {
           <div className="agent-library-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: '20px' }}>
             {agentList.map(agent => (
               <div key={agent.agent_name} className="glass-card agent-card-edit" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 200px', gap: '20px', alignItems: 'center' }}>
-                <AgentAvatar agent={agent} />
+                <AgentAvatar agent={agent} authFetch={authFetch} />
                 <div>
                   <h3 style={{ color: 'var(--primary)' }}>{agent.agent_name}</h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>{agent.purpose}</p>
@@ -1180,7 +1193,7 @@ function App() {
                   setIsRunningPipeline(true);
                   const results = [];
                   for(const step of pipeline) {
-                    const res = await fetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}`, { 
+                    const res = await authFetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}`, { 
                       method: 'POST',
                       headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1885,7 +1898,7 @@ function App() {
             <div className="glass-card modal-content" onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                  <AgentAvatar agent={viewingAgent} />
+                  <AgentAvatar agent={viewingAgent} authFetch={authFetch} />
                   <div>
                     <h2 className="title-grad" style={{ fontSize: '1.8rem' }}>{viewingAgent.agent_name}</h2>
                     <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>{viewingAgent.purpose}</p>
