@@ -200,14 +200,58 @@ class TelegramAgent:
             self.log(f"Erro no incident_handler: {e}")
             await update.message.reply_text("⚠️ Erro ao registrar incidente.")
 
+    async def silence_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Alterna o Modo Silencioso para o usuário."""
+        try:
+            user_id = str(update.effective_user.id)
+            pref_path = f"users/{user_id}/preferences.json"
+            
+            prefs = {}
+            if self.gcs_client:
+                prefs = self.gcs_client.read_json(pref_path) or {}
+            
+            current = prefs.get("silent_mode", False)
+            new_state = not current
+            prefs["silent_mode"] = new_state
+            
+            if self.gcs_client:
+                self.gcs_client.upload_json(prefs, pref_path)
+            
+            status = "ATIVADO 🤫" if new_state else "DESATIVADO 🔊"
+            msg = f"Modo Silencioso {status}.\n"
+            if new_state:
+                msg += "Agora só responderei se você me marcar ou usar comandos."
+            else:
+                msg += "Responderei a todas as mensagens do chat."
+            
+            await update.message.reply_text(msg)
+        except Exception as e:
+            self.log(f"Erro no silence_handler: {e}")
+            await update.message.reply_text("⚠️ Erro ao configurar modo silencioso.")
+
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if not update.message:
                 return
 
+            user_id = str(update.effective_user.id)
             user = update.effective_user.username or update.effective_user.first_name
             user_text = update.message.text or update.message.caption or ""
             
+            # --- TASK-12: Modo Silencioso ---
+            is_silent = False
+            if self.gcs_client:
+                prefs = self.gcs_client.read_json(f"users/{user_id}/preferences.json") or {}
+                is_silent = prefs.get("silent_mode", False)
+            
+            bot_name = os.getenv("TELEGRAM_BOT_NAME", "Flose").lower()
+            is_mentioned = bot_name in user_text.lower() or (update.message.reply_to_message and update.message.reply_to_message.from_user.id == context.bot.id)
+            is_command = user_text.startswith("/")
+            
+            if is_silent and not (is_command or is_mentioned):
+                # Ignora mensagem no modo silencioso se não for comando ou menção
+                return
+
             has_photo = bool(update.message.photo)
             has_audio = bool(update.message.voice or update.message.audio)
             
@@ -439,6 +483,7 @@ class TelegramAgent:
         self.application.add_handler(CommandHandler("dora", self.dora_handler))
         self.application.add_handler(CommandHandler("debug", self.debug_handler)) # TASK-08
         self.application.add_handler(CommandHandler("incidente", self.incident_handler)) # DORA Refinement
+        self.application.add_handler(CommandHandler("silencio", self.silence_handler)) # TASK-12
         self.application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, self.message_handler))
         
         await self.application.initialize()
