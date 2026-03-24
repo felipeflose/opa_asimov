@@ -410,6 +410,21 @@ class TelegramAgent:
 
             # Sincroniza o log final (com a decisão) no GCS
             if self.gcs_client:
+                # --- TASK-21: Cross-Analysis Persistence ---
+                is_cross = has_photo and ("analise" in user_text.lower() or "avalie" in user_text.lower())
+                if is_cross:
+                    cross_data = {
+                        "platform": "telegram",
+                        "user": user,
+                        "original_image": image_path,
+                        "vision_context": visual_context,
+                        "specialist_result": result,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    self.gcs_client.upload_json(cross_data, f"logs/cross_analysis/cross_{ts}.json")
+                    self.log(f"Cross-Analysis salva em logs/cross_analysis/cross_{ts}.json")
+
                 filename_final = f"logs/telegram/decision_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.json"
                 self.gcs_client.upload_json(log_data, filename_final)
     
