@@ -24,6 +24,10 @@ class DevAgent:
         if "agente " in query.lower():
             return self.agent_raio_x(query)
 
+        # TASK-29: Diff Diário
+        if "diff" in query.lower():
+            return self.get_daily_diff()
+
         # Contexto estático de arquitetura
         project_context = """
         ARQUITETURA FLORE AI:
@@ -160,3 +164,39 @@ class DevAgent:
             return info
         except Exception as e:
             return f"❌ Erro no Raio-X: {e}"
+
+    def get_daily_diff(self):
+        """Resume o que mudou no sistema nas últimas 24h (TASK-29)."""
+        if not self.gcs_client: return "GCS Client indisponível."
+        from datetime import datetime, timedelta
+        
+        try:
+            last_24h = datetime.now() - timedelta(hours=24)
+            prefix = f"users/{self.gcs_client.user_id}/logs/executions/"
+            blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix))
+            
+            recent_logs = []
+            for b in blobs:
+                if b.updated.replace(tzinfo=None) > last_24h:
+                    data = self.gcs_client.read_json(b.name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                    if data: recent_logs.append(data)
+
+            if not recent_logs:
+                return "😴 Nenhuma atividade letárgica nas últimas 24h. Tudo calmo na Flose AI."
+
+            # Analisar logs
+            new_tasks = [l for l in recent_logs if l.get("type") == "demand_gen" or "demand_info" in l]
+            errors = [l for l in recent_logs if "error" in l or l.get("status") == "error"]
+            agents_used = sorted(list(set([l.get("agent", "Orchestrator") for l in recent_logs])))
+            
+            summary = (
+                f"📅 **Resumo das últimas 24h (Changelog):**\n\n"
+                f"✅ **Atividade:** {len(recent_logs)} interações processadas.\n"
+                f"🤖 **Agentes ativos:** {', '.join(agents_used)}\n"
+                f"📝 **Novas Demandas:** {len(new_tasks)}\n"
+                f"❌ **Erros Detectados:** {len(errors)}\n\n"
+                f"🔗 Use `/cozinha logs` para ver os erros em detalhe."
+            )
+            return summary
+        except Exception as e:
+            return f"❌ Erro ao gerar diff: {e}"
