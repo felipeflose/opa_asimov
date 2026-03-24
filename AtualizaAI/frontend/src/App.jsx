@@ -178,6 +178,14 @@ function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [toasts, setToasts] = useState([]);
+
+  // --- TASK-36: Toast Helper ---
+  const toast = (message, type = 'info', duration = 4000) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type, duration }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
+  };
   const [authForm, setAuthForm] = useState({ username: '', password: '' });
 
   // --- TASK-35: Keyboard Shortcut Listener ---
@@ -390,13 +398,17 @@ function App() {
 
   const handleExecute = async (taskId, agentName = null) => {
     const finalAgent = agentName || executingAgent;
-    if (!finalAgent) return alert("Selecione um agente!");
+    if (!finalAgent) return toast("Selecione um agente!", "warning");
     const res = await authFetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${finalAgent}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
-    alert(data.status === 'success' ? "Tarefa executada com sucesso!" : "Erro: " + data.error);
+    if (data.status === 'success') {
+      toast("Tarefa executada com sucesso!", "success");
+    } else {
+      toast("Erro: " + data.error, "error");
+    }
     fetchData();
   };
 
@@ -423,7 +435,7 @@ function App() {
       body: JSON.stringify({ query })
     });
     const data = await res.json();
-    alert("🤖 Response: " + data.response);
+    toast("🤖 Response: " + data.response, "info");
     fetchData();
   };
 
@@ -433,7 +445,11 @@ function App() {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
-    alert(data.status === 'success' ? "Agente exportado como template!" : "Erro ao exportar");
+    if (data.status === 'success') {
+      toast("Agente exportado como template!", "success");
+    } else {
+      toast("Erro ao exportar", "error");
+    }
     fetchData();
   };
 
@@ -447,7 +463,11 @@ function App() {
       body: JSON.stringify({ template_name: templateName })
     });
     const data = await res.json();
-    alert(data.status === 'success' ? "Template importado com sucesso!" : "Erro ao importar");
+    if (data.status === 'success') {
+      toast("Template importado com sucesso!", "success");
+    } else {
+      toast("Erro ao importar", "error");
+    }
     fetchData();
   };
 
@@ -459,7 +479,7 @@ function App() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await resp.json();
-      alert(`Correction Result: ${data.result}`);
+      toast(`Correction Result: ${data.result}`, "success");
       fetchData();
     } catch (err) {
       console.error("Auto-fix error", err);
@@ -502,14 +522,14 @@ function App() {
       });
       const data = await res.json();
       if (data.status === 'success') {
-        alert("Auditoria concluída com sucesso!");
+        toast("Auditoria concluída com sucesso!", "success");
         fetchData();
       } else {
-        alert("Erro na auditoria: " + (data.error || "Erro desconhecido"));
+        toast("Erro na auditoria: " + (data.error || "Erro desconhecido"), "error");
       }
     } catch (err) {
       console.error("Audit error", err);
-      alert("Falha de rede na auditoria.");
+      toast("Falha de rede na auditoria.", "error");
     }
   };
 
@@ -521,11 +541,11 @@ function App() {
       });
       const data = await res.json();
       if (data.status === 'success') {
-          alert("Regeneração iniciada com sucesso!");
+          toast("Regeneração iniciada com sucesso!", "success");
           setViewingDelivery(null);
           fetchData();
       } else {
-          alert("Erro ao regenerar: " + (data.error || "Erro desconhecido"));
+          toast("Erro ao regenerar: " + (data.error || "Erro desconhecido"), "error");
       }
     } catch (err) {
       console.error("Regenerate error", err);
@@ -598,15 +618,15 @@ function App() {
       });
       const data = await resp.json();
       if (data.status === 'success') {
-        alert(data.message);
+        toast(data.message, "success");
         fetchQAReport();
         fetchData(); 
       } else {
-        alert("Erro: " + (data.error || "Falha desconhecida"));
+        toast("Erro: " + (data.error || "Falha desconhecida"), "error");
       }
     } catch (err) {
       console.error("Enrich error", err);
-      alert("Erro de conexão ou no servidor. Verifique o console.");
+      toast("Erro de conexão ou no servidor. Verifique o console.", "error");
     } finally {
       setEnrichingAgent(null);
     }
@@ -621,10 +641,10 @@ function App() {
       });
       const data = await res.json();
       if (data.status === 'success') {
-          alert("Backup criado e registry limpo com sucesso!");
+          toast("Backup criado e registry limpo com sucesso!", "success");
           fetchData();
       } else {
-          alert("Erro ao limpar: " + (data.error || "Erro desconhecido"));
+          toast("Erro ao limpar: " + (data.error || "Erro desconhecido"), "error");
       }
     } catch (err) {
       console.error("Cleanup error", err);
@@ -2031,11 +2051,14 @@ function App() {
         fetchData(data.token).finally(() => {
           setTimeout(() => setIsBooting(false), 2000);
         });
+        toast("Sessão iniciada com sucesso. Bem-vindo de volta!", "success");
       } else {
+        toast("Credenciais inválidas. Tente novamente.", "error");
         setError(true);
         setTimeout(() => setError(false), 2000);
       }
     } catch (err) {
+      toast("Falha na conexão com o gateway de autenticação.", "error");
       console.error("Auth error", err);
     }
   };
@@ -2296,8 +2319,32 @@ function App() {
           </div>
         )}
       </main>
+      <ToastContainer toasts={toasts} onDismiss={id => setToasts(prev => prev.filter(t => t.id !== id))} />
     </div>
   );
-}
+};
+
+const ToastContainer = ({ toasts, onDismiss }) => (
+  <div className="toast-container">
+    {toasts.map(t => (
+      <div key={t.id} className={`toast-item toast-${t.type}`}>
+        <div className="toast-header">
+          <span style={{ fontSize: '0.9rem' }}>
+            {t.type === 'success' ? '✅' : t.type === 'error' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️'}
+          </span>
+          <button className="toast-close" onClick={() => onDismiss(t.id)}>✕</button>
+        </div>
+        <div className="toast-content">{t.message}</div>
+        <div 
+          className="toast-progress" 
+          style={{ 
+            animation: `progress ${t.duration}ms linear forwards`,
+            background: t.type === 'success' ? '#00ff80' : t.type === 'error' ? '#ff4d4d' : t.type === 'warning' ? '#f59e0b' : 'var(--primary)'
+          }} 
+        />
+      </div>
+    ))}
+  </div>
+);
 
 export default App;
