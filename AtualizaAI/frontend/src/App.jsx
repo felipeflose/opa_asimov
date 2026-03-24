@@ -193,6 +193,7 @@ function App() {
   const [executionPreview, setExecutionPreview] = useState(null); // TASK-06
   const [taskModel, setTaskModel] = useState('gemini-2.0-flash'); // TASK-12
   const [newTaskCommand, setNewTaskCommand] = useState(''); // TASK-12
+  const [searchTerm, setSearchTerm] = useState(''); // TASK-17
   const [visionAnalysis, setVisionAnalysis] = useState(null);
   const [viewingAgent, setViewingAgent] = useState(null);
   const [pipeline, setPipeline] = useState([]);
@@ -845,7 +846,13 @@ function App() {
           'Concluído': ['Concluído', 'COMPLETED', 'done']
         };
         const targets = map[status] || [status];
-        return tasks.filter(t => targets.includes(t.status));
+        return tasks.filter(t => {
+          const matchesStatus = targets.includes(t.status);
+          const matchesSearch = !searchTerm || 
+            (t.title && t.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (t.responsible && t.responsible.toLowerCase().includes(searchTerm.toLowerCase()));
+          return matchesStatus && matchesSearch;
+        });
       };
 
       const onDragStart = (e, taskId) => {
@@ -911,6 +918,19 @@ function App() {
             >
               CRIAR TAREFA
             </button>
+          </div>
+
+          {/* TASK-17: Search Bar */}
+          <div className="glass-card" style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <span style={{ marginRight: '15px', fontSize: '0.9rem' }}>🔍</span>
+            <input 
+              type="text" 
+              placeholder="Pesquisar tarefas por título ou responsável..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: '0.85rem', outline: 'none' }}
+            />
+            {searchTerm && <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>LIMPAR</button>}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', flex: 1, overflow: 'hidden' }}>
