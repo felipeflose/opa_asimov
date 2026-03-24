@@ -317,6 +317,19 @@ async def get_graph(request: Request, token: str = None):
     
     return graph_data or {"nodes": [], "links": []}
 
+@app.get("/api/docs")
+def get_documentation():
+    import os
+    try:
+        path = os.path.join(os.path.dirname(__file__), "docs", "index.md")
+        if not os.path.exists(path):
+             return Response(content="# Docs\nFile not found.", media_type="text/markdown")
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return Response(content=content, media_type="text/markdown")
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/tasks")
 async def get_tasks(request: Request, token: str = None):
     if not validate_token(request, token):

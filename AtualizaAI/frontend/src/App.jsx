@@ -1756,6 +1756,24 @@ function App() {
             </div>
           ))}
         </nav>
+        
+        <div style={{ padding: '0 20px', marginTop: '15px' }}>
+          <a 
+            href="/api/docs" 
+            target="_blank" 
+            rel="noreferrer"
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', 
+              borderRadius: '12px', background: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)',
+              fontSize: '0.8rem', fontWeight: '800', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.05)',
+              transition: 'all 0.3s'
+            }}
+            onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.08)'; e.target.style.color = 'white'; e.target.style.borderColor = 'var(--primary)'; }}
+            onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.03)'; e.target.style.color = 'var(--text-muted)'; e.target.style.borderColor = 'rgba(255,255,255,0.05)'; }}
+          >
+            📚 DOCUMENTAÇÃO
+          </a>
+        </div>
 
         <div className="user-profile" style={{ marginTop: 'auto', flexDirection: 'column', alignItems: 'stretch', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
