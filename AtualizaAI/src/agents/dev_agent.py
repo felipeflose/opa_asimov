@@ -27,6 +27,10 @@ class DevAgent:
         # TASK-29: Diff Diário
         if "diff" in query.lower():
             return self.get_daily_diff()
+            
+        # TASK-30: Custo por Agente
+        if "custo" in query.lower():
+            return self.get_agent_cost(query)
 
         # Contexto estático de arquitetura
         project_context = """
@@ -200,3 +204,41 @@ class DevAgent:
             return summary
         except Exception as e:
             return f"❌ Erro ao gerar diff: {e}"
+
+    def get_agent_cost(self, query: str):
+        """Calcula custo de um agente específico ou geral (TASK-30)."""
+        if not self.gcs_client: return "GCS Client indisponível."
+        try:
+            agent_target = query.lower().replace("custo", "").strip()
+            
+            # Carregar logs de execução recentes
+            prefix = f"users/{self.gcs_client.user_id}/logs/executions/"
+            blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix, max_results=100))
+            
+            total_cost = 0.0
+            total_tokens = 0
+            count = 0
+            
+            for b in blobs:
+                data = self.gcs_client.read_json(b.name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                if not data: continue
+                
+                # Filtro por agente se especificado
+                if agent_target and data.get("agent", "").lower() != agent_target:
+                    continue
+                
+                # Acumula
+                total_cost += data.get("cost", 0)
+                total_tokens += data.get("tokens", 0)
+                count += 1
+            
+            target_name = agent_target.upper() if agent_target else "TODOS OS AGENTES"
+            report = (
+                f"💰 **Relatório FinOps: {target_name}**\n\n"
+                f"💵 **Custo Estimado (GCP):** ${total_cost:.4f} USD\n"
+                f"🧬 **Tokens Consumidos:** {total_tokens:,}\n"
+                f"⚙️ **Número de Execuções:** {count}\n"
+            )
+            return report
+        except Exception as e:
+            return f"❌ Erro ao calcular custo: {e}"
