@@ -1457,7 +1457,18 @@ function App() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Análise completa de cada agente: tarefas, acertividade e interações.</p>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={fetchQAReport} className="refresh-btn" style={{ padding: '8px 20px' }}>🔄 Atualizar</button>
+                <button onClick={fetchQAReport} className="refresh-btn" style={{ padding: '8px 20px' }}>🔄 Status</button>
+                <button 
+                  onClick={async () => {
+                    const res = await authFetch('/api/reports/synergy-weekly', { headers: { 'Authorization': `Bearer ${token}` } });
+                    const data = await res.json();
+                    if (data.report) alert(data.report);
+                  }}
+                  className="refresh-btn" 
+                  style={{ padding: '8px 20px', background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.3)' }}
+                >
+                  🌟 Sinergia
+                </button>
                 <button 
                   onClick={handleQAAutoFix} 
                   disabled={isFixing}

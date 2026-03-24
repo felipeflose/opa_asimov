@@ -379,6 +379,48 @@ async def get_health_score(request: Request, token: str = None):
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/api/reports/synergy-weekly")
+async def get_synergy_report(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        from src.agents.synergy_report_agent import SynergyReportAgent
+        report_agent = SynergyReportAgent(gcs_client=gcs)
+        report = report_agent.generate_report()
+        return {"report": report}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/reports/synergy-cycle")
+async def synergy_cycle(request: Request, token: str = None):
+    """Ciclo semanal de relatório de sinergia para Telegram."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        from src.agents.synergy_report_agent import SynergyReportAgent
+        report_agent = SynergyReportAgent(gcs_client=gcs)
+        report = report_agent.generate_report()
+        
+        # Enviar via Telegram via TelegramAgent se disponível
+        from src.agents.telegram_agent import TelegramAgent
+        # Precisamos de uma instância do bot ou usar o token direto
+        token_tg = os.getenv("TELEGRAM_BOT_TOKEN")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        
+        if token_tg and chat_id:
+             import httpx
+             msg = f"🌟 *Relatório de Sinergia Semanal (Flose AI)*\n\n{report[:4000]}"
+             async with httpx.AsyncClient() as client:
+                 await client.post(f"https://api.telegram.org/bot{token_tg}/sendMessage", json={
+                     "chat_id": chat_id,
+                     "text": msg,
+                     "parse_mode": "Markdown"
+                 })
+             return {"status": "success", "sent": True}
+        return {"status": "success", "sent": False, "report": report}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/agents/affinity")
 async def get_agent_affinity(request: Request, token: str = None):
     if not validate_token(request, token):

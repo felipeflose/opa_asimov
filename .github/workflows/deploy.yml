@@ -62,6 +62,19 @@ jobs:
             --uri="${SERVICE_URL}/broker_cycle" \
             --location=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }}
+            
+          gcloud scheduler jobs create http synergy-weekly-cycle \
+            --schedule="0 17 * * 5" \
+            --uri="${SERVICE_URL}/api/reports/synergy-cycle" \
+            --http-method=POST \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --description="Relatório semanal de sinergia" \
+            || gcloud scheduler jobs update http synergy-weekly-cycle \
+            --schedule="0 17 * * 5" \
+            --uri="${SERVICE_URL}/api/reports/synergy-cycle" \
+            --location=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }}
 
       - name: Deploy to Cloud Run
         id: deploy
