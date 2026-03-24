@@ -4,6 +4,10 @@ import json
 import subprocess
 import time
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Carrega variáveis do .env se existir localmente
+load_dotenv()
 
 # --- Logging Helper ---
 LOG_FILE = "setup.log"
