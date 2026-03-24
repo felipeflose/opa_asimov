@@ -247,6 +247,38 @@ class TelegramAgent:
             self.log(f"Erro no conselho_handler: {e}")
             await self.safe_reply(update, "⚠️ Erro ao buscar o conselho.")
 
+        except Exception as e:
+            self.log(f"Erro no conselho_handler: {e}")
+            await self.safe_reply(update, "⚠️ Erro ao buscar o conselho.")
+
+    async def cozinha_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Alterna o Modo Cozinha (Modo Dev) para o usuário."""
+        try:
+            user_id = str(update.effective_user.id)
+            arg = " ".join(context.args).lower() if context.args else ""
+            pref_path = f"users/{user_id}/preferences.json"
+            
+            prefs = {}
+            if self.gcs_client:
+                prefs = self.gcs_client.read_json(pref_path) or {}
+            
+            if arg == 'off':
+                prefs["dev_mode"] = False
+                status = "DESATIVADO 🍽️"
+                msg = f"Modo Cozinha {status}. Você voltou para o Orchestrator Padrão."
+            else:
+                prefs["dev_mode"] = True
+                status = "ATIVADO 🥣"
+                msg = f"Modo Cozinha {status}. Agora todas as suas perguntas serão respondidas pelo **DevAgent** especialista no codebase."
+            
+            if self.gcs_client:
+                self.gcs_client.upload_json(prefs, pref_path)
+            
+            await update.message.reply_text(msg, parse_mode='Markdown')
+        except Exception as e:
+            self.log(f"Erro no cozinha_handler: {e}")
+            await update.message.reply_text("⚠️ Erro ao configurar modo cozinha.")
+
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if not update.message:
@@ -256,18 +288,27 @@ class TelegramAgent:
             user = update.effective_user.username or update.effective_user.first_name
             user_text = update.message.text or update.message.caption or ""
             
-            # --- TASK-12: Modo Silencioso ---
+            # --- TASK-12/24: Modo Silencioso e Modo Dev ---
             is_silent = False
+            is_dev = False
             if self.gcs_client:
                 prefs = self.gcs_client.read_json(f"users/{user_id}/preferences.json") or {}
                 is_silent = prefs.get("silent_mode", False)
+                is_dev = prefs.get("dev_mode", False)
             
             bot_name = os.getenv("TELEGRAM_BOT_NAME", "Flose").lower()
             is_mentioned = bot_name in user_text.lower() or (update.message.reply_to_message and update.message.reply_to_message.from_user.id == context.bot.id)
             is_command = user_text.startswith("/")
             
             if is_silent and not (is_command or is_mentioned):
-                # Ignora mensagem no modo silencioso se não for comando ou menção
+                return
+
+            if is_dev and not is_command:
+                from src.agents.dev_agent import DevAgent
+                dev = DevAgent(gcs_client=self.gcs_client)
+                await update.message.reply_chat_action(action="typing")
+                result = dev.respond(user_text)
+                await self.safe_reply(update, f"🥣 **Cozinha (DevAgent):**\n\n{result}", parse_mode='Markdown')
                 return
 
             has_photo = bool(update.message.photo)
@@ -532,6 +573,7 @@ class TelegramAgent:
         self.application.add_handler(CommandHandler("incidente", self.incident_handler)) # DORA Refinement
         self.application.add_handler(CommandHandler("silencio", self.silence_handler)) # TASK-12
         self.application.add_handler(CommandHandler("conselho", self.conselho_handler)) # TASK-20
+        self.application.add_handler(CommandHandler("cozinha", self.cozinha_handler)) # TASK-24
         self.application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, self.message_handler))
         
         await self.application.initialize()
