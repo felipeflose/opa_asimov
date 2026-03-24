@@ -479,6 +479,10 @@ async def update_task_status(request: Request, task_id: str, new_status: str = N
                 # Lógica solicitada pelo usuário: Arrastar para a próxima raia = aprovado
                 if new_status in ["Em Progresso", "IN_PROGRESS"]:
                     task["budget_approved"] = True
+                
+                # TASK-14: Se voltar para Aberto, resetar aprovação
+                if new_status in ["Aberto", "OPEN"]:
+                    task["budget_approved"] = False
             
             if new_priority:
                 task["priority"] = new_priority
