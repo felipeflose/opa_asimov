@@ -447,6 +447,21 @@ async def get_cozinha_endpoints(request: Request, token: str = None):
         {"method": "GET", "path": "/api/docs", "desc": "Documentação interna"}
     ]
 
+@app.post("/api/settings")
+async def update_settings(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    data = await request.json()
+    new_model = data.get("gemini_model")
+    if new_model:
+        import os
+        os.environ["GEMINI_MODEL"] = new_model
+        # Logar a alteração
+        print(f"--- SETTINGS UPDATE: Model changed to {new_model} ---")
+        return {"status": "success", "message": f"Model updated to {new_model}"}
+    return {"status": "error", "message": "No data provided"}
+
 @app.get("/api/docs")
 def get_documentation():
     import os

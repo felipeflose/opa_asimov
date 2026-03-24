@@ -407,6 +407,18 @@ function App() {
   const [expandedAgent, setExpandedAgent] = useState(null);
   const [enrichingAgent, setEnrichingAgent] = useState(null);
   const [newActivityIds, setNewActivityIds] = useState(new Set());
+  const [modelVal, setModelVal] = useState(localStorage.getItem('flose_model') || 'gemini-1.5-flash');
+  const [prefs, setPrefs] = useState({
+    autoRefresh: localStorage.getItem('prefs_auto_refresh') !== 'false',
+    showReasoning: localStorage.getItem('prefs_show_reasoning') === 'true',
+    sound: localStorage.getItem('prefs_sound') === 'true'
+  });
+
+  const togglePref = (key) => {
+    const newVal = !prefs[key];
+    setPrefs(prev => ({ ...prev, [key]: newVal }));
+    localStorage.setItem(`prefs_${key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)}`, newVal);
+  };
 
   // --- TASK-38: Live Activity Helper ---
   const formatRelativeTime = (ts) => {
@@ -1492,6 +1504,201 @@ function App() {
                 style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '15px', color: 'white' }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
+                      padding: '18px', 
+                      cursor: 'grab', 
+                      border: selectedTask?.id === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
+                      position: 'relative',
+                      animation: 'fadeIn 0.4s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.65rem', color: col.color, fontWeight: '900' }}>{task.id}</span>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                         <span style={{ fontSize: '0.6rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+                           ${(task.estimated_cost || 0.001).toFixed(3)}
+                         </span>
+                         <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
+                      </div>
+                    </div>
+                    
+                    <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
+                    
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '15px', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {task.objective || 'Objetivo não detalhado...'}
+                    </p>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="avatar" style={{ width: '24px', height: '24px', fontSize: '0.5rem', background: 'var(--primary)', color: '#000' }}>
+                          {task.responsible?.substring(0,2).toUpperCase() || 'IA'}
+                        </div>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{task.responsible || 'IA'}</span>
+                      </div>
+                      <select 
+                        value={task.priority || 'Média'}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => handleUpdateStatus(task.id, null, e.target.value)}
+                        style={{ 
+                          fontSize: '0.55rem', 
+                          background: 'rgba(255,255,255,0.08)', 
+                          padding: '3px 8px', 
+                          borderRadius: '4px',
+                          border: 'none',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value="Alta">Alta</option>
+                        <option value="Média">Média</option>
+                        <option value="Baixa">Baixa</option>
+                      </select>
+                    </div>
+
+                    {/* Mostra governança se selecionado */}
+                    {selectedTask?.id === task.id && (
+                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}`, animation: 'slideDown 0.3s ease' }}>
+                        <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '5px' }}>🛡️ GOVERNANÇA FINOPS</p>
+                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{task.governance_finops || 'Aguardando auditoria FinOps...'}</p>
+                        
+                        {(task.governance_finops === 'Aguardando auditoria FinOps...' || !task.objective || task.objective === 'Geração pendente...') && (
+                          <button 
+                            className="login-button" 
+                            style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', marginTop: '10px' }} 
+                            onClick={(e) => { e.stopPropagation(); handleAuditFinOps(task.id); }}
+                          >
+                            🔍 AUDITAR AGORA
+                          </button>
+                        )}
+
+                        <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+                          {!task.budget_approved && col.id === 'Aberto' && (
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={() => handleApprove(task.id)}>👍 APROVAR</button>
+                          )}
+                          {task.status === 'Em Progresso' && task.budget_approved && (
+                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={() => {
+                              setExecutionPreview(task);
+                            }}>🚀 EXECUTAR</button>
+                          )}
+                          {task.status === 'Concluído' && (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981', flex: 1 }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER</button>
+                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', flex: 1 }} onClick={() => window.open(`/api/tasks/${task.id}/export?token=${token}`)}>💾 MD</button>
+                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', flex: 1 }} onClick={() => handleAuditFinOps(task.id)}>🛡️ AUDIT</button>
+                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid var(--border)', flex: 1 }} onClick={() => handleUpdateStatus(task.id, 'Aberto')}>↩ REOPEN</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+    }
+
+    if (activeTab === 'Agent Library') {
+      return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '40px' }}>
+          <div className="agent-library-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: '20px' }}>
+            {agentList.map(agent => (
+              <div key={agent.agent_name} className="glass-card agent-card-edit" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 200px', gap: '20px', alignItems: 'center' }}>
+                <AgentAvatar agent={agent} authFetch={authFetch} />
+                <div>
+                  <h3 style={{ color: 'var(--primary)' }}>{agent.agent_name}</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>{agent.purpose}</p>
+                  <div style={{ display: 'flex', gap: '15px' }}>
+                    <div className="metric-mini">
+                      <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>RUNS</span>
+                      <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{agent.metrics?.executions || 0}</p>
+                    </div>
+                    <div className="metric-mini">
+                      <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>TOKENS</span>
+                      <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{((agent.metrics?.total_tokens || 0)/1000).toFixed(1)}k</p>
+                    </div>
+                  </div>
+                  
+                  {/* TASK-22: Complementary Badges */}
+                  {agent.complementary_agents && agent.complementary_agents.length > 0 && (
+                    <div style={{ marginTop: '15px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>🤝 SINERGIA:</span>
+                      {agent.complementary_agents.map(comp => (
+                        <span 
+                          key={comp} 
+                          className="status-badge" 
+                          style={{ fontSize: '0.6rem', padding: '3px 8px', background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)', cursor: 'default' }}
+                        >
+                          {comp}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <button 
+                    className="nav-item badge-online" 
+                    style={{ padding: '8px 15px', borderRadius: '12px', fontSize: '0.7rem', cursor: 'pointer' }}
+                    onClick={() => setViewingAgent(agent)}
+                  >
+                    🛠️ Manage DNA
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="glass-card" style={{ background: 'rgba(0,0,0,0.3)' }}>
+            <h3 style={{ fontSize: '1.2rem', color: 'var(--primary)', marginBottom: '30px' }}>🧩 Affinity Heatmap</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+              {Object.entries(affinityMatrix.interactions).sort((a,b) => b[1].count - a[1].count).slice(0, 8).map(([pair, data]) => {
+                const agents = pair.split('<->');
+                return (
+                  <div key={pair} style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.75rem' }}>
+                      <span style={{ fontWeight: 'bold', color: '#e0e0e0' }}>{agents[0]} 🤝 {agents[1]}</span>
+                      <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{data.count} co-execs</span>
+                    </div>
+                    <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
+                      <div 
+                        style={{ 
+                          width: `${Math.min(100, data.count * 10)}%`, 
+                          height: '100%', 
+                          background: 'linear-gradient(90deg, var(--primary) 0%, #10b981 100%)',
+                          boxShadow: '0 0 10px var(--primary)',
+                          transition: 'width 1s ease-out'
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {Object.keys(affinityMatrix.interactions).length === 0 && (
+                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>Sem interações registradas para afinidade.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="glass-card chat-side">
+            <h3 className="title-grad" style={{ fontSize: '1.4rem' }}>Registry Assistant</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>Ask history or request prompt edits via natural language.</p>
+            
+            <div className="chat-bubble-area" style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', marginBottom: '15px', padding: '15px', overflowY: 'auto' }}>
+              <div className="ai-msg" style={{ fontSize: '0.85rem', color: '#e0e0e0', background: 'var(--glass)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
+                "Hi Felipe! I can help you update any agent. Just say: 'Change FinOps purpose to focus on GCP billing' or 'Who is the TaskManager?'"
+              </div>
+            </div>
+            
+            <div style={{ position: 'relative' }}>
+              <input 
+                type="text" 
+                placeholder="Type your registry command..." 
+                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '15px', color: 'white' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
                     handleAgentQuery(e.target.value);
                     e.target.value = ''; // Clear input after sending
                   }
@@ -1508,30 +1715,26 @@ function App() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '40px' }}>
           <div className="glass-card">
             <h3>🏗️ Pipeline Builder</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>
-              Select agents to build a sequential sequence of execution.
-            </p>
-            
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>Select agents to build sequential execution chains.</p>
             <div className="pipeline-area" style={{ minHeight: '400px', border: '2px dashed var(--border)', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {pipeline.length === 0 && <p style={{ textAlign: 'center', marginTop: '150px', opacity: 0.3 }}>Pipeline is empty. Add agents from the sidebar.</p>}
+              {pipeline.length === 0 && <p style={{ textAlign: 'center', marginTop: '150px', opacity: 0.3 }}>Pipeline is empty.</p>}
               {pipeline.map((step, idx) => (
-                <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid var(--primary)', animation: 'slideUp 0.3s' }}>
+                <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid var(--primary)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div className="avatar" style={{ scale: '0.7', background: 'var(--primary)', color: 'black' }}>{idx + 1}</div>
                     <div>
                       <h4 style={{ color: 'var(--primary)' }}>{step.agent_name}</h4>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{step.task || 'Generic processing...'}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{step.task || 'Process'}</p>
                     </div>
                   </div>
-                  <button onClick={() => setPipeline(pipeline.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
+                  <button onClick={() => setPipeline(pipeline.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>&times;</button>
                 </div>
               ))}
             </div>
-
             <div style={{ marginTop: '20px', display: 'flex', gap: '15px' }}>
               <button 
                 className="login-button" 
-                style={{ background: 'var(--primary)', color: 'black', flex: 1 }}
+                style={{ background: 'var(--primary)', color: 'black', flex: 1 }} 
                 disabled={pipeline.length === 0 || isRunningPipeline}
                 onClick={async () => {
                   setIsRunningPipeline(true);
@@ -1548,49 +1751,27 @@ function App() {
                   setIsRunningPipeline(false);
                 }}
               >
-                {isRunningPipeline ? '⏳ EXECUTING SEQUENTIAL OPS...' : '🚀 RUN PIPELINE'}
+                {isRunningPipeline ? '⏳ EXECUTING...' : '🚀 RUN PIPELINE'}
               </button>
-              <button className="refresh-btn" style={{ padding: '0 20px' }} onClick={() => {setPipeline([]); setPipelineResults([]);}}>CLEAR</button>
             </div>
           </div>
-
           <div className="glass-card">
-            <h3 style={{ marginBottom: '20px' }}>Agent Repository</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
+            <h3>Agent Repository</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {agentList.map(a => (
-                <div key={a.agent_name} className="glass-card" style={{ padding: '15px', cursor: 'pointer', border: '1px solid transparent', transition: 'all 0.2s' }} 
-                     onClick={() => {
-                       const t = prompt(`Instruction for ${a.agent_name}:`, "Refine the previous output or perform specific analysis.");
-                       if (t) setPipeline([...pipeline, { ...a, task: t }]);
-                     }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div className="avatar" style={{ width: '30px', height: '30px', fontSize: '0.6rem' }}>{a.agent_name.substring(0,2)}</div>
-                    <div>
-                      <p style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{a.agent_name}</p>
-                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{a.purpose.substring(0, 40)}...</p>
-                    </div>
-                  </div>
+                <div key={a.agent_name} className="glass-card" style={{ padding: '12px', cursor: 'pointer' }} onClick={() => setPipeline([...pipeline, { ...a, task: 'Process output' }])}>
+                  {a.agent_name}
                 </div>
               ))}
             </div>
-
-            {pipelineResults.length > 0 && (
-              <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(0,242,255,0.03)', borderRadius: '15px', border: '1px solid var(--border)' }}>
-                <h4 style={{ color: 'var(--primary)', marginBottom: '15px', fontSize: '0.9rem' }}>EXECUTION LOG:</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {pipelineResults.map((r, i) => (
-                    <details key={i} style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '10px' }}>
-                      <summary style={{ cursor: 'pointer', color: 'white', fontSize: '0.8rem', fontWeight: 'bold' }}>Step {i+1}: {r.agent}</summary>
-                      <pre style={{ padding: '10px', opacity: 0.8, fontSize: '0.75rem', whiteSpace: 'pre-wrap', marginTop: '10px', borderTop: '1px solid var(--border)' }}>{r.output}</pre>
-                    </details>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       );
     }
+
+
+
+
 
     if (activeTab === 'Marketplace') {
       return (
@@ -1635,9 +1816,8 @@ function App() {
                   <p>No community templates found. Be the first to export!</p>
                 </div>
               )}
-            </div>
+              </div>
           </div>
-
           <div className="glass-card">
             <h3 style={{ marginBottom: '20px' }}>My Exportable Agents</h3>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Turn your local agents into shareable templates.</p>
@@ -1657,27 +1837,7 @@ function App() {
       );
     }
 
-    if (activeTab === 'FinOps Guardian') {
-      return (
-        <div className="glass-card">
-          <h2 className="title-grad">Billing Dashboard</h2>
-          <div style={{ marginTop: '30px' }}>
-            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
-              <span>Total Estimated Cost (Cloud Run + Tokens)</span>
-              <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{stats.cost}</span>
-            </div>
-            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
-              <span>Tokens Used (Hoy)</span>
-              <span style={{ color: 'var(--primary)' }}>{stats.tokens}</span>
-            </div>
-            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
-              <span>API Request Volume</span>
-              <span style={{ color: 'var(--primary)' }}>{stats.calls || 0} calls</span>
-            </div>
-          </div>
-        </div>
-      );
-    }
+
 
     if (activeTab === 'Quality Inspector') {
 
@@ -1932,10 +2092,10 @@ function App() {
               )}
               {qaReport.orphan_agents.length > 0 && (
                 <div>
-                  <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ff4d4d', marginBottom: '8px' }}>Agentes com atividade mas não registrados:</p>
+                  <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ff4d4d', marginBottom: '8px' }}>Agentes órfãos (sem tarefas ou interações):</p>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {qaReport.orphan_agents.map((name, i) => (
-                      <span key={i} style={{ padding: '5px 12px', borderRadius: '8px', fontSize: '0.75rem', background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.3)' }}>{name}</span>
+                      <span key={i} style={{ padding: '5px 12px', borderRadius: '8px', background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.3)' }}>{name}</span>
                     ))}
                   </div>
                 </div>
@@ -2020,8 +2180,8 @@ function App() {
 
     if (activeTab === 'FinOps Guardian') {
       const breakdown = stats.agent_breakdown || {};
-      const agents = Object.keys(breakdown);
-      const maxCost = Math.max(...agents.map(a => breakdown[a].cost), 0.01);
+      const agentsList = Object.keys(breakdown);
+      const maxCost = Math.max(...agentsList.map(a => breakdown[a].cost), 0.01);
 
       return (
         <div className="glass-card" style={{ padding: '40px' }}>
@@ -2034,7 +2194,7 @@ function App() {
             <div className="glass-card" style={{ background: 'rgba(0,0,0,0.2)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '20px', color: 'var(--primary)' }}>Custo Diário por Agente</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {agents.length > 0 ? agents.map(agent => (
+                {agentsList.length > 0 ? agentsList.map(agent => (
                   <div key={agent}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px' }}>
                       <span>{agent}</span>
@@ -2067,7 +2227,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {agents.map(agent => (
+                  {agentsList.map(agent => (
                     <tr key={agent} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ padding: '8px 0' }}>{agent}</td>
                       <td style={{ padding: '8px 0' }}>{(breakdown[agent].tokens / 1000).toFixed(1)}k</td>
@@ -2088,7 +2248,7 @@ function App() {
       
       useEffect(() => {
         authFetch('/api/cozinha/endpoints').then(r => r.json()).then(setEndpoints);
-      }, []);
+      }, [activeTab]);
 
       const testEndpoint = async (path, method) => {
         const start = Date.now();
@@ -2164,12 +2324,132 @@ function App() {
 
     if (activeTab === 'Settings') {
        return (
-         <div className="glass-card" style={{ padding: '40px' }}>
-           <h2 className="title-grad">System Settings</h2>
-           <p style={{ color: 'var(--text-muted)' }}>Configure seu ambiente de Agentes e parâmetros de Curadoria.</p>
-         </div>
-       );
-    }
+         <div style={{ padding: '0 20px 40px 20px', maxWidth: '1000px' }}>
+            <header style={{ marginBottom: '40px' }}>
+              <h1 className="title-grad" style={{ fontSize: '2.4rem', marginBottom: '10px' }}>⚙️ System Settings</h1>
+              <p style={{ color: 'var(--text-muted)' }}>Configure core system parameters, AI models, and user preferences.</p>
+            </header>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+              {/* SECTION 1: System Config */}
+              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px' }}>🖥️ System Configuration</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>GEMINI MODEL</label>
+                    <input 
+                      type="text" 
+                      value={modelVal} 
+                      onChange={(e) => setModelVal(e.target.value)}
+                      className="glass-card" 
+                      style={{ padding: '10px 15px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', fontSize: '0.85rem', color: 'white' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', opacity: 0.6 }}>
+                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>GCP PROJECT ID</label>
+                    <input type="text" readOnly value="flose-ai-****" className="glass-card" style={{ padding: '10px 15px', border: 'none', background: 'rgba(0,0,0,0.1)', fontSize: '0.85rem', cursor: 'not-allowed', color: 'white' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', opacity: 0.6 }}>
+                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>ACTIVE REGION</label>
+                    <input type="text" readOnly value="us-central1" className="glass-card" style={{ padding: '10px 15px', border: 'none', background: 'rgba(0,0,0,0.1)', fontSize: '0.85rem', cursor: 'not-allowed', color: 'white' }} />
+                  </div>
+                </div>
+                <button 
+                  className="login-button" 
+                  style={{ marginTop: 'auto' }}
+                  onClick={async () => {
+                    const res = await authFetch('/api/settings', {
+                      method: 'POST',
+                      body: JSON.stringify({ gemini_model: modelVal })
+                    });
+                    const d = await res.json();
+                    if (d.status === 'success') {
+                      toast("System model updated effectively.", "success");
+                      localStorage.setItem('flose_model', modelVal);
+                    } else {
+                      toast(d.message || "Error updating settings", "error");
+                    }
+                  }}
+                >
+                  SAVE CONFIGURATION
+                </button>
+              </div>
+
+              {/* SECTION 2: Dashboard Prefs */}
+              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px' }}>🎨 Preferences</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {[
+                    { key: 'autoRefresh', label: 'Auto-refresh Activity Feed', icon: '🔄' },
+                    { key: 'showReasoning', label: 'Show Reasoning Chain by default', icon: '🧠' },
+                    { key: 'sound', label: 'Enable Sound Notifications', icon: '🔔' }
+                  ].map(pref => (
+                    <div key={pref.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <span style={{ fontSize: '1.2rem' }}>{pref.icon}</span>
+                        <span style={{ fontSize: '0.85rem' }}>{pref.label}</span>
+                      </div>
+                      <label className="switch">
+                        <input type="checkbox" checked={prefs[pref.key]} onChange={() => togglePref(pref.key)} />
+                        <span className="slider"></span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 'auto', padding: '15px', background: 'rgba(0,242,255,0.03)', borderRadius: '12px', border: '1px solid rgba(0,242,255,0.1)', fontSize: '0.7rem', color: 'var(--primary)' }}>
+                  ✨ Preferências visuais são salvas localmente no seu navegador para performance máxima.
+                </div>
+              </div>
+
+              {/* SECTION 3: Security */}
+              <div className="glass-card">
+                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px', marginBottom: '20px' }}>🛡️ Security</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Last Login</span>
+                    <span style={{ fontWeight: 'bold' }}>Today, 09:42 AM</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>SESSION TOKEN</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                       <input readOnly value="************************" className="glass-card" style={{ flex: 1, padding: '8px 12px', border: 'none', background: 'rgba(0,0,0,0.2)', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }} />
+                       <button 
+                         className="refresh-btn" 
+                         style={{ padding: '0 15px', fontSize: '0.65rem' }}
+                         onClick={(e) => {
+                           navigator.clipboard.writeText(token);
+                           const btn = e.currentTarget;
+                           const oldText = btn.innerText;
+                           btn.innerText = "COPIED!";
+                           setTimeout(() => btn.innerText = oldText, 2000);
+                         }}
+                       >
+                         COPY TOKEN
+                       </button>
+                    </div>
+                  </div>
+                  <button onClick={handleLogout} className="refresh-btn" style={{ borderColor: '#ff4d4d', color: '#ff4d4d', marginTop: '10px' }}>TERMINATE ALL SESSIONS</button>
+                </div>
+              </div>
+
+              {/* SECTION 4: About */}
+              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px' }}>ℹ️ System Artifacts</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.8rem' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Core Uptime</span>
+                      <span style={{ color: '#00ff80' }}>99.99%</span>
+                   </div>
+                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Knowledge Nodes</span>
+                      <span style={{ fontWeight: 'bold' }}>{graphData.nodes?.length || 0} Artifacts</span>
+                   </div>
+                </div>
+                <button className="login-button" style={{ marginTop: 'auto', background: 'transparent', border: '1px solid var(--border)', color: '#fff' }}>VIEW CHANGELOG</button>
+              </div>
+           </div>
+         );
+       }
 
     return (
       <div className="glass-card" style={{ textAlign: 'center', padding: '100px' }}>
