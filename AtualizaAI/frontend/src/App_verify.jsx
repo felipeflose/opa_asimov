@@ -186,8 +186,6 @@ function App() {
   const [agentList, setAgentList] = useState([]);
   const [executingAgent, setExecutingAgent] = useState('');
   const [executionPreview, setExecutionPreview] = useState(null); // TASK-06
-  const [taskModel, setTaskModel] = useState('gemini-2.0-flash'); // TASK-12
-  const [newTaskCommand, setNewTaskCommand] = useState(''); // TASK-12
   const [visionAnalysis, setVisionAnalysis] = useState(null);
   const [viewingAgent, setViewingAgent] = useState(null);
   const [pipeline, setPipeline] = useState([]);
@@ -838,58 +836,7 @@ function App() {
       };
 
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', height: '100%' }}>
-          {/* TASK-12: Create Task Row */}
-          <div className="glass-card" style={{ padding: '20px', display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder="Descreva a nova tarefa... (Ex: 'Analisar faturamento do BigQuery')"
-                value={newTaskCommand}
-                onChange={(e) => setNewTaskCommand(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleOrchestratorCommand(newTaskCommand, taskModel).then(() => setNewTaskCommand(''))}
-                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 20px', color: 'white' }}
-              />
-            </div>
-            
-            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-              <button 
-                onClick={() => setTaskModel('gemini-2.0-flash')}
-                style={{ 
-                  padding: '8px 15px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '900', border: 'none', cursor: 'pointer',
-                  background: taskModel === 'gemini-2.0-flash' ? 'var(--primary)' : 'transparent',
-                  color: taskModel === 'gemini-2.0-flash' ? '#000' : 'var(--text-muted)',
-                  transition: 'all 0.3s'
-                }}
-              >
-                ⚡ FLASH
-              </button>
-              <button 
-                onClick={() => setTaskModel('gemini-2.0-pro-exp-02-05')}
-                style={{ 
-                  padding: '8px 15px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '900', border: 'none', cursor: 'pointer',
-                  background: taskModel.includes('pro') ? '#a855f7' : 'transparent',
-                  color: taskModel.includes('pro') ? '#fff' : 'var(--text-muted)',
-                  transition: 'all 0.3s'
-                }}
-              >
-                🧠 PRO
-              </button>
-            </div>
-
-            <button 
-              className="login-button" 
-              style={{ width: 'auto', padding: '12px 25px', marginBottom: 0 }}
-              onClick={() => {
-                handleOrchestratorCommand(newTaskCommand, taskModel);
-                setNewTaskCommand('');
-              }}
-            >
-              CRIAR TAREFA
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', height: 'calc(100vh - 250px)', minHeight: '600px' }}>
           {columns.map(col => (
             <div 
               key={col.id} 
@@ -1011,8 +958,7 @@ function App() {
             </div>
           ))}
         </div>
-      </div>
-    );
+      );
     }
 
     if (activeTab === 'Agent Library') {

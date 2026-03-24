@@ -205,7 +205,13 @@ class CognitiveOrchestrator:
             print(f"Error in call_gemini: {e}")
             return f"Error: {str(e)}"
 
-    def process_command(self, user_command, image_path=None, visual_context="", chat_history=None):
+    def process_command(self, user_command, image_path=None, visual_context="", chat_history=None, model_name=None):
+        # Seleção de Modelo sob demanda (TASK-12)
+        if model_name:
+            import google.generativeai as genai
+            self.model = genai.GenerativeModel(model_name)
+            print(f"[ORCHESTRATOR] Usando modelo solicitado: {model_name}")
+            
         # Sanitização de Entrada
         user_command = self._sanitize_input(user_command)
 
