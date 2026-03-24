@@ -1450,6 +1450,24 @@ function App() {
                       ))}
                     </div>
                   )}
+                  {/* TASK-55: Badges */}
+                  <div style={{ marginTop: "15px", display: "flex", gap: "8px", alignItems: "center" }}>
+                    <span 
+                      className="status-badge" 
+                      style={{ 
+                        fontSize: "0.6rem", padding: "3px 10px", 
+                        background: (agent.status === "Draft" || agent.certified === false) ? "rgba(245,158,11,0.1)" : "rgba(16,185,129,0.1)", 
+                        color: (agent.status === "Draft" || agent.certified === false) ? "#f59e0b" : "#10b981", 
+                        border: (agent.status === "Draft" || agent.certified === false) ? "1px solid rgba(245,158,11,0.2)" : "1px solid rgba(16,185,129,0.2)",
+                        fontWeight: "900"
+                      }}
+                    >
+                      {(agent.status === "Draft" || agent.certified === false) ? "⏳ RASCUNHO" : "✅ CERTIFICADO"}
+                    </span>
+                    {(agent.tools?.includes("google_search") || agent.tools?.includes("google_search_retrieval")) && (
+                      <span style={{ fontSize: "0.6rem", color: "var(--primary)", opacity: 0.7, fontWeight: "bold" }}>🌐 BUSCA ATIVA</span>
+                    )}
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <button 
@@ -1883,6 +1901,24 @@ function App() {
                       )}
                     </div>
                   )}
+                  {/* TASK-55: Badges */}
+                  <div style={{ marginTop: "15px", display: "flex", gap: "8px", alignItems: "center" }}>
+                    <span 
+                      className="status-badge" 
+                      style={{ 
+                        fontSize: "0.6rem", padding: "3px 10px", 
+                        background: (agent.status === "Draft" || agent.certified === false) ? "rgba(245,158,11,0.1)" : "rgba(16,185,129,0.1)", 
+                        color: (agent.status === "Draft" || agent.certified === false) ? "#f59e0b" : "#10b981", 
+                        border: (agent.status === "Draft" || agent.certified === false) ? "1px solid rgba(245,158,11,0.2)" : "1px solid rgba(16,185,129,0.2)",
+                        fontWeight: "900"
+                      }}
+                    >
+                      {(agent.status === "Draft" || agent.certified === false) ? "⏳ RASCUNHO" : "✅ CERTIFICADO"}
+                    </span>
+                    {(agent.tools?.includes("google_search") || agent.tools?.includes("google_search_retrieval")) && (
+                      <span style={{ fontSize: "0.6rem", color: "var(--primary)", opacity: 0.7, fontWeight: "bold" }}>🌐 BUSCA ATIVA</span>
+                    )}
+                  </div>
                 </div>
               );
             })}

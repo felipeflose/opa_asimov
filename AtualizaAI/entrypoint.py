@@ -1044,7 +1044,29 @@ async def execute_task(task_id: str, agent_name: str, request: Request, token: s
         )
     except Exception as e:
         print(f"Erro ao atualizar o grafo cognitivo: {e}")
-    
+
+    # 7. Auto-Certificação se a Auditoria passar (TASK-55)
+    if "AUDIT_" in task_id and agent_name == "QualityInspector":
+        if "APROVADO" in result.upper() or "CERTIFICADO" in result.upper():
+            # Extrair o nome do agente sendo auditado do título da task
+            # "Auditoria: Validar DNA de [NOME]"
+            audited_name = task['title'].split(" de ")[-1] if " de " in task['title'] else ""
+            if audited_name:
+                agents_reg = gcs.read_json("agents/registry.json")
+                for areg in agents_reg.get("agents", []):
+                    if areg["agent_name"] == audited_name:
+                        areg["status"] = "Certified"
+                        areg["certified"] = True
+                        # Atualiza também o arquivo individual do agente
+                        individual_data = gcs.read_json(f"agents/{audited_name}.json")
+                        if individual_data:
+                            individual_data["status"] = "Certified"
+                            individual_data["certified"] = True
+                            gcs.upload_json(individual_data, f"agents/{audited_name}.json")
+                        break
+                gcs.upload_json(agents_reg, "agents/registry.json")
+                print(f"TASK-55: Agente {audited_name} CERTIFICADO com sucesso.")
+
     return {"status": "success", "result": result}
 
 @app.get("/api/tasks/{task_id}/export")
