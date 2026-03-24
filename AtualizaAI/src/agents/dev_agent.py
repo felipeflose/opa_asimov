@@ -20,6 +20,10 @@ class DevAgent:
         if "rota" in query.lower():
             return self.explain_route(query)
 
+        # TASK-28: Raio-X de Agente
+        if "agente " in query.lower():
+            return self.agent_raio_x(query)
+
         # Contexto estático de arquitetura
         project_context = """
         ARQUITETURA FLORE AI:
@@ -117,3 +121,42 @@ class DevAgent:
             return response.text.strip()
         except Exception as e:
             return f"❌ Erro ao traçar rota: {str(e)}"
+
+    def agent_raio_x(self, query: str):
+        """Extrai raio-x completo de um agente do registry e logs (TASK-28)."""
+        if not self.gcs_client: return "GCS Client indisponível."
+        try:
+            agent_name = query.lower().replace("agente ", "").strip()
+            registry = self.gcs_client.read_json("agents/registry.json") or {"agents": []}
+            agent_data = next((a for a in registry.get("agents", []) if a['agent_name'].lower() == agent_name), None)
+            
+            if not agent_data:
+                return f"🔍 Agente '{agent_name}' não encontrado no registro oficial."
+            
+            # Buscar última execução
+            prefix = f"users/{self.gcs_client.user_id}/logs/executions/"
+            blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix))
+            agent_logs = []
+            for b in blobs:
+                data = self.gcs_client.read_json(b.name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                if data and data.get("agent", "").lower() == agent_name:
+                    agent_logs.append(data)
+            
+            agent_logs.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+            last_exec = agent_logs[0] if agent_logs else None
+            
+            info = (
+                f"🧬 **RAIO-X: {agent_data['agent_name']}**\n\n"
+                f"📝 **System Prompt:** `{agent_data.get('system_prompt', 'N/A')[:150]}...`\n"
+                f"🛠️ **Tools:** {', '.join(agent_data.get('tools', [])) or 'Nenhuma'}\n"
+                f"📊 **Total de Execuções:** {len(agent_logs)}\n"
+            )
+            
+            if last_exec:
+                ts = last_exec.get("timestamp", "N/A")[11:16]
+                res = last_exec.get("result", "Sem resultado")[:100].replace("\n", " ")
+                info += f"⏱️ **Última Execução ({ts}):** {res}...\n"
+            
+            return info
+        except Exception as e:
+            return f"❌ Erro no Raio-X: {e}"
