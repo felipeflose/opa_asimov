@@ -203,7 +203,8 @@ async def get_stats(request: Request, token: str = None):
         "cost": f"${today_data.get('total_cost', today_data['cost']):.2f}",
         "tasks": tasks_count,
         "agents": agents_count,
-        "calls": today_data["calls"]
+        "calls": today_data["calls"],
+        "agent_breakdown": today_data.get("agents", {})
     }
 
 @app.get("/api/dora/summary")
@@ -316,6 +317,181 @@ async def get_graph(request: Request, token: str = None):
     
     return graph_data or {"nodes": [], "links": []}
 
+@app.get("/api/health-score")
+async def get_health_score(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        score = 0
+        # 1. % de tarefas concluídas (Máx 25)
+        total_tasks = 0
+        completed_tasks = 0
+        if os.path.exists(REGISTRY_PATH):
+            with open(REGISTRY_PATH, "r") as f:
+                tasks = json.load(f)
+                total_tasks = len(tasks)
+                completed_tasks = len([t for t in tasks if t.get("status") in ["Concluído", "COMPLETED", "done"]])
+        
+        task_score = (completed_tasks / total_tasks * 25) if total_tasks > 0 else 25
+        score += task_score
+        
+        # 2. Custo abaixo do budget (Máx 25)
+        budget_score = 25
+        if hasattr(orchestrator, 'finops'):
+             report = orchestrator.finops.get_finops_report()
+             if "Error" in str(report) or "Exeeded" in str(report): 
+                 budget_score = 0
+        score += budget_score
+        
+        # 3. Agentes configurados (Máx 25)
+        # O orquestrador tem um atributo 'agents' que é um dicionário
+        total_agents = len(orchestrator.agents) if hasattr(orchestrator, 'agents') else 0
+        ready_agents = 0
+        if total_agents > 0:
+            for name, agent in orchestrator.agents.items():
+                # Verificar se o agente tem uma personalidade ou algo preenchido
+                if hasattr(agent, 'personality') and agent.personality:
+                    ready_agents += 1
+                elif hasattr(agent, 'purpose') and agent.purpose:
+                    ready_agents += 1
+            agent_score = (ready_agents / total_agents * 25)
+        else:
+            agent_score = 25
+        score += agent_score
+        
+        # 4. Knowledge Graph (Máx 25)
+        kg_score = 0
+        graph_data = gcs.read_json("knowledge/global_graph.json")
+        if graph_data:
+             node_count = len(graph_data.get("nodes", []))
+             if node_count >= 10:
+                  kg_score = 25
+             else:
+                  kg_score = (node_count / 10 * 25)
+        score += kg_score
+        
+        return {"score": round(score, 1), "details": {
+            "tasks": task_score,
+            "budget": budget_score,
+            "agents": agent_score,
+            "kg": kg_score
+        }}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/reports/synergy-weekly")
+async def get_synergy_report(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        from src.agents.synergy_report_agent import SynergyReportAgent
+        report_agent = SynergyReportAgent(gcs_client=gcs)
+        report = report_agent.generate_report()
+        return {"report": report}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/reports/synergy-cycle")
+async def synergy_cycle(request: Request, token: str = None):
+    """Ciclo semanal de relatório de sinergia para Telegram."""
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        from src.agents.synergy_report_agent import SynergyReportAgent
+        report_agent = SynergyReportAgent(gcs_client=gcs)
+        report = report_agent.generate_report()
+        
+        # Enviar via Telegram via TelegramAgent se disponível
+        from src.agents.telegram_agent import TelegramAgent
+        # Precisamos de uma instância do bot ou usar o token direto
+        token_tg = os.getenv("TELEGRAM_BOT_TOKEN")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        
+        if token_tg and chat_id:
+             import httpx
+             msg = f"🌟 *Relatório de Sinergia Semanal (Flose AI)*\n\n{report[:4000]}"
+             async with httpx.AsyncClient() as client:
+                 await client.post(f"https://api.telegram.org/bot{token_tg}/sendMessage", json={
+                     "chat_id": chat_id,
+                     "text": msg,
+                     "parse_mode": "Markdown"
+                 })
+             return {"status": "success", "sent": True}
+        return {"status": "success", "sent": False, "report": report}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/agents/affinity")
+async def get_agent_affinity(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        matrix = gcs.read_json("agents/affinity_matrix.json")
+        return matrix or {"interactions": {}}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/cozinha/endpoints")
+async def get_cozinha_endpoints(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    # Lista fixa baseada no código atual para o dashboard
+    return [
+        {"method": "GET", "path": "/api/dashboard", "desc": "Métricas globais"},
+        {"method": "GET", "path": "/api/tasks", "desc": "Lista de tarefas"},
+        {"method": "GET", "path": "/api/agents", "desc": "Lista de agentes"},
+        {"method": "GET", "path": "/api/health-score", "desc": "Saúde do sistema"},
+        {"method": "GET", "path": "/api/agents/affinity", "desc": "Matriz de afinidade"},
+        {"method": "GET", "path": "/api/qa/report", "desc": "Relatório de QA"},
+        {"method": "GET", "path": "/api/graph", "desc": "Grafo cognitivo"},
+        {"method": "GET", "path": "/api/docs", "desc": "Documentação interna"}
+    ]
+
+@app.post("/api/settings")
+async def update_settings(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    data = await request.json()
+    new_model = data.get("gemini_model")
+    if new_model:
+        import os
+        os.environ["GEMINI_MODEL"] = new_model
+        # Logar a alteração
+        print(f"--- SETTINGS UPDATE: Model changed to {new_model} ---")
+        return {"status": "success", "message": f"Model updated to {new_model}"}
+    return {"status": "error", "message": "No data provided"}
+
+@app.get("/api/docs")
+def get_documentation():
+    import os
+    try:
+        path = os.path.join(os.path.dirname(__file__), "docs", "index.md")
+        if not os.path.exists(path):
+             return Response(content="# Docs\nFile not found.", media_type="text/markdown")
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return Response(content=content, media_type="text/markdown")
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.delete("/api/tasks/cleanup")
+async def cleanup_tasks(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    import shutil
+    import json
+    from datetime import datetime
+    try:
+        if os.path.exists(REGISTRY_PATH):
+            backup_path = f"registry_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            shutil.copy2(REGISTRY_PATH, backup_path)
+            with open(REGISTRY_PATH, "w") as f:
+                json.dump([], f)
+        return {"status": "success", "message": "Backend cleaned and backup created."}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/tasks")
 async def get_tasks(request: Request, token: str = None):
     if not validate_token(request, token):
@@ -386,6 +562,10 @@ async def update_task_status(request: Request, task_id: str, new_status: str = N
                 # Lógica solicitada pelo usuário: Arrastar para a próxima raia = aprovado
                 if new_status in ["Em Progresso", "IN_PROGRESS"]:
                     task["budget_approved"] = True
+                
+                # TASK-14: Se voltar para Aberto, resetar aprovação
+                if new_status in ["Aberto", "OPEN"]:
+                    task["budget_approved"] = False
             
             if new_priority:
                 task["priority"] = new_priority
@@ -903,6 +1083,40 @@ async def get_delivery(result_id: str, request: Request, token: str = None):
         return {"error": f"Artifact {result_id} not found in path {file_path}"}
     return data
 
+@app.post("/api/agents/upload-avatar")
+async def upload_agent_avatar(request: Request, agent_name: str, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    
+    form = await request.form()
+    file = form.get("file")
+    if not file: return {"error": "No file provided"}
+    
+    project_id = os.getenv("GCP_PROJECT_ID")
+    bucket_name = f"flose-ai-platform-{project_id}"
+    gcs = GCSClient(bucket_name, project_id=project_id)
+    
+    # 1. Upload para o GCS
+    ext = file.filename.split('.')[-1]
+    gcs_path = f"agents/avatars/{agent_name.lower()}_{os.urandom(2).hex()}.{ext}"
+    content = await file.read()
+    
+    blob = gcs.bucket.blob(gcs._full_path(gcs_path))
+    blob.upload_from_string(content, content_type=file.content_type)
+    
+    avatar_url = f"https://storage.googleapis.com/{bucket_name}/{gcs._full_path(gcs_path)}"
+    
+    # 2. Atualizar Registry
+    registry = gcs.read_json("agents/registry.json")
+    if registry and "agents" in registry:
+        for agent in registry["agents"]:
+            if agent["agent_name"] == agent_name:
+                agent["avatar"] = avatar_url
+                break
+        gcs.upload_json(registry, "agents/registry.json")
+        
+    return {"status": "success", "avatar_url": avatar_url}
+
 @app.get("/api/agents")
 async def get_agents(request: Request, token: str = None):
     if not validate_token(request, token):
@@ -913,7 +1127,24 @@ async def get_agents(request: Request, token: str = None):
     gcs = GCSClient(bucket_name, project_id=project_id)
     
     registry = gcs.read_json("agents/registry.json")
-    return registry.get("agents", []) if registry else []
+    agents = registry.get("agents", []) if registry else []
+    
+    # TASK-22: Complementaridade baseada em Afinidade
+    try:
+        matrix = gcs.read_json("agents/affinity_matrix.json") or {"interactions": {}}
+        interactions = matrix.get("interactions", {})
+        for agent in agents:
+            name = agent["agent_name"]
+            comp = []
+            for pair, data in interactions.items():
+                if name in pair:
+                    other = pair.replace(name, "").replace("<->", "").strip()
+                    if other: comp.append({"name": other, "count": data.get("count", 0)})
+            comp.sort(key=lambda x: x["count"], reverse=True)
+            agent["complementary_agents"] = [c["name"] for c in comp[:2]]
+    except: pass
+    
+    return agents
 
 @app.post("/api/agents/update")
 async def update_agent(agent_data: dict, request: Request, token: str = None):

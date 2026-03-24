@@ -90,6 +90,9 @@ class CognitiveOrchestrator:
         # Inicialização da Memória Episódica (Temporal)
         self.episodic_memory = EpisodicMemory(gcs_client=gcs_client)
         
+        # TASK-16: Rastreamento de afinidade
+        self.last_agent = None
+        
         # Usar apenas o SDK do Google Generative AI (AI Studio)
         # Nunca Vertex AI por ordem expressa do usuário
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
@@ -205,7 +208,13 @@ class CognitiveOrchestrator:
             print(f"Error in call_gemini: {e}")
             return f"Error: {str(e)}"
 
-    def process_command(self, user_command, image_path=None, visual_context="", chat_history=None):
+    def process_command(self, user_command, image_path=None, visual_context="", chat_history=None, model_name=None):
+        # Seleção de Modelo sob demanda (TASK-12)
+        if model_name:
+            import google.generativeai as genai
+            self.model = genai.GenerativeModel(model_name)
+            print(f"[ORCHESTRATOR] Usando modelo solicitado: {model_name}")
+            
         # Sanitização de Entrada
         user_command = self._sanitize_input(user_command)
 
@@ -351,18 +360,27 @@ class CognitiveOrchestrator:
         action = decision.get("action")
         infra_cost = decision.get("finops_check", {}).get("estimated_cost_usd", 0)
         
-        if action in ["execute", "generate_demand"] and infra_cost > 1.0:
+        if action in ["execute", "generate_demand"] and infra_cost > 1.5:
             try:
                 from src.agents.debate_agent import DebateAgent
                 debate_sys = DebateAgent()
+                # Envolve FinOps e Quality como juízes técnicos automáticos para decisões caras
+                debate_agents = ["FinOpsGuardian", "QualityInspector"]
+                if decision.get("agent_involved"):
+                    debate_agents.append(decision.get("agent_involved"))
+                
                 result = debate_sys.debate(
                     question=decision.get("task_description") or decision.get("response"),
+                    agents=debate_agents,
                     context=decision.get("reasoning", "")
                 )
                 if result["verdict"].get("decision") == "abort":
-                    return f"⚖️ **Debate Agent bloqueou a ação.**\n\nMotivo: {result['verdict']['reasoning']}"
+                    msg = f"⚖️ **Debate Agent BLOQUEOU a ação ($ {infra_cost:.2f})**\n\n"
+                    msg += f"*Veredito:* {result['verdict']['reasoning']}\n"
+                    msg += f"*Destaque:* {result['verdict'].get('winner_agent', 'N/A')} venceu o debate."
+                    return msg
             except Exception as e:
-                print(f"Erro no debate: {e}")
+                print(f"Erro no debate expandido: {e}")
 
         # Primeiro, verificamos se o FinOps aprovou na simulação do LLM
         finops = decision.get("finops_check", {})
@@ -617,4 +635,153 @@ class CognitiveOrchestrator:
                 cost=decision.get("finops_check", {}).get("estimated_cost_usd", 0)
             )
 
+        # --- TASK-16: Afinidade entre Agentes ---
+        current_agent = decision.get("agent_involved")
+        if not current_agent and decision.get("panel_agents"):
+            current_agent = decision.get("panel_agents")[0]
+            
+        if current_agent and self.last_agent and current_agent != self.last_agent:
+            self._update_affinity(self.last_agent, current_agent)
+            
+        if current_agent:
+            self.last_agent = current_agent
+
         return final_result
+
+    def _update_affinity(self, agent_a, agent_b):
+        """Atualiza a matriz de afinidade entre dois agentes no GCS."""
+        if not self.gcs_client: return
+        try:
+            path = "agents/affinity_matrix.json"
+            matrix = self.gcs_client.read_json(path) or {"interactions": {}, "metadata": {"last_update": ""}}
+            
+            # Key ordenada para ser bidirecional
+            pair = tuple(sorted([agent_a, agent_b]))
+            pair_key = f"{pair[0]}<->{pair[1]}"
+            
+            interactions = matrix.get("interactions", {})
+            if pair_key not in interactions:
+                interactions[pair_key] = {"count": 0, "last_interaction": ""}
+            
+            interactions[pair_key]["count"] += 1
+            interactions[pair_key]["last_interaction"] = datetime.now().isoformat()
+            
+            matrix["interactions"] = interactions
+            matrix["metadata"]["last_update"] = datetime.now().isoformat()
+            
+            self.gcs_client.upload_json(matrix, path)
+        except Exception as e:
+            print(f"Erro ao atualizar matriz de afinidade: {e}")
+
+    def run_pipeline(self, agent_names: List[str], initial_prompt: str):
+        """Executa uma sequência de agentes onde o output de um alimenta o próximo (TASK-17)."""
+        current_input = initial_prompt
+        full_results = []
+        pipeline_id = f"pipe_{int(time.time())}"
+        
+        try:
+            for i, name in enumerate(agent_names):
+                print(f"[PIPELINE] Executing agent {i+1}/{len(agent_names)}: {name}")
+                
+                # Procura o agente no registro
+                agent_data = None
+                if self.gcs_client:
+                    registry = self.gcs_client.read_json("agents/registry.json")
+                    if registry:
+                        agent_data = next((a for a in registry.get("agents", []) if a['agent_name'].lower() == name.lower()), None)
+
+                if not agent_data:
+                    full_results.append(f"❌ *Agente '{name}' não encontrado.*")
+                    continue
+
+                # Instancia e executa
+                agent_obj = AgentCore(
+                    name=agent_data['agent_name'],
+                    purpose=agent_data['purpose'],
+                    system_prompt=agent_data['system_prompt'],
+                    gcs_client=self.gcs_client,
+                    finops_manager=self.finops
+                )
+                
+                # Contexto para o agente saber que está num pipeline
+                pipeline_context = f"\n(Você é o passo {i+1} de um pipeline. O input abaixo é o resultado consolidado do passo anterior.)\n"
+                
+                run_output = agent_obj.run(pipeline_context + current_input)
+                resp = run_output[0] if isinstance(run_output, tuple) else run_output
+                
+                full_results.append(f"🤖 *{agent_data['agent_name']}*:\n{resp}")
+                
+                # O output do atual vira o input do próximo
+                current_input = resp
+                
+                # Update affinity se houver próximo
+                if i < len(agent_names) - 1:
+                    next_name = agent_names[i+1]
+                    self._update_affinity(agent_data['agent_name'], next_name)
+
+            # Salva o resultado no GCS
+            final_json = {
+                "pipeline_id": pipeline_id,
+                "agents": agent_names,
+                "initial_prompt": initial_prompt,
+                "steps": full_results,
+                "timestamp": datetime.now().isoformat()
+            }
+            if self.gcs_client:
+                self.gcs_client.upload_json(final_json, f"logs/pipelines/{pipeline_id}.json")
+            
+            return "\n\n---\n\n".join(full_results)
+            
+        except Exception as e:
+            print(f"Erro na pipeline: {e}")
+            return f"⚠️ Erro ao executar pipeline: {str(e)}"
+
+    async def run_conselho(self, question: str):
+        """Convocação de conselho de especialistas em paralelo (TASK-20)."""
+        if not self.gcs_client: return "Erro: GCS Client offline."
+        
+        try:
+            registry = self.gcs_client.read_json("agents/registry.json") or {"agents": []}
+            agents_to_call = registry.get("agents", [])[:5] # Limite de 5 para não estourar tokens/limites
+            
+            async def call_agent_task(agent_data):
+                try:
+                    agent_obj = AgentCore(
+                        name=agent_data['agent_name'],
+                        purpose=agent_data['purpose'],
+                        system_prompt=agent_data['system_prompt'],
+                        gcs_client=self.gcs_client,
+                        finops_manager=self.finops
+                    )
+                    # Força resposta curta de 1 frase
+                    short_question = f"{question}\n(RESPONDA EM APENAS 1 FRASE CURTA FOCADA NA SUA ESPECIALIDADE)"
+                    run_output = agent_obj.run(short_question)
+                    resp = run_output[0] if isinstance(run_output, tuple) else run_output
+                    return {"name": agent_data['agent_name'], "response": resp}
+                except:
+                    return {"name": agent_data['agent_name'], "response": "Não disponível."}
+
+            tasks = [call_agent_task(a) for a in agents_to_call]
+            responses = await asyncio.gather(*tasks)
+            
+            # Síntese Final
+            synthesis_prompt = f"""
+            Você é o Moderador do Conselho Flose AI. 
+            Abaixo estão os conselhos de nossos especialistas sobre: "{question}"
+            
+            CONSELHOS:
+            {json.dumps(responses)}
+            
+            SUA TAREFA:
+            Crie um veredito consolidado. 
+            Comece com uma frase de introdução e depois liste as perspectivas de cada agente (1 frase por agente).
+            Finalize com uma recomendação final da marca Flose AI.
+            Formato: Markdown elegance. Max 10 linhas.
+            """
+            
+            synthesis_resp = self.model.generate_content(synthesis_prompt)
+            return synthesis_resp.text.strip()
+            
+        except Exception as e:
+            print(f"Erro no conselho: {e}")
+            return f"⚠️ Erro ao convocar conselho: {str(e)}"

@@ -144,26 +144,41 @@ class TelegramAgent:
 
             self.log(f"Comando /debug recebido do admin {update.effective_user.username}")
             
-            # 1. Versão do Gemini
-            model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+            # 1. Status dos Serviços
+            gcs_status = "✅ Online" if self.gcs_client and self.gcs_client.bucket else "❌ Offline"
+            gemini_status = "✅ Online" if self.orchestrator and self.orchestrator.model else "❌ Offline"
             
-            # 2. Nós no Grafo
-            nodes_count = 0
-            if self.kg_manager:
-                nodes_count = len(self.kg_manager.graph.nodes())
-            
-            # 3. Uptime (Simulado via tempo de início da classe se disponível)
+            # 2. Última Execução Registrada
+            last_exec = "Nenhuma encontrada"
+            if self.gcs_client:
+                try:
+                    prefix = f"users/{self.gcs_client.user_id}/logs/executions/"
+                    blobs = list(self.gcs_client.bucket.list_blobs(prefix=prefix, max_results=5))
+                    if blobs:
+                        blobs.sort(key=lambda x: x.updated, reverse=True)
+                        data = self.gcs_client.read_json(blobs[0].name.replace(f"users/{self.gcs_client.user_id}/", ""))
+                        if data:
+                            last_exec = f"{data.get('agent', 'Unknown')} @ {data.get('timestamp', 'N/A')[:16]}"
+                except: pass
+
+            # 3. FinOps Consolidado de Hoje
+            finops_today = "Sem dados"
+            if hasattr(self.orchestrator, 'finops'):
+                finops_today = self.orchestrator.finops.get_finops_report()
+
+            # 4. Uptime e Contexto
             uptime = "N/A"
             if hasattr(self, 'start_time'):
                 delta = datetime.now() - self.start_time
-                uptime = str(delta).split(".")[0] # Formato HH:MM:SS
-            
+                uptime = str(delta).split(".")[0]
+
             debug_msg = (
                 f"🛠️ *System Debug Info*\n\n"
-                f"🧠 *Model:* `{model}`\n"
-                f"🕸️ *Graph Nodes:* {nodes_count}\n"
-                f"⏱️ *Uptime:* {uptime}\n"
-                f"🌍 *Enviroment:* `Production`"
+                f"🗄️ *GCS:* {gcs_status}\n"
+                f"🧠 *Gemini:* {gemini_status}\n"
+                f"⏱️ *Uptime:* `{uptime}`\n"
+                f"🚀 *Última Exec:* `{last_exec}`\n\n"
+                f"💰 *FinOps Today:* \n`{finops_today}`"
             )
             
             await self.safe_reply(update, debug_msg, parse_mode='Markdown')
@@ -185,14 +200,117 @@ class TelegramAgent:
             self.log(f"Erro no incident_handler: {e}")
             await update.message.reply_text("⚠️ Erro ao registrar incidente.")
 
+    async def silence_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Alterna o Modo Silencioso para o usuário."""
+        try:
+            user_id = str(update.effective_user.id)
+            pref_path = f"users/{user_id}/preferences.json"
+            
+            prefs = {}
+            if self.gcs_client:
+                prefs = self.gcs_client.read_json(pref_path) or {}
+            
+            current = prefs.get("silent_mode", False)
+            new_state = not current
+            prefs["silent_mode"] = new_state
+            
+            if self.gcs_client:
+                self.gcs_client.upload_json(prefs, pref_path)
+            
+            status = "ATIVADO 🤫" if new_state else "DESATIVADO 🔊"
+            msg = f"Modo Silencioso {status}.\n"
+            if new_state:
+                msg += "Agora só responderei se você me marcar ou usar comandos."
+            else:
+                msg += "Responderei a todas as mensagens do chat."
+            
+            await update.message.reply_text(msg)
+        except Exception as e:
+            self.log(f"Erro no silence_handler: {e}")
+            await update.message.reply_text("⚠️ Erro ao configurar modo silencioso.")
+
+    async def conselho_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Convoca o conselho de especialistas para uma pergunta estratégica."""
+        try:
+            user = update.effective_user.username or update.effective_user.first_name
+            question = " ".join(context.args) if context.args else "Qual a melhor estratégia para o projeto hoje?"
+            self.log(f"Comando /conselho recebido de @{user}: {question}")
+            
+            await update.message.reply_text("🏛️ *Convocando o Conselho de Especialistas da Flose AI...*", parse_mode='Markdown')
+            await update.message.reply_chat_action(action="typing")
+            
+            # Chama o orquestrador para rodar em paralelo
+            result = await self.orchestrator.run_conselho(question)
+            
+            await self.safe_reply(update, f"🏛️ *Veredito do Conselho*\n\n{result}", parse_mode='Markdown')
+        except Exception as e:
+            self.log(f"Erro no conselho_handler: {e}")
+            await self.safe_reply(update, "⚠️ Erro ao buscar o conselho.")
+
+        except Exception as e:
+            self.log(f"Erro no conselho_handler: {e}")
+            await self.safe_reply(update, "⚠️ Erro ao buscar o conselho.")
+
+    async def cozinha_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Alterna o Modo Cozinha (Modo Dev) para o usuário."""
+        try:
+            user_id = str(update.effective_user.id)
+            arg = " ".join(context.args).lower() if context.args else ""
+            pref_path = f"users/{user_id}/preferences.json"
+            
+            prefs = {}
+            if self.gcs_client:
+                prefs = self.gcs_client.read_json(pref_path) or {}
+            
+            if arg == 'off':
+                prefs["dev_mode"] = False
+                status = "DESATIVADO 🍽️"
+                msg = f"Modo Cozinha {status}. Você voltou para o Orchestrator Padrão."
+            else:
+                prefs["dev_mode"] = True
+                status = "ATIVADO 🥣"
+                msg = f"Modo Cozinha {status}. Agora todas as suas perguntas serão respondidas pelo **DevAgent** especialista no codebase."
+            
+            if self.gcs_client:
+                self.gcs_client.upload_json(prefs, pref_path)
+            
+            await update.message.reply_text(msg, parse_mode='Markdown')
+        except Exception as e:
+            self.log(f"Erro no cozinha_handler: {e}")
+            await update.message.reply_text("⚠️ Erro ao configurar modo cozinha.")
+
     async def message_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if not update.message:
                 return
 
+            user_id = str(update.effective_user.id)
             user = update.effective_user.username or update.effective_user.first_name
             user_text = update.message.text or update.message.caption or ""
             
+            # --- TASK-12/24: Modo Silencioso e Modo Dev ---
+            is_silent = False
+            is_dev = False
+            if self.gcs_client:
+                prefs = self.gcs_client.read_json(f"users/{user_id}/preferences.json") or {}
+                is_silent = prefs.get("silent_mode", False)
+                is_dev = prefs.get("dev_mode", False)
+            
+            bot_name = os.getenv("TELEGRAM_BOT_NAME", "Flose").lower()
+            is_mentioned = bot_name in user_text.lower() or (update.message.reply_to_message and update.message.reply_to_message.from_user.id == context.bot.id)
+            is_command = user_text.startswith("/")
+            
+            if is_silent and not (is_command or is_mentioned):
+                return
+
+            if is_dev and not is_command:
+                from src.agents.dev_agent import DevAgent
+                dev = DevAgent(gcs_client=self.gcs_client)
+                await update.message.reply_chat_action(action="typing")
+                result = dev.respond(user_text)
+                await self.safe_reply(update, f"🥣 **Cozinha (DevAgent):**\n\n{result}", parse_mode='Markdown')
+                return
+
             has_photo = bool(update.message.photo)
             has_audio = bool(update.message.voice or update.message.audio)
             
@@ -259,6 +377,20 @@ class TelegramAgent:
 
             # --- Detecta comando de diagrama Napkin (Texto ou Áudio) ---
             combined_input = (user_text + " " + audio_context).lower()
+            
+            # --- TASK-17: Pipeline Multi-Agente (Texto ou Áudio) ---
+            if " + " in combined_input and ("analise" in combined_input or "análise" in combined_input):
+                parts = combined_input.replace("analise", "").replace("análise", "").split("+")
+                agent_names = [p.strip() for p in parts]
+                if len(agent_names) >= 2:
+                    self.log(f"Pipeline sequencial detectada: {agent_names}")
+                    await update.message.reply_text(f"⛓️ *Iniciando Pipeline Sequencial:* {' ➡️ '.join(agent_names)}", parse_mode='Markdown')
+                    # Pega a transcrição total como prompt inicial
+                    initial_prompt = audio_context if (has_audio and not user_text) else user_text
+                    result = self.orchestrator.run_pipeline(agent_names, initial_prompt)
+                    await self.safe_reply(update, result, parse_mode='Markdown')
+                    return
+
             napkin_triggers = ["diagrama", "desenho", "visual", "mapa", "flowchart", "mindmap", "esquema", "arquitetura"]
             if any(t in combined_input for t in napkin_triggers):
                 # Se for áudio, usa a transcrição como prompt para o Napkin
@@ -319,6 +451,21 @@ class TelegramAgent:
 
             # Sincroniza o log final (com a decisão) no GCS
             if self.gcs_client:
+                # --- TASK-21: Cross-Analysis Persistence ---
+                is_cross = has_photo and ("analise" in user_text.lower() or "avalie" in user_text.lower())
+                if is_cross:
+                    cross_data = {
+                        "platform": "telegram",
+                        "user": user,
+                        "original_image": image_path,
+                        "vision_context": visual_context,
+                        "specialist_result": result,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    self.gcs_client.upload_json(cross_data, f"logs/cross_analysis/cross_{ts}.json")
+                    self.log(f"Cross-Analysis salva em logs/cross_analysis/cross_{ts}.json")
+
                 filename_final = f"logs/telegram/decision_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.json"
                 self.gcs_client.upload_json(log_data, filename_final)
     
@@ -424,6 +571,9 @@ class TelegramAgent:
         self.application.add_handler(CommandHandler("dora", self.dora_handler))
         self.application.add_handler(CommandHandler("debug", self.debug_handler)) # TASK-08
         self.application.add_handler(CommandHandler("incidente", self.incident_handler)) # DORA Refinement
+        self.application.add_handler(CommandHandler("silencio", self.silence_handler)) # TASK-12
+        self.application.add_handler(CommandHandler("conselho", self.conselho_handler)) # TASK-20
+        self.application.add_handler(CommandHandler("cozinha", self.cozinha_handler)) # TASK-24
         self.application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, self.message_handler))
         
         await self.application.initialize()

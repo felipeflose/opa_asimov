@@ -3,7 +3,7 @@ import localGraph from './global_graph.json';
 import * as d3 from 'd3';
 import './App.css';
 
-function AgentAvatar({ agent, size = 60, authFetch = fetch }) {
+function AgentAvatar({ agent, size = 60 }) {
   const [isHovered, setIsHovered] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -53,7 +53,7 @@ function AgentAvatar({ agent, size = 60, authFetch = fetch }) {
            formData.append('file', file);
            // Como estamos fora do escopo do 'App', precisaremos passar o token via props ou capturar do localStorage
            const token = sessionStorage.getItem('flose_token');
-           await authFetch(`/api/agents/upload-avatar?agent_name=${agent.agent_name}&token=${token}`, {
+           await fetch(`/api/agents/upload-avatar?agent_name=${agent.agent_name}&token=${token}`, {
              method: 'POST',
              body: formData
            });
@@ -126,12 +126,7 @@ function BrokerDashboard({ token }) {
                                         <td className="p-4">
                                             {a.certified ? 
                                                 <span className="text-emerald-400 flex items-center gap-1">✅ Certificado</span> : 
-                                                (a.certified === false ? (
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-red-400 flex items-center gap-1">❌ Reprovado</span>
-                                                        {a.improvement_report && <span style={{ fontSize: '10px', color: '#9ca3af', fontStyle: 'italic', maxWidth: '250px', lineHeight: '1.2' }}>{a.improvement_report}</span>}
-                                                    </div>
-                                                ) : <span className="text-gray-500">⏳ Pendente</span>)}
+                                                (a.certified === false ? <span className="text-red-400 flex items-center gap-1">❌ Reprovado</span> : <span className="text-gray-500">⏳ Pendente</span>)}
                                         </td>
                                         <td className="p-4 text-gray-500">{a.certified_at?.split('T')[0] || '-'}</td>
                                         <td className="p-4 text-gray-500 font-mono">{a.certification_attempts || 0}</td>
@@ -170,207 +165,10 @@ function BrokerDashboard({ token }) {
     );
 }
 
-const KpiCard = ({ label, value, trend, trendGood, sparkData = [0,0,0,0,0,0,0], icon, color = 'var(--primary)' }) => {
-  const [displayValue, setDisplayValue] = useState(0);
-  const numericValue = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-  const prefix = value.includes('$') ? '$' : '';
-  const suffix = value.includes('k') ? 'k' : value.includes('%') ? '%' : '';
-
-  useEffect(() => {
-    let start = 0;
-    const duration = 800;
-    const startTime = performance.now();
-
-    const animate = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      setDisplayValue(easeOutQuart * numericValue);
-
-      if (progress < 1) requestAnimationFrame(animate);
-    };
-
-    requestAnimationFrame(animate);
-  }, [numericValue]);
-
-  const state = trend === 'neutral' ? 'neutral' : ((trend === 'up' && trendGood) || (trend === 'down' && !trendGood) ? 'good' : 'alert');
-  const stateColor = state === 'good' ? '#00ff80' : state === 'alert' ? '#ff4d4d' : 'var(--text-muted)';
-  const bg = state === 'good' ? 'rgba(0,255,128,0.04)' : state === 'alert' ? 'rgba(255,77,77,0.04)' : 'rgba(255,255,255,0.03)';
-
-  // Sparkline calculation
-  const max = Math.max(...sparkData, 1);
-  const points = sparkData.map((v, i) => `${(i * 80) / 6},${30 - (v / max) * 25}`).join(' ');
-
-  return (
-    <div className="glass-card" style={{ 
-      background: `linear-gradient(135deg, ${bg} 0%, rgba(0,0,0,0) 100%)`,
-      borderBottom: `2px solid ${stateColor}`,
-      padding: '25px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '15px',
-      position: 'relative',
-      overflow: 'hidden',
-      animation: 'fadeIn 0.5s ease-out'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
-          {icon}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: stateColor, fontSize: '0.7rem', fontWeight: '900' }}>
-          {trend === 'up' ? '▲' : trend === 'down' ? '▼' : '●'}
-          <span>{trend.toUpperCase()}</span>
-        </div>
-      </div>
-      
-      <div>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '1px', marginBottom: '5px' }}>{label.toUpperCase()}</p>
-        <h3 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff' }}>
-          {prefix}{suffix === '%' ? displayValue.toFixed(1) : (displayValue > 100 ? displayValue.toFixed(0) : displayValue.toFixed(2))}{suffix}
-        </h3>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
-        <svg width="80" height="30" style={{ overflow: 'visible' }}>
-          <defs>
-            <linearGradient id={`grad-${label}`} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={stateColor} stopOpacity="0.2" />
-              <stop offset="100%" stopColor={stateColor} stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <polyline points={points} fill="none" stroke={stateColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <polygon points={`0,30 ${points} 80,30`} fill={`url(#grad-${label})`} />
-        </svg>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>L7D TREND</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 function App() {
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
   const [isAuthenticated, setIsAuthenticated] = useState(!!(sessionStorage.getItem('flose_token'))); 
   const [activeTab, setActiveTab] = useState('Dashboard'); // Better default than Cognitive Map
-  const [isBooting, setIsBooting] = useState(false);
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const [paletteQuery, setPaletteQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [toasts, setToasts] = useState([]);
-
-  // --- TASK-36: Toast Helper ---
-  const toast = (message, type = 'info', duration = 4000) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type, duration }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
-  };
-  const [authForm, setAuthForm] = useState({ username: '', password: '' });
-
-  // --- TASK-35: Keyboard Shortcut Listener ---
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setPaletteOpen(prev => !prev);
-      }
-      if (e.key === 'Escape') setPaletteOpen(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const CommandPalette = () => {
-    const inputRef = useRef(null);
-    useEffect(() => {
-      if (paletteOpen && inputRef.current) inputRef.current.focus();
-    }, [paletteOpen]);
-
-    const tabs = [
-      { id: 'Dashboard', icon: '📊', type: 'NAV' },
-      { id: 'Cognitive Map', icon: '🧬', type: 'NAV' },
-      { id: 'Task Manager', icon: '📋', type: 'NAV' },
-      { id: 'Agent Library', icon: '🤖', type: 'NAV' },
-      { id: 'Pipeline', icon: '🏗️', type: 'NAV' },
-      { id: 'Marketplace', icon: '🛒', type: 'NAV' },
-      { id: 'Quality Inspector', icon: '🔍', type: 'NAV' },
-      { id: 'Broker', icon: '🤝', type: 'NAV' },
-      { id: 'FinOps Guardian', icon: '💎', type: 'NAV' },
-      { id: 'DORA Metrics', icon: '📈', type: 'NAV' },
-      { id: 'Cozinha', icon: '🔧', type: 'NAV' },
-      { id: 'Settings', icon: '⚙️', type: 'NAV' },
-    ];
-
-    const actions = [
-      { id: 'Refresh Data', icon: '🔄', type: 'ACT', run: () => fetchData() },
-      { id: 'QA Auto-Fix', icon: '🛠️', type: 'ACT', run: () => handleQAAutoFix() },
-      { id: 'Logout', icon: '🚪', type: 'ACT', run: () => handleLogout() }
-    ];
-
-    const filtered = [
-      ...tabs.map(t => ({ ...t, display: t.id })),
-      ...agentList.slice(0, 5).map(a => ({ id: a.agent_name, icon: '🤖', type: 'AGENT', display: `Agent: ${a.agent_name}` })),
-      ...tasks.slice(0, 5).map(t => ({ id: t.id, icon: '📋', type: 'TASK', display: `Task: ${t.title}` })),
-      ...actions.map(a => ({ ...a, display: a.id }))
-    ].filter(i => i.display.toLowerCase().includes(paletteQuery.toLowerCase()));
-
-    const handleSelect = (item) => {
-      if (item.type === 'NAV') setActiveTab(item.id);
-      if (item.type === 'ACT') item.run();
-      if (item.type === 'AGENT') { setActiveTab('Agent Library'); setViewingAgent(agentList.find(a => a.agent_name === item.id)); }
-      if (item.type === 'TASK') { setActiveTab('Task Manager'); setSelectedTask(tasks.find(t => t.id === item.id)); }
-      setPaletteOpen(false);
-      setPaletteQuery('');
-    };
-
-    if (!paletteOpen) return null;
-
-    return (
-      <div className="cmdk-overlay" onClick={() => setPaletteOpen(false)}>
-        <div className="cmdk-box" onClick={(e) => e.stopPropagation()}>
-          <input 
-            ref={inputRef}
-            className="cmdk-input" 
-            placeholder="Search agents, tasks or navigation..." 
-            value={paletteQuery}
-            onChange={(e) => { setPaletteQuery(e.target.value); setSelectedIndex(0); }}
-            onKeyDown={(e) => {
-              if (e.key === 'ArrowDown') setSelectedIndex(s => Math.min(s + 1, filtered.length - 1));
-              if (e.key === 'ArrowUp') setSelectedIndex(s => Math.max(s - 1, 0));
-              if (e.key === 'Enter' && filtered[selectedIndex]) handleSelect(filtered[selectedIndex]);
-            }}
-          />
-          <div className="cmdk-list">
-            {filtered.map((item, i) => (
-              <div 
-                key={item.id + item.type} // Use a more robust key
-                className={`cmdk-item ${i === selectedIndex ? 'active' : ''}`}
-                onMouseEnter={() => setSelectedIndex(i)}
-                onClick={() => handleSelect(item)}
-              >
-                <span className="cmdk-item-icon">{item.icon}</span>
-                <span>{item.display}</span>
-                <span className="cmdk-kbd">{item.type}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // --- TASK-33: SplashScreen Component ---
-  const SplashScreen = () => (
-    <div className="splash-container">
-      <div className="orbital-system">
-        <div className="orbit orbit-1"></div>
-        <div className="orbit orbit-2"></div>
-        <div className="orbit orbit-3"></div>
-      </div>
-      <h1 className="splash-logo">Flose AI</h1>
-      <div className="splash-text">INITIALIZING COGNITIVE SYSTEMS...</div>
-    </div>
-  );
   const [key, setKey] = useState('');
   const [error, setError] = useState(false);
   const [stats, setStats] = useState({
@@ -387,84 +185,22 @@ function App() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [agentList, setAgentList] = useState([]);
   const [executingAgent, setExecutingAgent] = useState('');
-  const [executionPreview, setExecutionPreview] = useState(null);
-  const [taskModel, setTaskModel] = useState('gemini-2.0-flash');
-  const [newTaskCommand, setNewTaskCommand] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [executionPreview, setExecutionPreview] = useState(null); // TASK-06
   const [visionAnalysis, setVisionAnalysis] = useState(null);
   const [viewingAgent, setViewingAgent] = useState(null);
-  const [healthScore, setHealthScore] = useState(null);
   const [pipeline, setPipeline] = useState([]);
   const [pipelineResults, setPipelineResults] = useState([]);
   const [isRunningPipeline, setIsRunningPipeline] = useState(false);
-  const [affinityMatrix, setAffinityMatrix] = useState({ interactions: {} });
   const [marketTemplates, setMarketTemplates] = useState([]);
   const [isFixing, setIsFixing] = useState(false);
   const [viewingDelivery, setViewingDelivery] = useState(null);
+  
+  // QA Report State
   const [qaReport, setQaReport] = useState(null);
   const [qaLoading, setQaLoading] = useState(false);
   const [doraData, setDoraData] = useState(null);
   const [expandedAgent, setExpandedAgent] = useState(null);
   const [enrichingAgent, setEnrichingAgent] = useState(null);
-  const [newActivityIds, setNewActivityIds] = useState(new Set());
-  const [modelVal, setModelVal] = useState(localStorage.getItem('flose_model') || 'gemini-1.5-flash');
-  const [prefs, setPrefs] = useState({
-    autoRefresh: localStorage.getItem('prefs_auto_refresh') !== 'false',
-    showReasoning: localStorage.getItem('prefs_show_reasoning') === 'true',
-    sound: localStorage.getItem('prefs_sound') === 'true'
-  });
-
-  const togglePref = (key) => {
-    const newVal = !prefs[key];
-    setPrefs(prev => ({ ...prev, [key]: newVal }));
-    localStorage.setItem(`prefs_${key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)}`, newVal);
-  };
-
-  // --- TASK-38: Live Activity Helper ---
-  const formatRelativeTime = (ts) => {
-    const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
-    if (diff < 10) return "just now";
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
-    return new Date(ts).toLocaleDateString();
-  };
-
-  const fetchActivity = async () => {
-    if (!token) return;
-    try {
-      const res = await authFetch('/api/activity');
-      const data = await res.json();
-      if (data.error) return;
-
-      const currentFirst = activity[0]?.timestamp + activity[0]?.user;
-      const newFirst = data[0]?.timestamp + data[0]?.user;
-
-      if (newFirst !== currentFirst && activity.length > 0) {
-        const newIds = new Set(data.slice(0, 3).map(a => a.timestamp + a.user));
-        setNewActivityIds(newIds);
-        setActivity(data);
-        setTimeout(() => setNewActivityIds(new Set()), 2000);
-      } else if (activity.length === 0) {
-        setActivity(data);
-      }
-    } catch (err) {
-      console.error("Live activity feed error", err);
-    }
-  };
-
-  const authFetch = async (url, options = {}) => {
-    const headers = {
-      ...(options.headers || {}),
-      'Authorization': `Bearer ${token}`
-    };
-    const res = await fetch(url, { ...options, headers });
-    if (res.status === 401) {
-      handleLogout();
-      return null;
-    }
-    return res;
-  };
 
   // Buscar dados reais da API
   const fetchData = async () => {
@@ -475,11 +211,11 @@ function App() {
       };
       
       const [statsRes, graphRes, tasksRes, activityRes, agentsRes] = await Promise.all([
-        authFetch(`/api/stats`, options),
-        authFetch(`/api/graph`, options),
-        authFetch(`/api/tasks`, options),
-        authFetch(`/api/activity`, options),
-        authFetch(`/api/agents`, options)
+        fetch(`/api/stats`, options),
+        fetch(`/api/graph`, options),
+        fetch(`/api/tasks`, options),
+        fetch(`/api/activity`, options),
+        fetch(`/api/agents`, options)
       ]);
       
       const statsData = await statsRes.json();
@@ -495,24 +231,16 @@ function App() {
       const agentsD = await agentsRes.json();
       if (!agentsD.error) setAgentList(agentsD);
 
-      const marketRes = await authFetch(`/api/marketplace`, options);
+      const marketRes = await fetch(`/api/marketplace`, options);
       const marketD = await marketRes.json();
       if (!marketD.error) setMarketTemplates(marketD);
-
-      const healthRes = await authFetch(`/api/health-score`, options);
-      const healthD = await healthRes.json();
-      if (!healthD.error) setHealthScore(healthD);
-
-      const affRes = await authFetch(`/api/agents/affinity`, options);
-      const affD = await affRes.json();
-      if (!affD.error) setAffinityMatrix(affD);
     } catch (err) {
       console.error("Fetch error", err);
     }
   };
 
   const handleApprove = async (taskId) => {
-    await authFetch(`/api/tasks/approve?task_id=${taskId}`, { 
+    await fetch(`/api/tasks/approve?task_id=${taskId}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -521,23 +249,19 @@ function App() {
 
   const handleExecute = async (taskId, agentName = null) => {
     const finalAgent = agentName || executingAgent;
-    if (!finalAgent) return toast("Selecione um agente!", "warning");
-    const res = await authFetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${finalAgent}`, { 
+    if (!finalAgent) return alert("Selecione um agente!");
+    const res = await fetch(`/api/tasks/execute?task_id=${taskId}&agent_name=${finalAgent}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
-    if (data.status === 'success') {
-      toast("Tarefa executada com sucesso!", "success");
-    } else {
-      toast("Erro: " + data.error, "error");
-    }
+    alert(data.status === 'success' ? "Tarefa executada com sucesso!" : "Erro: " + data.error);
     fetchData();
   };
 
   const handleViewDelivery = async (resultId) => {
     try {
-      const res = await authFetch(`/api/tasks/delivery/${resultId}`, {
+      const res = await fetch(`/api/tasks/delivery/${resultId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -549,7 +273,7 @@ function App() {
   };
 
   const handleAgentQuery = async (query) => {
-    const res = await authFetch(`/api/agents/chat`, {
+    const res = await fetch(`/api/agents/chat`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -558,26 +282,22 @@ function App() {
       body: JSON.stringify({ query })
     });
     const data = await res.json();
-    toast("🤖 Response: " + data.response, "info");
+    alert("🤖 Response: " + data.response);
     fetchData();
   };
 
   const handleExport = async (name) => {
-    const res = await authFetch(`/api/marketplace/export/${name}`, { 
+    const res = await fetch(`/api/marketplace/export/${name}`, { 
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
-    if (data.status === 'success') {
-      toast("Agente exportado como template!", "success");
-    } else {
-      toast("Erro ao exportar", "error");
-    }
+    alert(data.status === 'success' ? "Agente exportado como template!" : "Erro ao exportar");
     fetchData();
   };
 
   const handleImport = async (templateName) => {
-    const res = await authFetch(`/api/marketplace/import`, { 
+    const res = await fetch(`/api/marketplace/import`, { 
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -586,23 +306,19 @@ function App() {
       body: JSON.stringify({ template_name: templateName })
     });
     const data = await res.json();
-    if (data.status === 'success') {
-      toast("Template importado com sucesso!", "success");
-    } else {
-      toast("Erro ao importar", "error");
-    }
+    alert(data.status === 'success' ? "Template importado com sucesso!" : "Erro ao importar");
     fetchData();
   };
 
   const handleQAAutoFix = async () => {
     setIsFixing(true);
     try {
-      const resp = await authFetch(`/api/qa/auto-fix`, { 
+      const resp = await fetch(`/api/qa/auto-fix`, { 
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await resp.json();
-      toast(`Correction Result: ${data.result}`, "success");
+      alert(`Correction Result: ${data.result}`);
       fetchData();
     } catch (err) {
       console.error("Auto-fix error", err);
@@ -625,7 +341,7 @@ function App() {
       if (newStatus) url += `&new_status=${newStatus}`;
       if (newPriority) url += `&new_priority=${newPriority}`;
       
-      const res = await authFetch(url, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -639,39 +355,20 @@ function App() {
   const handleAuditFinOps = async (taskId) => {
     try {
       console.log("Starting audit for", taskId);
-      const res = await authFetch(`/api/tasks/audit-finops?task_id=${taskId}`, {
+      const res = await fetch(`/api/tasks/audit-finops?task_id=${taskId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       if (data.status === 'success') {
-        toast("Auditoria concluída com sucesso!", "success");
+        alert("Auditoria concluída com sucesso!");
         fetchData();
       } else {
-        toast("Erro na auditoria: " + (data.error || "Erro desconhecido"), "error");
+        alert("Erro na auditoria: " + (data.error || "Erro desconhecido"));
       }
     } catch (err) {
       console.error("Audit error", err);
-      toast("Falha de rede na auditoria.", "error");
-    }
-  };
-
-  const handleRegenerate = async (taskId) => {
-    try {
-      const res = await authFetch(`/api/tasks/${taskId}/regenerate`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.status === 'success') {
-          toast("Regeneração iniciada com sucesso!", "success");
-          setViewingDelivery(null);
-          fetchData();
-      } else {
-          toast("Erro ao regenerar: " + (data.error || "Erro desconhecido"), "error");
-      }
-    } catch (err) {
-      console.error("Regenerate error", err);
+      alert("Falha de rede na auditoria.");
     }
   };
 
@@ -699,18 +396,11 @@ function App() {
 
   useEffect(() => {
     let interval;
-    let activityInterval;
-    if (isAuthenticated) {
-      if (activeTab === 'Dashboard' || activeTab === 'Task Manager') {
-        interval = setInterval(fetchData, 30000); 
-      }
-      if (activeTab === 'Dashboard') {
-        activityInterval = setInterval(fetchActivity, 5000);
-      }
+    if (isAuthenticated && (activeTab === 'Dashboard' || activeTab === 'Task Manager')) {
+      interval = setInterval(fetchData, 30000); 
     }
     return () => {
       if (interval) clearInterval(interval);
-      if (activityInterval) clearInterval(activityInterval);
     };
   }, [isAuthenticated, activeTab]);
 
@@ -742,42 +432,23 @@ function App() {
   const handleEnrichAgent = async (agentName) => {
     setEnrichingAgent(agentName);
     try {
-      const resp = await authFetch(`/api/qa/enrich-agent?agent_name=${encodeURIComponent(agentName)}`, {
+      const resp = await fetch(`/api/qa/enrich-agent?agent_name=${encodeURIComponent(agentName)}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await resp.json();
       if (data.status === 'success') {
-        toast(data.message, "success");
+        alert(data.message);
         fetchQAReport();
         fetchData(); 
       } else {
-        toast("Erro: " + (data.error || "Falha desconhecida"), "error");
+        alert("Erro: " + (data.error || "Falha desconhecida"));
       }
     } catch (err) {
       console.error("Enrich error", err);
-      toast("Erro de conexão ou no servidor. Verifique o console.", "error");
+      alert("Erro de conexão ou no servidor. Verifique o console.");
     } finally {
       setEnrichingAgent(null);
-    }
-  };
-
-  const handleCleanupTasks = async () => {
-    if (!window.confirm("🔴 PERIGO: Isso irá deletar todas as tarefas atuais. Deseja continuar?")) return;
-    try {
-      const res = await authFetch(`/api/tasks/cleanup`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.status === 'success') {
-          toast("Backup criado e registry limpo com sucesso!", "success");
-          fetchData();
-      } else {
-          toast("Erro ao limpar: " + (data.error || "Erro desconhecido"), "error");
-      }
-    } catch (err) {
-      console.error("Cleanup error", err);
     }
   };
 
@@ -1048,47 +719,28 @@ function App() {
     if (activeTab === 'Dashboard') {
       return (
         <>
-          <section className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
-            <KpiCard 
-              label="System Health" 
-              value={`${healthScore?.score || 0}%`}
-              trend="neutral" 
-              trendGood={true}
-              sparkData={[70, 72, 68, 75, 80, 82, healthScore?.score || 85]}
-              icon="🧬"
-            />
-            <KpiCard 
-              label="Estimated Tokens" 
-              value={stats.tokens || "0"}
-              trend="up" 
-              trendGood={false}
-              sparkData={[1200, 1500, 1100, 1800, 2200, 1900, parseInt(stats.tokens) || 2000]}
-              icon="⚡"
-            />
-            <KpiCard 
-              label="Daily Spend" 
-              value={`$${stats.cost || "0.00"}`}
-              trend="down" 
-              trendGood={true}
-              sparkData={[2.5, 2.8, 2.2, 2.9, 3.1, 2.7, parseFloat(stats.cost) || 2.4]}
-              icon="💎"
-            />
-            <KpiCard 
-              label="Active Agents" 
-              value={`${stats.agents || 0}`}
-              trend="up" 
-              trendGood={true}
-              sparkData={[10, 11, 11, 12, 12, 13, stats.agents || 14]}
-              icon="🤖"
-            />
-            <KpiCard 
-              label="Pending Tasks" 
-              value={`${stats.tasks || 0}`}
-              trend={stats.tasks > 5 ? "up" : "down"}
-              trendGood={false}
-              sparkData={[2, 4, 3, 5, 8, 4, stats.tasks || 3]}
-              icon="📋"
-            />
+          <section className="kpi-grid">
+            <div className="glass-card">
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Tokens Used Today</p>
+              <h3 style={{ fontSize: '2rem' }}>{stats.tokens}</h3>
+              <div className="mini-graph" style={{ backgroundColor: 'var(--primary)', height: '4px', width: '60%', marginTop: '10px', borderRadius: '2px' }}></div>
+            </div>
+            <div className="glass-card">
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Current Daily Spend</p>
+              <h3 style={{ fontSize: '2rem' }}>{stats.cost}</h3>
+              <p style={{ color: '#00ff80', fontSize: '0.7rem', marginTop: '5px' }}>Real-time GCP Data</p>
+            </div>
+            <div className="glass-card">
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Active Agents</p>
+              <h3 style={{ fontSize: '2rem' }}>{stats.agents}</h3>
+            </div>
+            <div className="glass-card">
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '10px' }}>Pending Tasks</p>
+              <h3 style={{ fontSize: '2rem' }}>{stats.tasks}</h3>
+              <p style={{ color: stats.tasks > 0 ? '#f59e0b' : '#00ff80', fontSize: '0.7rem', marginTop: '5px' }}>
+                {stats.tasks > 0 ? 'Action required' : 'All clear'}
+              </p>
+            </div>
           </section>
 
           <section className="content-area" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px' }}>
@@ -1130,35 +782,16 @@ function App() {
               </div>
             </div>
             <div className="glass-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h4 style={{ margin: 0 }}>System Activity</h4>
-                <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#00ff80' }}>
-                  <span className="live-dot" /> LIVE
-                </div>
-              </div>
-              <div className="audit-list" style={{ maxHeight: '310px', overflowY: 'auto', paddingRight: '5px' }}>
-                {activity.length > 0 ? activity.map((act, i) => {
-                  const isNew = newActivityIds.has(act.timestamp + act.user);
-                  const icon = (act.agent || "").includes("Telegram") ? "📱" : (act.agent || "").includes("Vision") ? "👁️" : "🤖";
-                  
-                  return (
-                    <div key={i} className={`audit-item ${isNew ? 'new-item' : ''}`} style={{ padding: '12px 0', borderBottom: '1px solid var(--border)', transition: 'all 0.3s' }}>
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                        <span style={{ fontSize: '1.1rem' }}>{icon}</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--primary)' }}>@{act.user || 'system'}</p>
-                            <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{formatRelativeTime(act.timestamp)}</span>
-                          </div>
-                          <p style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '4px', lineHeight: '1.4' }}>
-                            {act.message ? (act.message.length > 60 ? act.message.substring(0, 60) + '...' : act.message) : '[Signal Processing]'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }) : (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', marginTop: '100px' }}>Waiting for signals...</p>
+              <h4 style={{ marginBottom: '20px' }}>Recent Activity (Telegram)</h4>
+              <div className="audit-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {activity.length > 0 ? activity.map((act, i) => (
+                  <div key={i} className="audit-item" style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}>@{act.user}</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{act.message ? act.message.substring(0, 40) + '...' : '[Image/No Text]'}</p>
+                    <span style={{ fontSize: '0.6rem', opacity: 0.5 }}>{new Date(act.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                )) : (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Waiting for incoming signals...</p>
                 )}
               </div>
             </div>
@@ -1186,13 +819,7 @@ function App() {
           'Concluído': ['Concluído', 'COMPLETED', 'done']
         };
         const targets = map[status] || [status];
-        return tasks.filter(t => {
-          const matchesStatus = targets.includes(t.status);
-          const matchesSearch = !searchTerm || 
-            (t.title && t.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (t.responsible && t.responsible.toLowerCase().includes(searchTerm.toLowerCase()));
-          return matchesStatus && matchesSearch;
-        });
+        return tasks.filter(t => targets.includes(t.status));
       };
 
       const onDragStart = (e, taskId) => {
@@ -1209,71 +836,7 @@ function App() {
       };
 
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', height: '100%' }}>
-          {/* TASK-12: Create Task Row */}
-          <div className="glass-card" style={{ padding: '20px', display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder="Descreva a nova tarefa... (Ex: 'Analisar faturamento do BigQuery')"
-                value={newTaskCommand}
-                onChange={(e) => setNewTaskCommand(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleOrchestratorCommand(newTaskCommand, taskModel).then(() => setNewTaskCommand(''))}
-                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 20px', color: 'white' }}
-              />
-            </div>
-            
-            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-              <button 
-                onClick={() => setTaskModel('gemini-2.0-flash')}
-                style={{ 
-                  padding: '8px 15px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '900', border: 'none', cursor: 'pointer',
-                  background: taskModel === 'gemini-2.0-flash' ? 'var(--primary)' : 'transparent',
-                  color: taskModel === 'gemini-2.0-flash' ? '#000' : 'var(--text-muted)',
-                  transition: 'all 0.3s'
-                }}
-              >
-                ⚡ FLASH
-              </button>
-              <button 
-                onClick={() => setTaskModel('gemini-2.0-pro-exp-02-05')}
-                style={{ 
-                  padding: '8px 15px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '900', border: 'none', cursor: 'pointer',
-                  background: taskModel.includes('pro') ? '#a855f7' : 'transparent',
-                  color: taskModel.includes('pro') ? '#fff' : 'var(--text-muted)',
-                  transition: 'all 0.3s'
-                }}
-              >
-                🧠 PRO
-              </button>
-            </div>
-
-            <button 
-              className="login-button" 
-              style={{ width: 'auto', padding: '12px 25px', marginBottom: 0 }}
-              onClick={() => {
-                handleOrchestratorCommand(newTaskCommand, taskModel);
-                setNewTaskCommand('');
-              }}
-            >
-              CRIAR TAREFA
-            </button>
-          </div>
-
-          {/* TASK-17: Search Bar */}
-          <div className="glass-card" style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ marginRight: '15px', fontSize: '0.9rem' }}>🔍</span>
-            <input 
-              type="text" 
-              placeholder="Pesquisar tarefas por título ou responsável..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: '0.85rem', outline: 'none' }}
-            />
-            {searchTerm && <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>LIMPAR</button>}
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', height: 'calc(100vh - 250px)', minHeight: '600px' }}>
           {columns.map(col => (
             <div 
               key={col.id} 
@@ -1316,14 +879,9 @@ function App() {
                       animation: 'fadeIn 0.4s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                       <span style={{ fontSize: '0.65rem', color: col.color, fontWeight: '900' }}>{task.id}</span>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                         <span style={{ fontSize: '0.6rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-                           ${(task.estimated_cost || 0.001).toFixed(3)}
-                         </span>
-                         <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
-                      </div>
+                      <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
                     </div>
                     
                     <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
@@ -1389,8 +947,6 @@ function App() {
                             <div style={{ display: 'flex', gap: '8px' }}>
                               <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981', flex: 1 }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER</button>
                               <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', flex: 1 }} onClick={() => window.open(`/api/tasks/${task.id}/export?token=${token}`)}>💾 MD</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', flex: 1 }} onClick={() => handleAuditFinOps(task.id)}>🛡️ AUDIT</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid var(--border)', flex: 1 }} onClick={() => handleUpdateStatus(task.id, 'Aberto')}>↩ REOPEN</button>
                             </div>
                           )}
                         </div>
@@ -1402,8 +958,7 @@ function App() {
             </div>
           ))}
         </div>
-      </div>
-    );
+      );
     }
 
     if (activeTab === 'Agent Library') {
@@ -1412,7 +967,7 @@ function App() {
           <div className="agent-library-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: '20px' }}>
             {agentList.map(agent => (
               <div key={agent.agent_name} className="glass-card agent-card-edit" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 200px', gap: '20px', alignItems: 'center' }}>
-                <AgentAvatar agent={agent} authFetch={authFetch} />
+                <AgentAvatar agent={agent} />
                 <div>
                   <h3 style={{ color: 'var(--primary)' }}>{agent.agent_name}</h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>{agent.purpose}</p>
@@ -1426,22 +981,6 @@ function App() {
                       <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{((agent.metrics?.total_tokens || 0)/1000).toFixed(1)}k</p>
                     </div>
                   </div>
-                  
-                  {/* TASK-22: Complementary Badges */}
-                  {agent.complementary_agents && agent.complementary_agents.length > 0 && (
-                    <div style={{ marginTop: '15px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>🤝 SINERGIA:</span>
-                      {agent.complementary_agents.map(comp => (
-                        <span 
-                          key={comp} 
-                          className="status-badge" 
-                          style={{ fontSize: '0.6rem', padding: '3px 8px', background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)', cursor: 'default' }}
-                        >
-                          {comp}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <button 
@@ -1454,232 +993,6 @@ function App() {
                 </div>
               </div>
             ))}
-          </div>
-          
-          <div className="glass-card" style={{ background: 'rgba(0,0,0,0.3)' }}>
-            <h3 style={{ fontSize: '1.2rem', color: 'var(--primary)', marginBottom: '30px' }}>🧩 Affinity Heatmap</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-              {Object.entries(affinityMatrix.interactions).sort((a,b) => b[1].count - a[1].count).slice(0, 8).map(([pair, data]) => {
-                const agents = pair.split('<->');
-                return (
-                  <div key={pair} style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.75rem' }}>
-                      <span style={{ fontWeight: 'bold', color: '#e0e0e0' }}>{agents[0]} 🤝 {agents[1]}</span>
-                      <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{data.count} co-execs</span>
-                    </div>
-                    <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
-                      <div 
-                        style={{ 
-                          width: `${Math.min(100, data.count * 10)}%`, 
-                          height: '100%', 
-                          background: 'linear-gradient(90deg, var(--primary) 0%, #10b981 100%)',
-                          boxShadow: '0 0 10px var(--primary)',
-                          transition: 'width 1s ease-out'
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              {Object.keys(affinityMatrix.interactions).length === 0 && (
-                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>Sem interações registradas para afinidade.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="glass-card chat-side">
-            <h3 className="title-grad" style={{ fontSize: '1.4rem' }}>Registry Assistant</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>Ask history or request prompt edits via natural language.</p>
-            
-            <div className="chat-bubble-area" style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', marginBottom: '15px', padding: '15px', overflowY: 'auto' }}>
-              <div className="ai-msg" style={{ fontSize: '0.85rem', color: '#e0e0e0', background: 'var(--glass)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
-                "Hi Felipe! I can help you update any agent. Just say: 'Change FinOps purpose to focus on GCP billing' or 'Who is the TaskManager?'"
-              </div>
-            </div>
-            
-            <div style={{ position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder="Type your registry command..." 
-                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '15px', color: 'white' }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                      padding: '18px', 
-                      cursor: 'grab', 
-                      border: selectedTask?.id === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
-                      position: 'relative',
-                      animation: 'fadeIn 0.4s ease'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: col.color, fontWeight: '900' }}>{task.id}</span>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                         <span style={{ fontSize: '0.6rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-                           ${(task.estimated_cost || 0.001).toFixed(3)}
-                         </span>
-                         <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
-                      </div>
-                    </div>
-                    
-                    <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
-                    
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '15px', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {task.objective || 'Objetivo não detalhado...'}
-                    </p>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="avatar" style={{ width: '24px', height: '24px', fontSize: '0.5rem', background: 'var(--primary)', color: '#000' }}>
-                          {task.responsible?.substring(0,2).toUpperCase() || 'IA'}
-                        </div>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{task.responsible || 'IA'}</span>
-                      </div>
-                      <select 
-                        value={task.priority || 'Média'}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => handleUpdateStatus(task.id, null, e.target.value)}
-                        style={{ 
-                          fontSize: '0.55rem', 
-                          background: 'rgba(255,255,255,0.08)', 
-                          padding: '3px 8px', 
-                          borderRadius: '4px',
-                          border: 'none',
-                          color: '#fff',
-                          cursor: 'pointer',
-                          outline: 'none'
-                        }}
-                      >
-                        <option value="Alta">Alta</option>
-                        <option value="Média">Média</option>
-                        <option value="Baixa">Baixa</option>
-                      </select>
-                    </div>
-
-                    {/* Mostra governança se selecionado */}
-                    {selectedTask?.id === task.id && (
-                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}`, animation: 'slideDown 0.3s ease' }}>
-                        <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '5px' }}>🛡️ GOVERNANÇA FINOPS</p>
-                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{task.governance_finops || 'Aguardando auditoria FinOps...'}</p>
-                        
-                        {(task.governance_finops === 'Aguardando auditoria FinOps...' || !task.objective || task.objective === 'Geração pendente...') && (
-                          <button 
-                            className="login-button" 
-                            style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', marginTop: '10px' }} 
-                            onClick={(e) => { e.stopPropagation(); handleAuditFinOps(task.id); }}
-                          >
-                            🔍 AUDITAR AGORA
-                          </button>
-                        )}
-
-                        <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                          {!task.budget_approved && col.id === 'Aberto' && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={() => handleApprove(task.id)}>👍 APROVAR</button>
-                          )}
-                          {task.status === 'Em Progresso' && task.budget_approved && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={() => {
-                              setExecutionPreview(task);
-                            }}>🚀 EXECUTAR</button>
-                          )}
-                          {task.status === 'Concluído' && (
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981', flex: 1 }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', flex: 1 }} onClick={() => window.open(`/api/tasks/${task.id}/export?token=${token}`)}>💾 MD</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', flex: 1 }} onClick={() => handleAuditFinOps(task.id)}>🛡️ AUDIT</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid var(--border)', flex: 1 }} onClick={() => handleUpdateStatus(task.id, 'Aberto')}>↩ REOPEN</button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-    }
-
-    if (activeTab === 'Agent Library') {
-      return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '40px' }}>
-          <div className="agent-library-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: '20px' }}>
-            {agentList.map(agent => (
-              <div key={agent.agent_name} className="glass-card agent-card-edit" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 200px', gap: '20px', alignItems: 'center' }}>
-                <AgentAvatar agent={agent} authFetch={authFetch} />
-                <div>
-                  <h3 style={{ color: 'var(--primary)' }}>{agent.agent_name}</h3>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>{agent.purpose}</p>
-                  <div style={{ display: 'flex', gap: '15px' }}>
-                    <div className="metric-mini">
-                      <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>RUNS</span>
-                      <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{agent.metrics?.executions || 0}</p>
-                    </div>
-                    <div className="metric-mini">
-                      <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>TOKENS</span>
-                      <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{((agent.metrics?.total_tokens || 0)/1000).toFixed(1)}k</p>
-                    </div>
-                  </div>
-                  
-                  {/* TASK-22: Complementary Badges */}
-                  {agent.complementary_agents && agent.complementary_agents.length > 0 && (
-                    <div style={{ marginTop: '15px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>🤝 SINERGIA:</span>
-                      {agent.complementary_agents.map(comp => (
-                        <span 
-                          key={comp} 
-                          className="status-badge" 
-                          style={{ fontSize: '0.6rem', padding: '3px 8px', background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)', cursor: 'default' }}
-                        >
-                          {comp}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <button 
-                    className="nav-item badge-online" 
-                    style={{ padding: '8px 15px', borderRadius: '12px', fontSize: '0.7rem', cursor: 'pointer' }}
-                    onClick={() => setViewingAgent(agent)}
-                  >
-                    🛠️ Manage DNA
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="glass-card" style={{ background: 'rgba(0,0,0,0.3)' }}>
-            <h3 style={{ fontSize: '1.2rem', color: 'var(--primary)', marginBottom: '30px' }}>🧩 Affinity Heatmap</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-              {Object.entries(affinityMatrix.interactions).sort((a,b) => b[1].count - a[1].count).slice(0, 8).map(([pair, data]) => {
-                const agents = pair.split('<->');
-                return (
-                  <div key={pair} style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.75rem' }}>
-                      <span style={{ fontWeight: 'bold', color: '#e0e0e0' }}>{agents[0]} 🤝 {agents[1]}</span>
-                      <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{data.count} co-execs</span>
-                    </div>
-                    <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
-                      <div 
-                        style={{ 
-                          width: `${Math.min(100, data.count * 10)}%`, 
-                          height: '100%', 
-                          background: 'linear-gradient(90deg, var(--primary) 0%, #10b981 100%)',
-                          boxShadow: '0 0 10px var(--primary)',
-                          transition: 'width 1s ease-out'
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              {Object.keys(affinityMatrix.interactions).length === 0 && (
-                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>Sem interações registradas para afinidade.</p>
-              )}
-            </div>
           </div>
 
           <div className="glass-card chat-side">
@@ -1715,32 +1028,36 @@ function App() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '40px' }}>
           <div className="glass-card">
             <h3>🏗️ Pipeline Builder</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>Select agents to build sequential execution chains.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>
+              Select agents to build a sequential sequence of execution.
+            </p>
+            
             <div className="pipeline-area" style={{ minHeight: '400px', border: '2px dashed var(--border)', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {pipeline.length === 0 && <p style={{ textAlign: 'center', marginTop: '150px', opacity: 0.3 }}>Pipeline is empty.</p>}
+              {pipeline.length === 0 && <p style={{ textAlign: 'center', marginTop: '150px', opacity: 0.3 }}>Pipeline is empty. Add agents from the sidebar.</p>}
               {pipeline.map((step, idx) => (
-                <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid var(--primary)' }}>
+                <div key={idx} className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid var(--primary)', animation: 'slideUp 0.3s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div className="avatar" style={{ scale: '0.7', background: 'var(--primary)', color: 'black' }}>{idx + 1}</div>
                     <div>
                       <h4 style={{ color: 'var(--primary)' }}>{step.agent_name}</h4>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{step.task || 'Process'}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{step.task || 'Generic processing...'}</p>
                     </div>
                   </div>
-                  <button onClick={() => setPipeline(pipeline.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>&times;</button>
+                  <button onClick={() => setPipeline(pipeline.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
                 </div>
               ))}
             </div>
+
             <div style={{ marginTop: '20px', display: 'flex', gap: '15px' }}>
               <button 
                 className="login-button" 
-                style={{ background: 'var(--primary)', color: 'black', flex: 1 }} 
+                style={{ background: 'var(--primary)', color: 'black', flex: 1 }}
                 disabled={pipeline.length === 0 || isRunningPipeline}
                 onClick={async () => {
                   setIsRunningPipeline(true);
                   const results = [];
                   for(const step of pipeline) {
-                    const res = await authFetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}`, { 
+                    const res = await fetch(`/api/tasks/execute?task_id=PIPELINE&agent_name=${step.agent_name}`, { 
                       method: 'POST',
                       headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1751,27 +1068,49 @@ function App() {
                   setIsRunningPipeline(false);
                 }}
               >
-                {isRunningPipeline ? '⏳ EXECUTING...' : '🚀 RUN PIPELINE'}
+                {isRunningPipeline ? '⏳ EXECUTING SEQUENTIAL OPS...' : '🚀 RUN PIPELINE'}
               </button>
+              <button className="refresh-btn" style={{ padding: '0 20px' }} onClick={() => {setPipeline([]); setPipelineResults([]);}}>CLEAR</button>
             </div>
           </div>
+
           <div className="glass-card">
-            <h3>Agent Repository</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <h3 style={{ marginBottom: '20px' }}>Agent Repository</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
               {agentList.map(a => (
-                <div key={a.agent_name} className="glass-card" style={{ padding: '12px', cursor: 'pointer' }} onClick={() => setPipeline([...pipeline, { ...a, task: 'Process output' }])}>
-                  {a.agent_name}
+                <div key={a.agent_name} className="glass-card" style={{ padding: '15px', cursor: 'pointer', border: '1px solid transparent', transition: 'all 0.2s' }} 
+                     onClick={() => {
+                       const t = prompt(`Instruction for ${a.agent_name}:`, "Refine the previous output or perform specific analysis.");
+                       if (t) setPipeline([...pipeline, { ...a, task: t }]);
+                     }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="avatar" style={{ width: '30px', height: '30px', fontSize: '0.6rem' }}>{a.agent_name.substring(0,2)}</div>
+                    <div>
+                      <p style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{a.agent_name}</p>
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{a.purpose.substring(0, 40)}...</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
+
+            {pipelineResults.length > 0 && (
+              <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(0,242,255,0.03)', borderRadius: '15px', border: '1px solid var(--border)' }}>
+                <h4 style={{ color: 'var(--primary)', marginBottom: '15px', fontSize: '0.9rem' }}>EXECUTION LOG:</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {pipelineResults.map((r, i) => (
+                    <details key={i} style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '10px' }}>
+                      <summary style={{ cursor: 'pointer', color: 'white', fontSize: '0.8rem', fontWeight: 'bold' }}>Step {i+1}: {r.agent}</summary>
+                      <pre style={{ padding: '10px', opacity: 0.8, fontSize: '0.75rem', whiteSpace: 'pre-wrap', marginTop: '10px', borderTop: '1px solid var(--border)' }}>{r.output}</pre>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
     }
-
-
-
-
 
     if (activeTab === 'Marketplace') {
       return (
@@ -1816,8 +1155,9 @@ function App() {
                   <p>No community templates found. Be the first to export!</p>
                 </div>
               )}
-              </div>
+            </div>
           </div>
+
           <div className="glass-card">
             <h3 style={{ marginBottom: '20px' }}>My Exportable Agents</h3>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '20px' }}>Turn your local agents into shareable templates.</p>
@@ -1837,7 +1177,27 @@ function App() {
       );
     }
 
-
+    if (activeTab === 'FinOps Guardian') {
+      return (
+        <div className="glass-card">
+          <h2 className="title-grad">Billing Dashboard</h2>
+          <div style={{ marginTop: '30px' }}>
+            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
+              <span>Total Estimated Cost (Cloud Run + Tokens)</span>
+              <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{stats.cost}</span>
+            </div>
+            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
+              <span>Tokens Used (Hoy)</span>
+              <span style={{ color: 'var(--primary)' }}>{stats.tokens}</span>
+            </div>
+            <div className="billing-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid var(--border)' }}>
+              <span>API Request Volume</span>
+              <span style={{ color: 'var(--primary)' }}>{stats.calls || 0} calls</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     if (activeTab === 'Quality Inspector') {
 
@@ -1908,18 +1268,7 @@ function App() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Análise completa de cada agente: tarefas, acertividade e interações.</p>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={fetchQAReport} className="refresh-btn" style={{ padding: '8px 20px' }}>🔄 Status</button>
-                <button 
-                  onClick={async () => {
-                    const res = await authFetch('/api/reports/synergy-weekly', { headers: { 'Authorization': `Bearer ${token}` } });
-                    const data = await res.json();
-                    if (data.report) alert(data.report);
-                  }}
-                  className="refresh-btn" 
-                  style={{ padding: '8px 20px', background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.3)' }}
-                >
-                  🌟 Sinergia
-                </button>
+                <button onClick={fetchQAReport} className="refresh-btn" style={{ padding: '8px 20px' }}>🔄 Atualizar</button>
                 <button 
                   onClick={handleQAAutoFix} 
                   disabled={isFixing}
@@ -2092,10 +1441,10 @@ function App() {
               )}
               {qaReport.orphan_agents.length > 0 && (
                 <div>
-                  <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ff4d4d', marginBottom: '8px' }}>Agentes órfãos (sem tarefas ou interações):</p>
+                  <p style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ff4d4d', marginBottom: '8px' }}>Agentes com atividade mas não registrados:</p>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {qaReport.orphan_agents.map((name, i) => (
-                      <span key={i} style={{ padding: '5px 12px', borderRadius: '8px', background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.3)' }}>{name}</span>
+                      <span key={i} style={{ padding: '5px 12px', borderRadius: '8px', fontSize: '0.75rem', background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.3)' }}>{name}</span>
                     ))}
                   </div>
                 </div>
@@ -2180,8 +1529,8 @@ function App() {
 
     if (activeTab === 'FinOps Guardian') {
       const breakdown = stats.agent_breakdown || {};
-      const agentsList = Object.keys(breakdown);
-      const maxCost = Math.max(...agentsList.map(a => breakdown[a].cost), 0.01);
+      const agents = Object.keys(breakdown);
+      const maxCost = Math.max(...agents.map(a => breakdown[a].cost), 0.01);
 
       return (
         <div className="glass-card" style={{ padding: '40px' }}>
@@ -2194,7 +1543,7 @@ function App() {
             <div className="glass-card" style={{ background: 'rgba(0,0,0,0.2)' }}>
               <h3 style={{ fontSize: '1rem', marginBottom: '20px', color: 'var(--primary)' }}>Custo Diário por Agente</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {agentsList.length > 0 ? agentsList.map(agent => (
+                {agents.length > 0 ? agents.map(agent => (
                   <div key={agent}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px' }}>
                       <span>{agent}</span>
@@ -2227,7 +1576,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {agentsList.map(agent => (
+                  {agents.map(agent => (
                     <tr key={agent} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ padding: '8px 0' }}>{agent}</td>
                       <td style={{ padding: '8px 0' }}>{(breakdown[agent].tokens / 1000).toFixed(1)}k</td>
@@ -2242,214 +1591,14 @@ function App() {
       );
     }
 
-    if (activeTab === 'Cozinha') {
-      const [endpoints, setEndpoints] = useState([]);
-      const [testResults, setTestResults] = useState({});
-      
-      useEffect(() => {
-        authFetch('/api/cozinha/endpoints').then(r => r.json()).then(setEndpoints);
-      }, [activeTab]);
-
-      const testEndpoint = async (path, method) => {
-        const start = Date.now();
-        try {
-          const res = await authFetch(path, { method });
-          const data = await res.json();
-          const elapsed = Date.now() - start;
-          setTestResults(prev => ({ ...prev, [path]: { status: res.status, time: elapsed, data } }));
-        } catch (e) {
-          setTestResults(prev => ({ ...prev, [path]: { status: 'ERR', time: 0, data: e.message } }));
-        }
-      };
-
-      return (
-        <div style={{ padding: '0 20px 40px 20px' }}>
-          <header style={{ marginBottom: '40px' }}>
-            <h1 className="title-grad" style={{ fontSize: '2.4rem', marginBottom: '10px' }}>🔧 Cozinha (Modo Dev)</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Mestres da Cozinha: Gerencie, audite e teste as entranhas da Flose AI ao vivo.</p>
-          </header>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
-            <div className="glass-card">
-              <h3 style={{ marginBottom: '25px', fontSize: '1.1rem' }}>🔌 Codebase API Explorer</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {endpoints.map(ep => (
-                  <div key={ep.path} className="glass-card" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px 25px', display: 'grid', gridTemplateColumns: '80px 1fr 120px', alignItems: 'center', gap: '20px' }}>
-                    <span style={{ fontSize: '0.7rem', fontWeight: '900', color: ep.method === 'GET' ? '#00ff80' : '#a855f7', background: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '6px', textAlign: 'center' }}>{ep.method}</span>
-                    <div>
-                      <code style={{ fontSize: '0.85rem', color: '#fff' }}>{ep.path}</code>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>{ep.desc}</p>
-                    </div>
-                    <button 
-                      onClick={() => testEndpoint(ep.path, ep.method)}
-                      className="login-button" 
-                      style={{ padding: '8px 15px', fontSize: '0.65rem', marginBottom: 0 }}
-                    >
-                      ⚡ TESTAR
-                    </button>
-                    {testResults[ep.path] && (
-                      <div style={{ gridColumn: '1 / -1', marginTop: '15px', padding: '15px', background: 'rgba(0,0,0,0.4)', borderRadius: '10px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--text-muted)' }}>
-                          <span>Status: <b style={{ color: testResults[ep.path].status === 200 ? '#00ff80' : '#ff4444' }}>{testResults[ep.path].status}</b></span>
-                          <span>Latência: <b>{testResults[ep.path].time}ms</b></span>
-                        </div>
-                        <pre style={{ overflowX: 'auto', color: '#aaa', fontSize: '0.7rem' }}>
-                          {JSON.stringify(testResults[ep.path].data, null, 2).substring(0, 500)}...
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="glass-card" style={{ background: 'rgba(168,85,247,0.05)', borderColor: 'rgba(168,85,247,0.2)' }}>
-              <h3 style={{ color: '#a855f7', marginBottom: '15px' }}>👨‍🍳 Mestre da Cozinha</h3>
-              <p style={{ fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '20px' }}>
-                O DevAgent está monitorando o codebase em tempo real. Qualquer alteração em `entrypoint.py` ou nos `agents/` será refletida aqui.
-              </p>
-              <div className="metric-mini" style={{ padding: '20px', background: 'rgba(0,0,0,0.2)', marginBottom: '15px' }}>
-                <span style={{ fontSize: '0.65rem' }}>UPTIME</span>
-                <p style={{ fontSize: '1.2rem' }}>99.9%</p>
-              </div>
-              <div className="metric-mini" style={{ padding: '20px', background: 'rgba(0,0,0,0.2)' }}>
-                <span style={{ fontSize: '0.65rem' }}>ERROS NAS ÚLTIMAS 24H</span>
-                <p style={{ fontSize: '1.2rem', color: '#ff4444' }}>0</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     if (activeTab === 'Settings') {
        return (
-         <div style={{ padding: '0 20px 40px 20px', maxWidth: '1000px' }}>
-            <header style={{ marginBottom: '40px' }}>
-              <h1 className="title-grad" style={{ fontSize: '2.4rem', marginBottom: '10px' }}>⚙️ System Settings</h1>
-              <p style={{ color: 'var(--text-muted)' }}>Configure core system parameters, AI models, and user preferences.</p>
-            </header>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-              {/* SECTION 1: System Config */}
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px' }}>🖥️ System Configuration</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>GEMINI MODEL</label>
-                    <input 
-                      type="text" 
-                      value={modelVal} 
-                      onChange={(e) => setModelVal(e.target.value)}
-                      className="glass-card" 
-                      style={{ padding: '10px 15px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', fontSize: '0.85rem', color: 'white' }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', opacity: 0.6 }}>
-                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>GCP PROJECT ID</label>
-                    <input type="text" readOnly value="flose-ai-****" className="glass-card" style={{ padding: '10px 15px', border: 'none', background: 'rgba(0,0,0,0.1)', fontSize: '0.85rem', cursor: 'not-allowed', color: 'white' }} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', opacity: 0.6 }}>
-                    <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>ACTIVE REGION</label>
-                    <input type="text" readOnly value="us-central1" className="glass-card" style={{ padding: '10px 15px', border: 'none', background: 'rgba(0,0,0,0.1)', fontSize: '0.85rem', cursor: 'not-allowed', color: 'white' }} />
-                  </div>
-                </div>
-                <button 
-                  className="login-button" 
-                  style={{ marginTop: 'auto' }}
-                  onClick={async () => {
-                    const res = await authFetch('/api/settings', {
-                      method: 'POST',
-                      body: JSON.stringify({ gemini_model: modelVal })
-                    });
-                    const d = await res.json();
-                    if (d.status === 'success') {
-                      toast("System model updated effectively.", "success");
-                      localStorage.setItem('flose_model', modelVal);
-                    } else {
-                      toast(d.message || "Error updating settings", "error");
-                    }
-                  }}
-                >
-                  SAVE CONFIGURATION
-                </button>
-              </div>
-
-              {/* SECTION 2: Dashboard Prefs */}
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px' }}>🎨 Preferences</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {[
-                    { key: 'autoRefresh', label: 'Auto-refresh Activity Feed', icon: '🔄' },
-                    { key: 'showReasoning', label: 'Show Reasoning Chain by default', icon: '🧠' },
-                    { key: 'sound', label: 'Enable Sound Notifications', icon: '🔔' }
-                  ].map(pref => (
-                    <div key={pref.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span style={{ fontSize: '1.2rem' }}>{pref.icon}</span>
-                        <span style={{ fontSize: '0.85rem' }}>{pref.label}</span>
-                      </div>
-                      <label className="switch">
-                        <input type="checkbox" checked={prefs[pref.key]} onChange={() => togglePref(pref.key)} />
-                        <span className="slider"></span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 'auto', padding: '15px', background: 'rgba(0,242,255,0.03)', borderRadius: '12px', border: '1px solid rgba(0,242,255,0.1)', fontSize: '0.7rem', color: 'var(--primary)' }}>
-                  ✨ Preferências visuais são salvas localmente no seu navegador para performance máxima.
-                </div>
-              </div>
-
-              {/* SECTION 3: Security */}
-              <div className="glass-card">
-                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px', marginBottom: '20px' }}>🛡️ Security</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Last Login</span>
-                    <span style={{ fontWeight: 'bold' }}>Today, 09:42 AM</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>SESSION TOKEN</label>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                       <input readOnly value="************************" className="glass-card" style={{ flex: 1, padding: '8px 12px', border: 'none', background: 'rgba(0,0,0,0.2)', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }} />
-                       <button 
-                         className="refresh-btn" 
-                         style={{ padding: '0 15px', fontSize: '0.65rem' }}
-                         onClick={(e) => {
-                           navigator.clipboard.writeText(token);
-                           const btn = e.currentTarget;
-                           const oldText = btn.innerText;
-                           btn.innerText = "COPIED!";
-                           setTimeout(() => btn.innerText = oldText, 2000);
-                         }}
-                       >
-                         COPY TOKEN
-                       </button>
-                    </div>
-                  </div>
-                  <button onClick={handleLogout} className="refresh-btn" style={{ borderColor: '#ff4d4d', color: '#ff4d4d', marginTop: '10px' }}>TERMINATE ALL SESSIONS</button>
-                </div>
-              </div>
-
-              {/* SECTION 4: About */}
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px' }}>ℹ️ System Artifacts</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.8rem' }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Core Uptime</span>
-                      <span style={{ color: '#00ff80' }}>99.99%</span>
-                   </div>
-                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Knowledge Nodes</span>
-                      <span style={{ fontWeight: 'bold' }}>{graphData.nodes?.length || 0} Artifacts</span>
-                   </div>
-                </div>
-                <button className="login-button" style={{ marginTop: 'auto', background: 'transparent', border: '1px solid var(--border)', color: '#fff' }}>VIEW CHANGELOG</button>
-              </div>
-           </div>
-         );
-       }
+         <div className="glass-card" style={{ padding: '40px' }}>
+           <h2 className="title-grad">System Settings</h2>
+           <p style={{ color: 'var(--text-muted)' }}>Configure seu ambiente de Agentes e parâmetros de Curadoria.</p>
+         </div>
+       );
+    }
 
     return (
       <div className="glass-card" style={{ textAlign: 'center', padding: '100px' }}>
@@ -2462,28 +1611,21 @@ function App() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/login', {
+      const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authForm)
+        body: JSON.stringify({ key })
       });
-      const data = await res.json();
-      if (data.token) {
+      const data = await response.json();
+      if (data.status === 'authorized') {
         sessionStorage.setItem('flose_token', data.token);
         setToken(data.token);
         setIsAuthenticated(true);
-        setIsBooting(true);
-        fetchData(data.token).finally(() => {
-          setTimeout(() => setIsBooting(false), 2000);
-        });
-        toast("Sessão iniciada com sucesso. Bem-vindo de volta!", "success");
       } else {
-        toast("Credenciais inválidas. Tente novamente.", "error");
         setError(true);
         setTimeout(() => setError(false), 2000);
       }
     } catch (err) {
-      toast("Falha na conexão com o gateway de autenticação.", "error");
       console.error("Auth error", err);
     }
   };
@@ -2516,78 +1658,25 @@ function App() {
     );
   }
 
-  if (isBooting) {
-    return <SplashScreen />;
-  }
-
   return (
     <div className="app-container">
-      <CommandPalette />
       <div className="sidebar">
         <div className="logo" style={{ marginBottom: '60px' }}>
           <h1 className="title-grad">Flose IA</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Command Center v2.0</p>
         </div>
         
-        <nav className="nav-menu" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          {[
-            { id: 'Dashboard', icon: '📊', badge: null },
-            { id: 'Cognitive Map', icon: '🧬', badge: null },
-            { id: 'Task Manager', icon: '📋', badge: stats.open > 0 ? stats.open : null, badgeColor: '#f59e0b' },
-            { id: 'Agent Library', icon: '🤖', badge: stats.agents },
-            { id: 'Pipeline', icon: '🏗️', badge: null },
-            { id: 'Marketplace', icon: '🛒', badge: null },
-            { id: 'Quality Inspector', icon: '🔍', badge: (qaReport?.summary?.avg_accuracy < 60) ? '!' : null, badgeColor: '#ff4d4d' },
-            { id: 'Broker', icon: '🤝', badge: null },
-            { id: 'FinOps Guardian', icon: '💎', badge: health.cost_today > 0 ? `$${health.cost_today}` : null, badgeColor: '#00ff80' },
-            { id: 'DORA Metrics', icon: '📈', badge: null },
-            { id: 'Cozinha', icon: '🔧', badge: null },
-            { id: 'Settings', icon: '⚙️', badge: null },
-          ].map(tab => (
+        <nav className="nav-menu">
+          {['Dashboard', 'Cognitive Map', 'Task Manager', 'Agent Library', 'Pipeline', 'Marketplace', 'Quality Inspector', 'Broker', 'FinOps Guardian', 'DORA Metrics', 'Settings'].map(tab => (
             <div 
-              key={tab.id}
-              className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px' }}
+              key={tab}
+              className={`nav-item ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '1rem' }}>{tab.icon}</span>
-                <span style={{ fontSize: '0.85rem' }}>{tab.id}</span>
-              </div>
-              {tab.badge && (
-                <span style={{ 
-                  background: tab.badgeColor || 'rgba(255,255,255,0.1)', 
-                  color: tab.badgeColor ? '#000' : '#fff',
-                  fontSize: '0.6rem', padding: '2px 8px', borderRadius: '10px', fontWeight: '900',
-                  minWidth: '20px', textAlign: 'center'
-                }}>
-                  {tab.badge}
-                </span>
-              )}
-              {tab.id === 'Quality Inspector' && (qaReport?.summary?.avg_accuracy < 60) && (
-                <div className="pulse-red"></div>
-              )}
+              {tab}
             </div>
           ))}
         </nav>
-        
-        <div style={{ padding: '0 20px', marginTop: '15px' }}>
-          <a 
-            href="/api/docs" 
-            target="_blank" 
-            rel="noreferrer"
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', 
-              borderRadius: '12px', background: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)',
-              fontSize: '0.8rem', fontWeight: '800', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.05)',
-              transition: 'all 0.3s'
-            }}
-            onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.08)'; e.target.style.color = 'white'; e.target.style.borderColor = 'var(--primary)'; }}
-            onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.03)'; e.target.style.color = 'var(--text-muted)'; e.target.style.borderColor = 'rgba(255,255,255,0.05)'; }}
-          >
-            📚 DOCUMENTAÇÃO
-          </a>
-        </div>
 
         <div className="user-profile" style={{ marginTop: 'auto', flexDirection: 'column', alignItems: 'stretch', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -2655,7 +1744,7 @@ function App() {
             <div className="glass-card modal-content" onClick={e => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                  <AgentAvatar agent={viewingAgent} authFetch={authFetch} />
+                  <AgentAvatar agent={viewingAgent} />
                   <div>
                     <h2 className="title-grad" style={{ fontSize: '1.8rem' }}>{viewingAgent.agent_name}</h2>
                     <p style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>{viewingAgent.purpose}</p>
@@ -2735,41 +1824,14 @@ function App() {
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                   {viewingDelivery.timestamp ? `Verified by Flose AI Platform • ${new Date(viewingDelivery.timestamp).toLocaleString()}` : "System Log Analysis"}
                 </span>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                  <button className="login-button" style={{ width: 'auto', padding: '12px 30px', background: 'rgba(0,242,255,0.1)', color: 'var(--primary)', border: '1px solid var(--primary)' }} onClick={() => handleRegenerate(viewingDelivery.task_id)}>♻️ REGENERATE</button>
-                  <button className="login-button" style={{ width: 'auto', padding: '12px 35px' }} onClick={() => setViewingDelivery(null)}>CLOSE</button>
-                </div>
+                <button className="login-button" style={{ width: 'auto', padding: '12px 35px' }} onClick={() => setViewingDelivery(null)}>CLOSE</button>
               </div>
             </div>
           </div>
         )}
       </main>
-      <ToastContainer toasts={toasts} onDismiss={id => setToasts(prev => prev.filter(t => t.id !== id))} />
     </div>
   );
-};
-
-const ToastContainer = ({ toasts, onDismiss }) => (
-  <div className="toast-container">
-    {toasts.map(t => (
-      <div key={t.id} className={`toast-item toast-${t.type}`}>
-        <div className="toast-header">
-          <span style={{ fontSize: '0.9rem' }}>
-            {t.type === 'success' ? '✅' : t.type === 'error' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️'}
-          </span>
-          <button className="toast-close" onClick={() => onDismiss(t.id)}>✕</button>
-        </div>
-        <div className="toast-content">{t.message}</div>
-        <div 
-          className="toast-progress" 
-          style={{ 
-            animation: `progress ${t.duration}ms linear forwards`,
-            background: t.type === 'success' ? '#00ff80' : t.type === 'error' ? '#ff4d4d' : t.type === 'warning' ? '#f59e0b' : 'var(--primary)'
-          }} 
-        />
-      </div>
-    ))}
-  </div>
-);
+}
 
 export default App;
