@@ -2253,9 +2253,10 @@ function App() {
                 </div>
                 <button className="login-button" style={{ marginTop: 'auto', background: 'transparent', border: '1px solid var(--border)', color: '#fff' }}>VIEW CHANGELOG</button>
               </div>
-           </div>
-         );
-       }
+            </div>
+          </div>
+        );
+      }
 
     return (
       <div className="glass-card" style={{ textAlign: 'center', padding: '100px' }}>
