@@ -663,3 +663,66 @@ class CognitiveOrchestrator:
             self.gcs_client.upload_json(matrix, path)
         except Exception as e:
             print(f"Erro ao atualizar matriz de afinidade: {e}")
+
+    def run_pipeline(self, agent_names: List[str], initial_prompt: str):
+        """Executa uma sequência de agentes onde o output de um alimenta o próximo (TASK-17)."""
+        current_input = initial_prompt
+        full_results = []
+        pipeline_id = f"pipe_{int(time.time())}"
+        
+        try:
+            for i, name in enumerate(agent_names):
+                print(f"[PIPELINE] Executing agent {i+1}/{len(agent_names)}: {name}")
+                
+                # Procura o agente no registro
+                agent_data = None
+                if self.gcs_client:
+                    registry = self.gcs_client.read_json("agents/registry.json")
+                    if registry:
+                        agent_data = next((a for a in registry.get("agents", []) if a['agent_name'].lower() == name.lower()), None)
+
+                if not agent_data:
+                    full_results.append(f"❌ *Agente '{name}' não encontrado.*")
+                    continue
+
+                # Instancia e executa
+                agent_obj = AgentCore(
+                    name=agent_data['agent_name'],
+                    purpose=agent_data['purpose'],
+                    system_prompt=agent_data['system_prompt'],
+                    gcs_client=self.gcs_client,
+                    finops_manager=self.finops
+                )
+                
+                # Contexto para o agente saber que está num pipeline
+                pipeline_context = f"\n(Você é o passo {i+1} de um pipeline. O input abaixo é o resultado consolidado do passo anterior.)\n"
+                
+                run_output = agent_obj.run(pipeline_context + current_input)
+                resp = run_output[0] if isinstance(run_output, tuple) else run_output
+                
+                full_results.append(f"🤖 *{agent_data['agent_name']}*:\n{resp}")
+                
+                # O output do atual vira o input do próximo
+                current_input = resp
+                
+                # Update affinity se houver próximo
+                if i < len(agent_names) - 1:
+                    next_name = agent_names[i+1]
+                    self._update_affinity(agent_data['agent_name'], next_name)
+
+            # Salva o resultado no GCS
+            final_json = {
+                "pipeline_id": pipeline_id,
+                "agents": agent_names,
+                "initial_prompt": initial_prompt,
+                "steps": full_results,
+                "timestamp": datetime.now().isoformat()
+            }
+            if self.gcs_client:
+                self.gcs_client.upload_json(final_json, f"logs/pipelines/{pipeline_id}.json")
+            
+            return "\n\n---\n\n".join(full_results)
+            
+        except Exception as e:
+            print(f"Erro na pipeline: {e}")
+            return f"⚠️ Erro ao executar pipeline: {str(e)}"

@@ -318,6 +318,20 @@ class TelegramAgent:
 
             # --- Detecta comando de diagrama Napkin (Texto ou Áudio) ---
             combined_input = (user_text + " " + audio_context).lower()
+            
+            # --- TASK-17: Pipeline Multi-Agente (Texto ou Áudio) ---
+            if " + " in combined_input and ("analise" in combined_input or "análise" in combined_input):
+                parts = combined_input.replace("analise", "").replace("análise", "").split("+")
+                agent_names = [p.strip() for p in parts]
+                if len(agent_names) >= 2:
+                    self.log(f"Pipeline sequencial detectada: {agent_names}")
+                    await update.message.reply_text(f"⛓️ *Iniciando Pipeline Sequencial:* {' ➡️ '.join(agent_names)}", parse_mode='Markdown')
+                    # Pega a transcrição total como prompt inicial
+                    initial_prompt = audio_context if (has_audio and not user_text) else user_text
+                    result = self.orchestrator.run_pipeline(agent_names, initial_prompt)
+                    await self.safe_reply(update, result, parse_mode='Markdown')
+                    return
+
             napkin_triggers = ["diagrama", "desenho", "visual", "mapa", "flowchart", "mindmap", "esquema", "arquitetura"]
             if any(t in combined_input for t in napkin_triggers):
                 # Se for áudio, usa a transcrição como prompt para o Napkin
