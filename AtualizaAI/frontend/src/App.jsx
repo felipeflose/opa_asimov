@@ -976,9 +976,14 @@ function App() {
                       animation: 'fadeIn 0.4s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.65rem', color: col.color, fontWeight: '900' }}>{task.id}</span>
-                      <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                         <span style={{ fontSize: '0.6rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+                           ${(task.estimated_cost || 0.001).toFixed(3)}
+                         </span>
+                         <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
+                      </div>
                     </div>
                     
                     <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
