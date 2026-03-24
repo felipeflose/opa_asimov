@@ -15,6 +15,10 @@ class DevAgent:
         # TASK-26: Atalho para logs de erro
         if "logs" in query.lower():
             return self.get_error_logs()
+        
+        # TASK-27: Explorar fluxo de rota
+        if "rota" in query.lower():
+            return self.explain_route(query)
 
         # Contexto estático de arquitetura
         project_context = """
@@ -89,3 +93,27 @@ class DevAgent:
             return header + "\n".join(error_list)
         except Exception as e:
             return f"⚠️ Falha ao ler logs no GCS: {e}"
+
+    def explain_route(self, query: str):
+        """Explica por quais arquivos e métodos uma mensagem passa (TASK-27)."""
+        prompt = f"""
+        Você é o DevAgent da Flose AI. Explique passo a passo o FLUXO TÉCNICO de uma mensagem na plataforma 
+        baseando-se na ARQUITETURA abaixo:
+        
+        - telegram_agent.py (setup_webhook -> process_update -> message_handler)
+        - vision_agent.py (analyze_image) e audio_agent.py (transcribe)
+        - cognitive_orchestrator.py (process_command -> execute_decision)
+        - base_agent.py (Agentes especialistas reais)
+        - gcs_client.py (Persistência em Bucket)
+        - entrypoint.py (API e Webhooks que recebem os gatilhos externos)
+        
+        PERGUNTA SOBRE A ROTA: "{query}"
+        
+        Sua resposta deve ser uma lista numerada ou um diagrama Mermaid simplificado (texto) 
+        explicando quais métodos de quais arquivos são chamados e em qual ordem.
+        """
+        try:
+            response = self.model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            return f"❌ Erro ao traçar rota: {str(e)}"
