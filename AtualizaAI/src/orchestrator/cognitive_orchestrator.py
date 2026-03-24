@@ -360,18 +360,27 @@ class CognitiveOrchestrator:
         action = decision.get("action")
         infra_cost = decision.get("finops_check", {}).get("estimated_cost_usd", 0)
         
-        if action in ["execute", "generate_demand"] and infra_cost > 1.0:
+        if action in ["execute", "generate_demand"] and infra_cost > 1.5:
             try:
                 from src.agents.debate_agent import DebateAgent
                 debate_sys = DebateAgent()
+                # Envolve FinOps e Quality como juízes técnicos automáticos para decisões caras
+                debate_agents = ["FinOpsGuardian", "QualityInspector"]
+                if decision.get("agent_involved"):
+                    debate_agents.append(decision.get("agent_involved"))
+                
                 result = debate_sys.debate(
                     question=decision.get("task_description") or decision.get("response"),
+                    agents=debate_agents,
                     context=decision.get("reasoning", "")
                 )
                 if result["verdict"].get("decision") == "abort":
-                    return f"⚖️ **Debate Agent bloqueou a ação.**\n\nMotivo: {result['verdict']['reasoning']}"
+                    msg = f"⚖️ **Debate Agent BLOQUEOU a ação ($ {infra_cost:.2f})**\n\n"
+                    msg += f"*Veredito:* {result['verdict']['reasoning']}\n"
+                    msg += f"*Destaque:* {result['verdict'].get('winner_agent', 'N/A')} venceu o debate."
+                    return msg
             except Exception as e:
-                print(f"Erro no debate: {e}")
+                print(f"Erro no debate expandido: {e}")
 
         # Primeiro, verificamos se o FinOps aprovou na simulação do LLM
         finops = decision.get("finops_check", {})
