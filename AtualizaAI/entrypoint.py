@@ -379,6 +379,16 @@ async def get_health_score(request: Request, token: str = None):
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/api/agents/affinity")
+async def get_agent_affinity(request: Request, token: str = None):
+    if not validate_token(request, token):
+        return {"error": "Unauthorized"}
+    try:
+        matrix = gcs.read_json("agents/affinity_matrix.json")
+        return matrix or {"interactions": {}}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/docs")
 def get_documentation():
     import os

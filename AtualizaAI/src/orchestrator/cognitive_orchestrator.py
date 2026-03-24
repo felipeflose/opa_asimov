@@ -90,6 +90,9 @@ class CognitiveOrchestrator:
         # Inicialização da Memória Episódica (Temporal)
         self.episodic_memory = EpisodicMemory(gcs_client=gcs_client)
         
+        # TASK-16: Rastreamento de afinidade
+        self.last_agent = None
+        
         # Usar apenas o SDK do Google Generative AI (AI Studio)
         # Nunca Vertex AI por ordem expressa do usuário
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
@@ -623,4 +626,40 @@ class CognitiveOrchestrator:
                 cost=decision.get("finops_check", {}).get("estimated_cost_usd", 0)
             )
 
+        # --- TASK-16: Afinidade entre Agentes ---
+        current_agent = decision.get("agent_involved")
+        if not current_agent and decision.get("panel_agents"):
+            current_agent = decision.get("panel_agents")[0]
+            
+        if current_agent and self.last_agent and current_agent != self.last_agent:
+            self._update_affinity(self.last_agent, current_agent)
+            
+        if current_agent:
+            self.last_agent = current_agent
+
         return final_result
+
+    def _update_affinity(self, agent_a, agent_b):
+        """Atualiza a matriz de afinidade entre dois agentes no GCS."""
+        if not self.gcs_client: return
+        try:
+            path = "agents/affinity_matrix.json"
+            matrix = self.gcs_client.read_json(path) or {"interactions": {}, "metadata": {"last_update": ""}}
+            
+            # Key ordenada para ser bidirecional
+            pair = tuple(sorted([agent_a, agent_b]))
+            pair_key = f"{pair[0]}<->{pair[1]}"
+            
+            interactions = matrix.get("interactions", {})
+            if pair_key not in interactions:
+                interactions[pair_key] = {"count": 0, "last_interaction": ""}
+            
+            interactions[pair_key]["count"] += 1
+            interactions[pair_key]["last_interaction"] = datetime.now().isoformat()
+            
+            matrix["interactions"] = interactions
+            matrix["metadata"]["last_update"] = datetime.now().isoformat()
+            
+            self.gcs_client.upload_json(matrix, path)
+        except Exception as e:
+            print(f"Erro ao atualizar matriz de afinidade: {e}")

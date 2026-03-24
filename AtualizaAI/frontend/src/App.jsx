@@ -200,6 +200,7 @@ function App() {
   const [pipeline, setPipeline] = useState([]);
   const [pipelineResults, setPipelineResults] = useState([]);
   const [isRunningPipeline, setIsRunningPipeline] = useState(false);
+  const [affinityMatrix, setAffinityMatrix] = useState({ interactions: {} }); // TASK-16
   const [marketTemplates, setMarketTemplates] = useState([]);
   const [isFixing, setIsFixing] = useState(false);
   const [viewingDelivery, setViewingDelivery] = useState(null);
@@ -260,6 +261,10 @@ function App() {
       const healthRes = await authFetch(`/api/health-score`, options);
       const healthD = await healthRes.json();
       if (!healthD.error) setHealthScore(healthD);
+
+      const affRes = await authFetch(`/api/agents/affinity`, options);
+      const affD = await affRes.json();
+      if (!affD.error) setAffinityMatrix(affD);
     } catch (err) {
       console.error("Fetch error", err);
     }
@@ -1146,6 +1151,37 @@ function App() {
                 </div>
               </div>
             ))}
+          </div>
+          
+          <div className="glass-card" style={{ background: 'rgba(0,0,0,0.3)' }}>
+            <h3 style={{ fontSize: '1.2rem', color: 'var(--primary)', marginBottom: '30px' }}>🧩 Affinity Heatmap</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+              {Object.entries(affinityMatrix.interactions).sort((a,b) => b[1].count - a[1].count).slice(0, 8).map(([pair, data]) => {
+                const agents = pair.split('<->');
+                return (
+                  <div key={pair} style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.75rem' }}>
+                      <span style={{ fontWeight: 'bold', color: '#e0e0e0' }}>{agents[0]} 🤝 {agents[1]}</span>
+                      <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{data.count} co-execs</span>
+                    </div>
+                    <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
+                      <div 
+                        style={{ 
+                          width: `${Math.min(100, data.count * 10)}%`, 
+                          height: '100%', 
+                          background: 'linear-gradient(90deg, var(--primary) 0%, #10b981 100%)',
+                          boxShadow: '0 0 10px var(--primary)',
+                          transition: 'width 1s ease-out'
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {Object.keys(affinityMatrix.interactions).length === 0 && (
+                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>Sem interações registradas para afinidade.</p>
+              )}
+            </div>
           </div>
 
           <div className="glass-card chat-side">
