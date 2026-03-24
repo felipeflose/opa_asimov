@@ -173,6 +173,24 @@ async def verify_auth(request: Request):
         return {"status": "authorized", "token": API_TOKEN}
     return {"status": "unauthorized"}
 
+@app.post("/api/errors/report")
+async def report_error(request: Request):
+    try:
+        error_data = await request.json()
+        project_id = os.getenv("GCP_PROJECT_ID")
+        bucket_name = f"flose-ai-platform-{project_id}"
+        gcs = GCSClient(bucket_name, project_id=project_id)
+        
+        import datetime
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        log_path = f"logs/errors/error_{timestamp}.json"
+        
+        gcs.write_json(log_path, error_data)
+        return {"status": "logged", "path": log_path}
+    except Exception as e:
+        print(f"Error logging failed: {e}")
+        return {"status": "failed", "error": str(e)}
+
 @app.get("/api/stats")
 async def get_stats(request: Request, token: str = None):
     # Proteção via header ou fallback token
