@@ -253,6 +253,14 @@ function App() {
   const [token, setToken] = useState(sessionStorage.getItem('flose_token') || '');
   const [isAuthenticated, setIsAuthenticated] = useState(!!(sessionStorage.getItem('flose_token'))); 
   const [activeTab, setActiveTab] = useState('Dashboard'); // Better default than Cognitive Map
+  const [cozinhaEndpoints, setCozinhaEndpoints] = useState([]);
+  const [cozinhaTestResults, setCozinhaTestResults] = useState({});
+
+  useEffect(() => {
+    if (activeTab === 'Cozinha') {
+      authFetch('/api/cozinha/endpoints').then(r => r.json()).then(setCozinhaEndpoints);
+    }
+  }, [activeTab]);
   const [isBooting, setIsBooting] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState('');
@@ -1489,218 +1497,23 @@ function App() {
 
           <div className="glass-card chat-side">
             <h3 className="title-grad" style={{ fontSize: '1.4rem' }}>Registry Assistant</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>Ask history or request prompt edits via natural language.</p>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "20px" }}>Ask history or request prompt edits via natural language.</p>
             
-            <div className="chat-bubble-area" style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', marginBottom: '15px', padding: '15px', overflowY: 'auto' }}>
-              <div className="ai-msg" style={{ fontSize: '0.85rem', color: '#e0e0e0', background: 'var(--glass)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
+            <div className="chat-bubble-area" style={{ height: "300px", background: "rgba(0,0,0,0.2)", borderRadius: "15px", marginBottom: "15px", padding: "15px", overflowY: "auto" }}>
+              <div className="ai-msg" style={{ fontSize: "0.85rem", color: "#e0e0e0", background: "var(--glass)", padding: "10px", borderRadius: "12px", marginBottom: "10px" }}>
                 "Hi Felipe! I can help you update any agent. Just say: 'Change FinOps purpose to focus on GCP billing' or 'Who is the TaskManager?'"
               </div>
             </div>
             
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: "relative" }}>
               <input 
                 type="text" 
                 placeholder="Type your registry command..." 
-                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '15px', color: 'white' }}
+                style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "12px", padding: "15px", color: "white" }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                      padding: '18px', 
-                      cursor: 'grab', 
-                      border: selectedTask?.id === task.id ? `1px solid ${col.color}` : '1px solid var(--border)',
-                      position: 'relative',
-                      animation: 'fadeIn 0.4s ease'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: col.color, fontWeight: '900' }}>{task.id}</span>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                         <span style={{ fontSize: '0.6rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-                           ${(task.estimated_cost || 0.001).toFixed(3)}
-                         </span>
-                         <span style={{ fontSize: '0.7rem' }}>{task.budget_approved ? '💎' : '⏳'}</span>
-                      </div>
-                    </div>
-                    
-                    <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', lineHeight: '1.4' }}>{task.title}</h4>
-                    
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '15px', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {task.objective || 'Objetivo não detalhado...'}
-                    </p>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="avatar" style={{ width: '24px', height: '24px', fontSize: '0.5rem', background: 'var(--primary)', color: '#000' }}>
-                          {task.responsible?.substring(0,2).toUpperCase() || 'IA'}
-                        </div>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{task.responsible || 'IA'}</span>
-                      </div>
-                      <select 
-                        value={task.priority || 'Média'}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => handleUpdateStatus(task.id, null, e.target.value)}
-                        style={{ 
-                          fontSize: '0.55rem', 
-                          background: 'rgba(255,255,255,0.08)', 
-                          padding: '3px 8px', 
-                          borderRadius: '4px',
-                          border: 'none',
-                          color: '#fff',
-                          cursor: 'pointer',
-                          outline: 'none'
-                        }}
-                      >
-                        <option value="Alta">Alta</option>
-                        <option value="Média">Média</option>
-                        <option value="Baixa">Baixa</option>
-                      </select>
-                    </div>
-
-                    {/* Mostra governança se selecionado */}
-                    {selectedTask?.id === task.id && (
-                      <div style={{ marginTop: '15px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', borderLeft: `3px solid ${col.color}`, animation: 'slideDown 0.3s ease' }}>
-                        <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '5px' }}>🛡️ GOVERNANÇA FINOPS</p>
-                        <p style={{ fontSize: '0.7rem', color: '#fff' }}>{task.governance_finops || 'Aguardando auditoria FinOps...'}</p>
-                        
-                        {(task.governance_finops === 'Aguardando auditoria FinOps...' || !task.objective || task.objective === 'Geração pendente...') && (
-                          <button 
-                            className="login-button" 
-                            style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', marginTop: '10px' }} 
-                            onClick={(e) => { e.stopPropagation(); handleAuditFinOps(task.id); }}
-                          >
-                            🔍 AUDITAR AGORA
-                          </button>
-                        )}
-
-                        <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                          {!task.budget_approved && col.id === 'Aberto' && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px' }} onClick={() => handleApprove(task.id)}>👍 APROVAR</button>
-                          )}
-                          {task.status === 'Em Progresso' && task.budget_approved && (
-                            <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'var(--primary)', color: '#000' }} onClick={() => {
-                              setExecutionPreview(task);
-                            }}>🚀 EXECUTAR</button>
-                          )}
-                          {task.status === 'Concluído' && (
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: '#10b981', flex: 1 }} onClick={() => handleViewDelivery(task.result_id)}>📦 VER</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.1)', flex: 1 }} onClick={() => window.open(`/api/tasks/${task.id}/export?token=${token}`)}>💾 MD</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', flex: 1 }} onClick={() => handleAuditFinOps(task.id)}>🛡️ AUDIT</button>
-                              <button className="login-button" style={{ fontSize: '0.65rem', padding: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid var(--border)', flex: 1 }} onClick={() => handleUpdateStatus(task.id, 'Aberto')}>↩ REOPEN</button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-    }
-
-    if (activeTab === 'Agent Library') {
-      return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '40px' }}>
-          <div className="agent-library-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100%, 1fr))', gap: '20px' }}>
-            {agentList.map(agent => (
-              <div key={agent.agent_name} className="glass-card agent-card-edit" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 200px', gap: '20px', alignItems: 'center' }}>
-                <AgentAvatar agent={agent} authFetch={authFetch} />
-                <div>
-                  <h3 style={{ color: 'var(--primary)' }}>{agent.agent_name}</h3>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>{agent.purpose}</p>
-                  <div style={{ display: 'flex', gap: '15px' }}>
-                    <div className="metric-mini">
-                      <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>RUNS</span>
-                      <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{agent.metrics?.executions || 0}</p>
-                    </div>
-                    <div className="metric-mini">
-                      <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>TOKENS</span>
-                      <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{((agent.metrics?.total_tokens || 0)/1000).toFixed(1)}k</p>
-                    </div>
-                  </div>
-                  
-                  {/* TASK-22: Complementary Badges */}
-                  {agent.complementary_agents && agent.complementary_agents.length > 0 && (
-                    <div style={{ marginTop: '15px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>🤝 SINERGIA:</span>
-                      {agent.complementary_agents.map(comp => (
-                        <span 
-                          key={comp} 
-                          className="status-badge" 
-                          style={{ fontSize: '0.6rem', padding: '3px 8px', background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)', cursor: 'default' }}
-                        >
-                          {comp}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <button 
-                    className="nav-item badge-online" 
-                    style={{ padding: '8px 15px', borderRadius: '12px', fontSize: '0.7rem', cursor: 'pointer' }}
-                    onClick={() => setViewingAgent(agent)}
-                  >
-                    🛠️ Manage DNA
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="glass-card" style={{ background: 'rgba(0,0,0,0.3)' }}>
-            <h3 style={{ fontSize: '1.2rem', color: 'var(--primary)', marginBottom: '30px' }}>🧩 Affinity Heatmap</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-              {Object.entries(affinityMatrix.interactions).sort((a,b) => b[1].count - a[1].count).slice(0, 8).map(([pair, data]) => {
-                const agents = pair.split('<->');
-                return (
-                  <div key={pair} style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.75rem' }}>
-                      <span style={{ fontWeight: 'bold', color: '#e0e0e0' }}>{agents[0]} 🤝 {agents[1]}</span>
-                      <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{data.count} co-execs</span>
-                    </div>
-                    <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
-                      <div 
-                        style={{ 
-                          width: `${Math.min(100, data.count * 10)}%`, 
-                          height: '100%', 
-                          background: 'linear-gradient(90deg, var(--primary) 0%, #10b981 100%)',
-                          boxShadow: '0 0 10px var(--primary)',
-                          transition: 'width 1s ease-out'
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              {Object.keys(affinityMatrix.interactions).length === 0 && (
-                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>Sem interações registradas para afinidade.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="glass-card chat-side">
-            <h3 className="title-grad" style={{ fontSize: '1.4rem' }}>Registry Assistant</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '20px' }}>Ask history or request prompt edits via natural language.</p>
-            
-            <div className="chat-bubble-area" style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', marginBottom: '15px', padding: '15px', overflowY: 'auto' }}>
-              <div className="ai-msg" style={{ fontSize: '0.85rem', color: '#e0e0e0', background: 'var(--glass)', padding: '10px', borderRadius: '12px', marginBottom: '10px' }}>
-                "Hi Felipe! I can help you update any agent. Just say: 'Change FinOps purpose to focus on GCP billing' or 'Who is the TaskManager?'"
-              </div>
-            </div>
-            
-            <div style={{ position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder="Type your registry command..." 
-                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '15px', color: 'white' }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleAgentQuery(e.target.value);
-                    e.target.value = ''; // Clear input after sending
+                    e.target.value = ""; // Clear input after sending
                   }
                 }}
               />
@@ -2243,22 +2056,15 @@ function App() {
     }
 
     if (activeTab === 'Cozinha') {
-      const [endpoints, setEndpoints] = useState([]);
-      const [testResults, setTestResults] = useState({});
-      
-      useEffect(() => {
-        authFetch('/api/cozinha/endpoints').then(r => r.json()).then(setEndpoints);
-      }, [activeTab]);
-
       const testEndpoint = async (path, method) => {
         const start = Date.now();
         try {
           const res = await authFetch(path, { method });
           const data = await res.json();
           const elapsed = Date.now() - start;
-          setTestResults(prev => ({ ...prev, [path]: { status: res.status, time: elapsed, data } }));
+          setCozinhaTestResults(prev => ({ ...prev, [path]: { status: res.status, time: elapsed, data } }));
         } catch (e) {
-          setTestResults(prev => ({ ...prev, [path]: { status: 'ERR', time: 0, data: e.message } }));
+          setCozinhaTestResults(prev => ({ ...prev, [path]: { status: 'ERR', time: 0, data: e.message } }));
         }
       };
 
@@ -2273,7 +2079,7 @@ function App() {
             <div className="glass-card">
               <h3 style={{ marginBottom: '25px', fontSize: '1.1rem' }}>🔌 Codebase API Explorer</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {endpoints.map(ep => (
+                {cozinhaEndpoints.map(ep => (
                   <div key={ep.path} className="glass-card" style={{ background: 'rgba(255,255,255,0.02)', padding: '15px 25px', display: 'grid', gridTemplateColumns: '80px 1fr 120px', alignItems: 'center', gap: '20px' }}>
                     <span style={{ fontSize: '0.7rem', fontWeight: '900', color: ep.method === 'GET' ? '#00ff80' : '#a855f7', background: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '6px', textAlign: 'center' }}>{ep.method}</span>
                     <div>
@@ -2287,14 +2093,14 @@ function App() {
                     >
                       ⚡ TESTAR
                     </button>
-                    {testResults[ep.path] && (
+                    {cozinhaTestResults[ep.path] && (
                       <div style={{ gridColumn: '1 / -1', marginTop: '15px', padding: '15px', background: 'rgba(0,0,0,0.4)', borderRadius: '10px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--text-muted)' }}>
-                          <span>Status: <b style={{ color: testResults[ep.path].status === 200 ? '#00ff80' : '#ff4444' }}>{testResults[ep.path].status}</b></span>
-                          <span>Latência: <b>{testResults[ep.path].time}ms</b></span>
+                          <span>Status: <b style={{ color: cozinhaTestResults[ep.path].status === 200 ? '#00ff80' : '#ff4444' }}>{cozinhaTestResults[ep.path].status}</b></span>
+                          <span>Latência: <b>{cozinhaTestResults[ep.path].time}ms</b></span>
                         </div>
                         <pre style={{ overflowX: 'auto', color: '#aaa', fontSize: '0.7rem' }}>
-                          {JSON.stringify(testResults[ep.path].data, null, 2).substring(0, 500)}...
+                          {JSON.stringify(cozinhaTestResults[ep.path].data, null, 2).substring(0, 500)}...
                         </pre>
                       </div>
                     )}
@@ -2747,7 +2553,7 @@ function App() {
       <ToastContainer toasts={toasts} onDismiss={id => setToasts(prev => prev.filter(t => t.id !== id))} />
     </div>
   );
-};
+}
 
 const ToastContainer = ({ toasts, onDismiss }) => (
   <div className="toast-container">
