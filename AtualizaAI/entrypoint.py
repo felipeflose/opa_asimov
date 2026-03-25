@@ -4,8 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request
 from dotenv import load_dotenv
 
-# Carrega variáveis do arquivo .env localmente
-load_dotenv()
+# Carrega variáveis do arquivo .env localmente, forçando override
+load_dotenv(override=True)
 
 # --- 1. Configurações Globais ---
 print("🚀 Iniciando Flose AI Platform com Frontend em React...")
