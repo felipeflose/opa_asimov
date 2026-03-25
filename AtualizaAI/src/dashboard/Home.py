@@ -6,8 +6,8 @@ import time
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Carrega variáveis do .env se existir localmente
-load_dotenv()
+# Carrega variáveis do .env se existir localmente, forçando o override para evitar conflitos de ambiente
+load_dotenv(override=True)
 
 # --- Logging Helper ---
 LOG_FILE = "setup.log"
@@ -27,9 +27,39 @@ def secure_compare(input_str, secret_str):
 
 # --- Persistence Logic ---
 def save_settings(project_id, region, api_key):
-    # Overwrite .env with current settings
+    # Update .env without destroying other variables like MASTER_KEY or ADMIN_EMAIL
+    lines = []
+    found = set()
+    if os.path.exists(".env"):
+        with open(".env", "r") as f:
+            lines = f.readlines()
+    
+    new_lines = []
+    updates = {
+        "GCP_PROJECT_ID": project_id,
+        "GCP_REGION": region,
+        "GEMINI_API_KEY": api_key
+    }
+    
+    # Process existing lines
+    for line in lines:
+        match = False
+        for k, v in updates.items():
+            if line.startswith(f"{k}="):
+                new_lines.append(f"{k}={v}\n")
+                found.add(k)
+                match = True
+                break
+        if not match:
+            new_lines.append(line)
+            
+    # Add new ones if they didn't exist
+    for k, v in updates.items():
+        if k not in found:
+            new_lines.append(f"{k}={v}\n")
+            
     with open(".env", "w") as f:
-        f.write(f"GCP_PROJECT_ID={project_id}\nGCP_REGION={region}\nGEMINI_API_KEY={api_key}\n")
+        f.writelines(new_lines)
 
 def load_settings():
     settings = {}
