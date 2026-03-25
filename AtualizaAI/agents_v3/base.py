@@ -21,15 +21,16 @@ class BaseAgent:
         self.system_prompt = system_prompt
         self.gemini_client = gemini_client
 
-    async def run(self, task: str) -> AgentResult:
+    async def run(self, task: str, use_search: bool = True) -> AgentResult:
         """Executa a tarefa dada pelo orquestrador e retorna o resultado formatado"""
         try:
             logger.info("agent_run", agent=self.name, task=task[:50])
             
-            # Executa prompt
+            # Executa prompt com FERRAMENTAS DE BUSCA ATIVADAS
             resp = await self.gemini_client.generate_text(
                 prompt=task, 
-                system_instruction=self.system_prompt
+                system_instruction=self.system_prompt,
+                use_search=use_search
             )
             
             return AgentResult(
