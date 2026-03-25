@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flose AI v3.0 — Migration Checklist</title>
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ef;
+    --accent: #e63946;
+    --success: #10b981;
+    --border: #d1cec8;
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    padding: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { font-family: 'Space Mono', monospace; font-size: 24px; margin-bottom: 30px; border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .phase { margin-bottom: 40px; }
+  .phase-title { font-size: 18px; font-weight: bold; color: var(--accent); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+  ul { list-style: none; padding: 0; }
+  li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .check-box { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+  .check-box.done { background: var(--success); border-color: var(--success); text-align: center; color: white; line-height: 14px; }
+  .check-box.done::after { content: '✔'; font-size: 12px; }
+  .item-text.done { text-decoration: line-through; color: #a0a0a0; }
+  .badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: bold; margin-left: auto; }
+  .badge-p1 { background: rgba(230,57,70,0.1); color: var(--accent); }
+  .badge-p2 { background: rgba(37,99,235,0.1); color: #2563eb; }
+</style>
+</head>
+<body>
+
+<h1>🧠 Flose AI v3.0 // Migration Checklist</h1>
+
+<div class="phase">
+  <div class="phase-title">0 — Preparação</div>
+  <ul>
+    <li><div class="check-box done"></div><div class="item-text done">Criar nova branch migration-v3</div><span class="badge badge-p1">OK</span></li>
+    <li><div class="check-box done"></div><div class="item-text done">Definir estrutura de diretórios final</div><span class="badge badge-p1">OK</span></li>
+  </ul>
+</div>
+
+<div class="phase">
+  <div class="phase-title">1 — Fundamentos (Storage & Auth)</div>
+  <ul>
+    <li><div class="check-box done"></div><div class="item-text done">Implementar storage/gcs.py (V3)</div><span class="badge badge-p1">OK</span></li>
+    <li><div class="check-box done"></div><div class="item-text done">Implementar core/gemini_client.py (V3)</div><span class="badge badge-p1">OK</span></li>
+    <li><div class="check-box done"></div><div class="item-text done">Implementar api/auth.py (JWT Única)</div><span class="badge badge-p1">OK</span></li>
+  </ul>
+</div>
+
+<div class="phase">
+  <div class="phase-title">2 — Orquestrador (Decomposição)</div>
+  <ul>
+    <li><div class="check-box done"></div><div class="item-text done">Criar Orquestrador Decomposto (6 Classes)</div><span class="badge badge-p1">OK</span></li>
+    <li><div class="check-box done"></div><div class="item-text done">Simplificar BaseAgent e Agentes Core</div><span class="badge badge-p1">OK</span></li>
+  </ul>
+</div>
+
+<div class="phase">
+  <div class="phase-title">3 — BFF (FastAPI)</div>
+  <ul>
+    <li><div class="check-box done"></div><div class="item-text done">Criar api/main.py e entrypoint v3</div><span class="badge badge-p2">OK</span></li>
+    <li><div class="check-box done"></div><div class="item-text done">Implementar Routers (Chat, Agents, Tasks, FinOps)</div><span class="badge badge-p2">OK</span></li>
+    <li><div class="check-box done"></div><div class="item-text done">Implementar SSE para real-time feed</div><span class="badge badge-p2">OK</span></li>
+  </ul>
+</div>
+
+<div class="phase">
+  <div class="phase-title">4 — Frontend (React V3)</div>
+  <ul>
+    <li><div class="check-box done"></div><div class="item-text done">Configurar Zustand + React Query + Router</div><span class="badge badge-p1">OK</span></li>
+    <li><div class="check-box"></div><div class="item-text">Reescrever App.jsx em Componentes Atômicos</div><span class="badge badge-p2">P2</span></li>
+    <li><div class="check-box"></div><div class="item-text">Integrar com o novo BFF</div><span class="badge badge-p1">P1</span></li>
+  </ul>
+</div>
+
+<div class="phase">
+  <div class="phase-title">5 — Deployment & Cleanup</div>
+  <ul>
+    <li><div class="check-box done"></div><div class="item-text done">Arrumar Dockerfile Multi-stage</div><span class="badge badge-p1">OK</span></li>
+    <li><div class="check-box done"></div><div class="item-text done">Remover dependências inúteis (Pyspark/Streaming)</div><span class="badge badge-p1">OK</span></li>
+    <li><div class="check-box"></div><div class="item-text">Remover Streamlit core</div><span class="badge badge-p2">P2</span></li>
+  </ul>
+</div>
+
+</body>
+</html>
