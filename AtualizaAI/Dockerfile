@@ -1,25 +1,38 @@
-# Usar Python como base
+# Stage 1: Build Frontend (React)
+FROM node:20-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+# Ignorar dependências opcionais para build rápido
+RUN npm ci --only=production
+COPY frontend/ .
+RUN npm run build
+
+# Stage 2: Python Backend (FastAPI BFF)
 FROM python:3.11-slim
-
-# Instalar dependências do sistema
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-# Instalar dependências Python (cache)
+# Dependências do sistema mínimas para Cloud Run e Health Check
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl && rm -rf /var/lib/apt/lists/*
+
+# Instalação de dependências Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar TODO o projeto (incluindo a pasta frontend/dist gerada localmente)
-COPY . .
+# Cópia do código estruturado V3
+COPY api/ ./api/
+COPY core/ ./core/
+COPY agents_v3/ ./agents/
+COPY storage_v3/ ./storage/
+COPY services/ ./services/
 
-# Variáveis de Ambiente
+# Copia o build do frontend gerado no Stage 1
+COPY --from=frontend-build /app/frontend/dist ./frontend/dist
+
+# Configurações de ambiente
 ENV PORT=8080
-ENV PYTHONUNBUFFERED=True
-
+ENV PYTHONUNBUFFERED=1
 EXPOSE 8080
 
-CMD ["python", "entrypoint.py"]
+# Comando de inicialização do BFF V3
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]
