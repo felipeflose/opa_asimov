@@ -1,4 +1,53 @@
-# Flose AI Platform
+# Flose AI Platform v3.0
+
+> Plataforma de orquestração multi-agente de IA de Próxima Geração, operando no Google Cloud Platform (GCP) com Governança via Sala de Aula (Classroom) e Memória de Longo Prazo via RAG Cache (GCS).
+
+---
+
+## Componentes Principais (v3.0)
+
+### 🎓 Sala de Aula (Classroom)
+- Sistema de isolamento para agentes em treinamento (`in_training`).
+- Calibração de Prompt, Ferramentas e RAG antes da promoção para produção.
+- Checklist de progresso neuronal visível no Command Center.
+
+### 🏛️ RAG & Cache Imortal
+- Web Scraping integrado para leitura de sites externos.
+- Persistência de conhecimento no Bucket GCS (`agents/{name}/rag/cache/`).
+- Injeção de contexto dinâmica para reduzir alucinações da IA.
+
+### 🧠 Orquestrador V3 (`core/orchestrator_v3/`)
+- Motor de decisão em tempo real com Gemini Flash 1.5/2.0.
+- Diagnóstico detalhado de erros (Cota, Rede, IA) para o usuário final.
+- Suporte a ferramentas de Grounding (Google Search) nativo.
+
+### 🛠️ Estrutura do Projeto (v3.0)
+
+```
+AtualizaAI/
+├── entrypoint.py           # Servidor FastAPI (BFF Principle)
+├── agents_v3/              # Agentes Especializados (Base & Specialized)
+├── core/                   # Núcleo de Orquestração (Logic & Gemini)
+├── api/routers/            # Endpoints modulares (Agents, Tasks, Chat...)
+├── storage_v3/             # Nova camada de I/O GCS otimizada
+├── services/               # Serviços de Domínio (Scraper, TaskService)
+├── frontend/               # React + React Query (Command Center)
+│   └── src/pages/          # Agents, Classroom, Tasks...
+└── docs/                   # Documentação completa
+```
+
+---
+
+## Deploy & GitHub CI/CD
+
+O projeto utiliza **GitHub Actions** para deploy automático no Cloud Run.
+Sempre que um `push` é feito na `main`:
+1. O Frontend é compilado e injetado no diretório estático do FastAPI.
+2. A imagem Docker é construída e enviada ao Artifact Registry.
+3. O Cloud Run é atualizado com as novas camadas de segurança e rede.
+4. O Webhook do Telegram é reconfigurado para a nova URL da revisão.
+
+---
 
 > Plataforma de orquestração multi-agente de IA, operating on Google Cloud Platform (GCP) com integração ao Telegram, Gemini API e Google Cloud Storage.
 

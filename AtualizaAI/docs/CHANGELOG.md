@@ -4,7 +4,25 @@ Todas as mudanças significativas do projeto estão documentadas aqui.
 
 ---
 
-## [v2.1.0] — Março 2026 — Security & Reliability Overhaul
+## [v3.0.0] — Março 2026 — Sala de Aula & RAG Imortal
+
+### 🎓 Governança: Sala de Aula (Classroom)
+- **Isolamento de Agentes:** Agentes criados agora nascem em `in_training` e ficam bloqueados até atingirem 100% de progresso.
+- **Centro de Calibração:** Interface tudo-em-um para editar Prompt, anexar RAG e ativar Ferramentas de busca.
+- **Bloqueio de Produção:** O orquestrador avisa o usuário no Telegram se tentar falar com um agente ainda em treinamento.
+
+### 🏛️ Inteligência: RAG & Cache no GCS
+- **Memória Imortal:** Links lidos pelos agentes são cacheados no Bucket (`agents/{name}/rag/cache/`).
+- **Web Scraping V3:** Motor de extração limpa de conteúdo de sites integrado ao fluxo de resposta.
+- **Injeção de Contexto:** O conhecimento do RAG é injetado automaticamente no prompt, reduzindo alucinações.
+
+### 🛠️ Robustez & Diagnóstico
+- **Safe Typing V3:** Refatoração completa de tipos para garantir compatibilidade 100% com Cloud Run (Python 3.10).
+- **Diagnóstico Transparente:** Erros de cota (429) ou queda do Gemini (503) são reportados com detalhes no Telegram.
+- **Real-time Feel:** Dashboard com polling de 10s para refletir mudanças de treinamento instantaneamente.
+
+---
+
 
 ### 🔴 Segurança Crítica
 
