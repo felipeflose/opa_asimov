@@ -37,7 +37,7 @@ def get_orchestrator(request: Request) -> OrchestratorV3:
         router=ActionRouter(agent_registry=AgentRegistry(gemini))
     )
 
-@router.post("/", response_model=ChatResponse)
+@router.post("", response_model=ChatResponse)
 async def process_command(
     req: ChatRequest, 
     admin_email: str = Depends(require_auth),

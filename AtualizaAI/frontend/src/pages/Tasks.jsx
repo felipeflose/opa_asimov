@@ -9,7 +9,7 @@ const TasksPage = () => {
   const { data: tasks, isLoading } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/api/tasks/');
+      const { data } = await apiClient.get('/api/tasks');
       return data;
     }
   });
@@ -25,7 +25,7 @@ const TasksPage = () => {
 
   const createTask = useMutation({
     mutationFn: async (task) => {
-      const { data } = await apiClient.post('/api/tasks/', task);
+      const { data } = await apiClient.post('/api/tasks', task);
       return data;
     },
     onSuccess: () => {

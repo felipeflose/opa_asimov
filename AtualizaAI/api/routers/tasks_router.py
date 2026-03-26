@@ -28,7 +28,7 @@ def get_task_service(request: Request) -> TaskService:
     gcs = GCSClient(bucket)
     return TaskService(gcs)
 
-@router.get("/", response_model=List[TaskResponse])
+@router.get("", response_model=List[TaskResponse])
 async def list_tasks(
     status: Optional[str] = None,
     service: TaskService = Depends(get_task_service),
@@ -37,7 +37,7 @@ async def list_tasks(
     """Lista todas as tarefas filtradas opcionalmente por status"""
     return await service.list_tasks(status)
 
-@router.post("/", response_model=TaskResponse)
+@router.post("", response_model=TaskResponse)
 async def create_task(
     task: TaskCreate, 
     service: TaskService = Depends(get_task_service),
