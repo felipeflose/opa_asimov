@@ -43,7 +43,8 @@ class GCSClient:
 
         try:
             blob = self.bucket.blob(path)
-            content = blob.download_as_text()
+            # Usar utf-8-sig para ignorar BOMs indesejados (comum em arquivos do Windows)
+            content = blob.download_as_bytes().decode("utf-8-sig")
             data = json.loads(content)
             self._save_to_cache(path, data)
             return data
