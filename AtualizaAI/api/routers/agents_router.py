@@ -22,8 +22,8 @@ class AgentCreate(BaseModel):
     avatar: Optional[str] = None
     tools: Optional[List[str]] = []
     rag: Optional[RagConfig] = RagConfig()
-    status: str = "ready" # "ready" ou "in_training"
-    training_progress: int = 100
+    status: str = "in_training" # "ready" ou "in_training"
+    training_progress: int = 0
 
 class AgentResponse(AgentCreate):
     created_at: Optional[str] = None
