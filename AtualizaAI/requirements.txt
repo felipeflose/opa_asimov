@@ -12,4 +12,6 @@ pillow==10.4.0
 structlog==24.4.0
 python-dotenv==1.0.0
 psutil==6.0.0
+numpy==1.26.4
+pandas==2.2.2
 # Removed: pyspark, faiss-cpu, scikit-learn, pyarrow, langchain (as per v3 specs)
