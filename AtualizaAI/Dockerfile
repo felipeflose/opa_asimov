@@ -1,13 +1,4 @@
-# Stage 1: Build Frontend (React)
-FROM node:20-alpine AS frontend-build
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-# Ignorar dependências opcionais para build rápido
-RUN npm ci --only=production
-COPY frontend/ .
-RUN npm run build
-
-# Stage 2: Python Backend (FastAPI BFF)
+# Stage 1: Python Backend (FastAPI BFF & Dashboard v3.1)
 FROM python:3.11-slim
 WORKDIR /app
 
@@ -28,9 +19,9 @@ COPY storage_v3/ ./storage_v3/
 COPY services/ ./services/
 COPY entrypoint.py .
 
-# Copia o build do frontend gerado no Stage 1
-# No entrypoint, ele procura em ./frontend/dist
-COPY --from=frontend-build /app/frontend/dist ./frontend/dist
+# Copia o build do frontend gerado pelo Actions (AtualizaAI/frontend/dist)
+# O repositório já deve ter a pasta pronta antes do Docker build.
+COPY frontend/dist ./frontend/dist
 
 # Configurações de ambiente
 ENV PORT=8080

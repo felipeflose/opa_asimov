@@ -6,11 +6,11 @@ __pycache__/
 *.pyc
 *.log
 .env
-tmp_vectors/
-brain/
+AtualizaAI/tmp_vectors/
+AtualizaAI/brain/
 .agents/
 .agent/
 .gemini/
 
 # IMPORTANTE: NÃO ignorar a pasta dist para o build do Cloud Run chegar completo!
-!frontend/dist/
+#!AtualizaAI/frontend/dist/

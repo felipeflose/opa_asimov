@@ -37,7 +37,7 @@ const LoginPage = () => {
       <div className="w-full max-w-md p-10 bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl relative z-10">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black italic tracking-tighter bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            FLOSE AI
+            FLOSE AI v3.1 🚀
           </h1>
           <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mt-2">v3.0 Cognition Hub</p>
         </div>
