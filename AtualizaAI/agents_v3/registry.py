@@ -41,6 +41,7 @@ class AgentRegistry:
             if dynamic_config:
                 instance.tools = dynamic_config.get("tools", [])
                 instance.system_prompt = dynamic_config.get("system_prompt", instance.system_prompt)
+                instance.rag = dynamic_config.get("rag", instance.rag)
                 
             self._instances[name] = instance
             return instance
@@ -53,7 +54,8 @@ class AgentRegistry:
                 purpose=config["purpose"],
                 system_prompt=config["system_prompt"],
                 gemini_client=self.gemini_client,
-                tools=config.get("tools", [])
+                tools=config.get("tools", []),
+                rag=config.get("rag", {"files": [], "links": []})
             )
             self._instances[name] = instance
             return instance

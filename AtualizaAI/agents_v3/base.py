@@ -13,25 +13,48 @@ class AgentResult(BaseModel):
     agent_name: str
     status: str = "success"
 
+from services.scraper import WebScraper
+
 class BaseAgent:
     """Classe base v3 simplificada para todos os agentes especializados"""
-    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None):
+    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None, rag: Dict = None):
         self.name = name
         self.purpose = purpose
         self.system_prompt = system_prompt
         self.gemini_client = gemini_client
         self.tools = tools or []
+        self.rag = rag or {"files": [], "links": []}
 
     async def run(self, task: str) -> AgentResult:
         """Executa a tarefa dada pelo orquestrador e retorna o resultado formatado"""
         try:
             logger.info("agent_run", agent=self.name, task=task[:50])
             
-            # Executa prompt com FERRAMENTAS DINÂMICAS do registro
+            # 1. Coleta conhecimento externo (RAG Links)
+            external_context = ""
+            links = self.rag.get("links", [])
+            if links:
+                logger.info("rag_link_browsing", agent=self.name, count=len(links))
+                for link in links:
+                    content = await WebScraper.get_content(link)
+                    if content:
+                        external_context += f"\n--- CONTEÚDO DO LINK ({link}) ---\n{content}\n"
+
+            # 2. Prepara o prompt Final com Conhecimento Injetado
+            final_task = task
+            if external_context:
+                final_task = (
+                    "USE O CONHECIMENTO EXTERNO ABAIXO PARA RESPONDER À TAREFA SE RELEVANTE:\n\n"
+                    f"{external_context}\n\n"
+                    "--------------------------------------------------\n"
+                    f"TAREFA DO USUÁRIO: {task}"
+                )
+
+            # 3. Executa prompt com FERRAMENTAS DINÂMICAS do registro
             use_search = "google_search" in self.tools
             
             resp = await self.gemini_client.generate_text(
-                prompt=task, 
+                prompt=final_task, 
                 system_instruction=self.system_prompt,
                 use_search=use_search
             )
@@ -59,5 +82,6 @@ class BaseAgent:
             "purpose": self.purpose,
             "system_prompt": self.system_prompt,
             "tools": self.tools,
+            "rag": self.rag,
             "agent_type": self.__class__.__name__
         }
