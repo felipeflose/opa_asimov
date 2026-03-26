@@ -1374,22 +1374,23 @@ frontend_path = os.path.join(current_dir, "frontend", "dist")
 
 if os.path.exists(frontend_path):
     from fastapi.responses import FileResponse
-    from fastapi.exceptions import HTTPException
     
+    # Mount de assets direto
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_path, "assets")), name="assets")
     
-    @app.exception_handler(404)
-    async def custom_404_handler(request: Request, exc: HTTPException):
-        if request.url.path.startswith("/api"):
-            from fastapi.responses import JSONResponse
-            return JSONResponse({"detail": "Not Found"}, status_code=404)
-            
-        index_file = os.path.join(frontend_path, "index.html")
-        if os.path.exists(index_file):
-            return FileResponse(index_file)
-        return {"error": "Frontend route not found"}
+    # Catch-all route para roteamento do React (SPA)
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        file_path = os.path.join(frontend_path, full_path)
+        # Se for a raiz ou o caminho for vazio, serve index.html
+        if not full_path or full_path == "/":
+            return FileResponse(os.path.join(frontend_path, "index.html"))
+        # Se for um arquivo estático real (ex: vite.svg, manifesto), serve ele
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        # Se for uma nova rota do React (ex: /login, /dashboard) => Fallback para index.html
+        return FileResponse(os.path.join(frontend_path, "index.html"))
 
-    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
 else:
     @app.get("/")
     async def root_fallback():
