@@ -121,7 +121,7 @@ class BaseAgent:
                 status="failed"
             )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict:
         """Converte o agente para representação no JSON registry"""
         return {
             "name": self.name,
