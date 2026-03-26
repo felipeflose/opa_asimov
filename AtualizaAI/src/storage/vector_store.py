@@ -1,10 +1,18 @@
-import faiss
+try:
+    import faiss
+except ImportError:
+    faiss = None
+
 import numpy as np
 import pandas as pd
 import google.generativeai as genai
 import os
 import threading
-from sklearn.decomposition import PCA
+
+try:
+    from sklearn.decomposition import PCA
+except ImportError:
+    PCA = None
 
 class VectorStore:
     def __init__(self, model_name='models/gemini-embedding-001', gcs_client=None):
