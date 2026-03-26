@@ -94,7 +94,7 @@ const AgentsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Lista de Agentes */}
         <div className="lg:col-span-1 space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-          {agents?.map((agent) => (
+          {agents?.filter(a => a.status === 'ready' || !a.status).map((agent) => (
             <div 
               key={agent.name}
               onClick={() => { setSelectedAgent(agent); setIsEditing(false); setActiveTab('config'); }}

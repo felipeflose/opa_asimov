@@ -19,7 +19,7 @@ from storage_v3.gcs import GCSClient
 
 class BaseAgent:
     """Classe base v3 simplificada para todos os agentes especializados"""
-    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None, rag: Dict = None, gcs_client: Optional[GCSClient] = None):
+    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None, rag: Dict = None, gcs_client: Optional[GCSClient] = None, status: str = "ready", training_progress: int = 100):
         self.name = name
         self.purpose = purpose
         self.system_prompt = system_prompt
@@ -27,9 +27,20 @@ class BaseAgent:
         self.tools = tools or []
         self.rag = rag or {"files": [], "links": []}
         self.gcs = gcs_client
+        self.status = status
+        self.training_progress = training_progress
 
     async def run(self, task: str) -> AgentResult:
         """Executa a tarefa dada pelo orquestrador e retorna o resultado formatado"""
+        if self.status == "in_training":
+            return AgentResult(
+                output=f"Lamento, o agente {self.name} ainda está na 'Sala de Aula' sendo treinado e não pode responder agora. Por favor, aguarde o treinamento atingir 100%!",
+                tokens_used=0,
+                cost_usd=0.0,
+                agent_name=self.name,
+                status="in_training"
+            )
+        
         try:
             logger.info("agent_run", agent=self.name, task=task[:50])
             
@@ -118,5 +129,7 @@ class BaseAgent:
             "system_prompt": self.system_prompt,
             "tools": self.tools,
             "rag": self.rag,
+            "status": self.status,
+            "training_progress": self.training_progress,
             "agent_type": self.__class__.__name__
         }

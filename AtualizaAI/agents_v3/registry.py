@@ -40,11 +40,16 @@ class AgentRegistry:
             instance = agent_class(self.gemini_client)
             # Injeta GCS para suporte a RAG
             instance.gcs = self.gcs
+            instance.status = "ready" # Especialistas sempre prontos (codificados)
+            instance.training_progress = 100
             
             if dynamic_config:
                 instance.tools = dynamic_config.get("tools", [])
                 instance.system_prompt = dynamic_config.get("system_prompt", instance.system_prompt)
                 instance.rag = dynamic_config.get("rag", instance.rag)
+                # Especialistas podem ser 'desativados' se configurado explicitamente no JSON
+                instance.status = dynamic_config.get("status", "ready")
+                instance.training_progress = dynamic_config.get("training_progress", 100)
                 
             self._instances[name] = instance
             return instance
@@ -59,7 +64,9 @@ class AgentRegistry:
                 gemini_client=self.gemini_client,
                 tools=config.get("tools", []),
                 rag=config.get("rag", {"files": [], "links": []}),
-                gcs_client=self.gcs
+                gcs_client=self.gcs,
+                status=config.get("status", "ready"),
+                training_progress=config.get("training_progress", 100)
             )
             self._instances[name] = instance
             return instance

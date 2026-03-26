@@ -8,6 +8,7 @@ const Sidebar = () => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', path: '/dashboard' },
     { id: 'agents', label: 'Agentes', icon: '🤖', path: '/agents' },
+    { id: 'classroom', label: 'Sala de Aula', icon: '🎓', path: '/classroom' },
     { id: 'tasks', label: 'Demandas', icon: '📋', path: '/tasks' },
     { id: 'finops', label: 'FinOps', icon: '💎', path: '/finops' },
   ];

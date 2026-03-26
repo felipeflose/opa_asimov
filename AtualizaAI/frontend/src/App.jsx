@@ -7,6 +7,7 @@ import './index.css';
 // Layout e Paginas (V3 Structure)
 import DashboardPage from './pages/Dashboard';
 import AgentsPage from './pages/Agents';
+import ClassroomPage from './pages/Classroom';
 import TasksPage from './pages/Tasks';
 import FinOpsPage from './pages/FinOps';
 import LoginPage from './pages/Login';
@@ -56,6 +57,14 @@ function AppV3() {
                 element={
                   <ProtectedRoute>
                     <AgentsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/classroom" 
+                element={
+                  <ProtectedRoute>
+                    <ClassroomPage />
                   </ProtectedRoute>
                 } 
               />
