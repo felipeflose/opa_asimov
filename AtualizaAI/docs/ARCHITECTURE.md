@@ -36,6 +36,22 @@
 
 ---
 
+## Arquitetura v3.0 — Novidades
+
+A versão 3.0 introduziu a **Governança Estrita de Agentes** e a **Memória RAG Persistente** integrada ao GCS.
+
+### 🎓 Governança: Sala de Aula (Classroom)
+- **Isolamento de Treinamento:** Agentes novos em `status: "in_training"` são interceptados pelo orquestrador.
+- **Bloqueio no Telegram:** O bot avisa que o especialista ainda está sendo calibrado, protegendo a produção.
+- **Promoção Humana:** O Admin avalia o progresso (0-100%) antes de mudar o status para `"certified"`.
+
+### 🏛️ Inteligência: RAG & Cache no GCS
+- **WebScraper Service:** Extração de conteúdo útil de URLs externas via BeautifulSoup4.
+- **Cache de Conhecimento:** Tudo o que é lido é persistido em `agents/{name}/rag/cache/` no bucket do GCP.
+- **Injeção Dinâmica:** O conteúdo do cache é injetado no prompt como "Conhecimento Externo Confiável".
+
+---
+
 ## Camadas do Sistema
 
 ### 1. Interface Layer
