@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
-// URL do BFF (em produção seria o domínio do Cloud Run)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// Em produção (Cloud Run), usamos caminhos relativos para falar com o mesmo host
+// Em desenvolvimento, o proxy do Vite (/api) cuida do redirecionamento para o backend local (8080)
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
