@@ -1354,7 +1354,9 @@ async def napkin_visual_proxy(request: Request, url: str = None, token: str = No
 
 # --- 4. Servir Frontend React ---
 # Montamos a pasta dist gerada pelo build do Vite
-frontend_path = os.path.join(os.getcwd(), "frontend", "dist")
+# Usamos o caminho absoluto relativo ao arquivo para evitar erros de CWD
+current_dir = os.path.dirname(os.path.abspath(__file__))
+frontend_path = os.path.join(current_dir, "frontend", "dist")
 
 if os.path.exists(frontend_path):
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
