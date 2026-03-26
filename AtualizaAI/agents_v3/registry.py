@@ -38,6 +38,9 @@ class AgentRegistry:
             dynamic_config = await self._load_dynamic_config(name)
             
             instance = agent_class(self.gemini_client)
+            # Injeta GCS para suporte a RAG
+            instance.gcs = self.gcs
+            
             if dynamic_config:
                 instance.tools = dynamic_config.get("tools", [])
                 instance.system_prompt = dynamic_config.get("system_prompt", instance.system_prompt)
@@ -55,7 +58,8 @@ class AgentRegistry:
                 system_prompt=config["system_prompt"],
                 gemini_client=self.gemini_client,
                 tools=config.get("tools", []),
-                rag=config.get("rag", {"files": [], "links": []})
+                rag=config.get("rag", {"files": [], "links": []}),
+                gcs_client=self.gcs
             )
             self._instances[name] = instance
             return instance

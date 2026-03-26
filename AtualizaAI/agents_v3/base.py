@@ -13,34 +13,69 @@ class AgentResult(BaseModel):
     agent_name: str
     status: str = "success"
 
+import hashlib
 from services.scraper import WebScraper
+from storage_v3.gcs import GCSClient
 
 class BaseAgent:
     """Classe base v3 simplificada para todos os agentes especializados"""
-    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None, rag: Dict = None):
+    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None, rag: Dict = None, gcs_client: Optional[GCSClient] = None):
         self.name = name
         self.purpose = purpose
         self.system_prompt = system_prompt
         self.gemini_client = gemini_client
         self.tools = tools or []
         self.rag = rag or {"files": [], "links": []}
+        self.gcs = gcs_client
 
     async def run(self, task: str) -> AgentResult:
         """Executa a tarefa dada pelo orquestrador e retorna o resultado formatado"""
         try:
             logger.info("agent_run", agent=self.name, task=task[:50])
             
-            # 1. Coleta conhecimento externo (RAG Links)
+            # 1. Coleta conhecimento externo (RAG Links com Cache no GCS)
             external_context = ""
             links = self.rag.get("links", [])
-            if links:
-                logger.info("rag_link_browsing", agent=self.name, count=len(links))
-                for link in links:
+            for link in links:
+                content = None
+                cache_path = None
+                
+                # Tenta ler do cache no GCS se disponível
+                if self.gcs:
+                    link_hash = hashlib.md5(link.encode()).hexdigest()
+                    cache_path = f"agents/{self.name}/rag/cache/{link_hash}.txt"
+                    try:
+                        blob = self.gcs.bucket.blob(cache_path)
+                        if blob.exists():
+                            content = blob.download_as_text()
+                            logger.info("rag_cache_hit", agent=self.name, link=link)
+                    except Exception: pass
+                
+                # Se não tem cache, faz scraping e salva
+                if not content:
+                    logger.info("rag_link_scraping", agent=self.name, link=link)
                     content = await WebScraper.get_content(link)
-                    if content:
-                        external_context += f"\n--- CONTEÚDO DO LINK ({link}) ---\n{content}\n"
+                    if content and self.gcs and cache_path:
+                        try:
+                            self.gcs.bucket.blob(cache_path).upload_from_string(content)
+                            logger.info("rag_cache_saved", agent=self.name, path=cache_path)
+                        except Exception: pass
+                
+                if content:
+                    external_context += f"\n--- CONTEÚDO DO LINK ({link}) ---\n{content}\n"
 
-            # 2. Prepara o prompt Final com Conhecimento Injetado
+            # 2. Processa Documentos (Arquivos RAG)
+            files = self.rag.get("files", [])
+            for file_path in files:
+                if self.gcs:
+                    try:
+                        blob = self.gcs.bucket.blob(file_path)
+                        if blob.exists():
+                            file_content = blob.download_as_text()
+                            external_context += f"\n--- CONTEÚDO DO ARQUIVO ({file_path}) ---\n{file_content}\n"
+                    except Exception: pass
+
+            # 3. Prepara o prompt Final com Conhecimento Injetado
             final_task = task
             if external_context:
                 final_task = (
