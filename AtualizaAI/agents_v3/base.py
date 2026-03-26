@@ -15,18 +15,21 @@ class AgentResult(BaseModel):
 
 class BaseAgent:
     """Classe base v3 simplificada para todos os agentes especializados"""
-    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient):
+    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None):
         self.name = name
         self.purpose = purpose
         self.system_prompt = system_prompt
         self.gemini_client = gemini_client
+        self.tools = tools or []
 
-    async def run(self, task: str, use_search: bool = True) -> AgentResult:
+    async def run(self, task: str) -> AgentResult:
         """Executa a tarefa dada pelo orquestrador e retorna o resultado formatado"""
         try:
             logger.info("agent_run", agent=self.name, task=task[:50])
             
-            # Executa prompt com FERRAMENTAS DE BUSCA ATIVADAS
+            # Executa prompt com FERRAMENTAS DINÂMICAS do registro
+            use_search = "google_search" in self.tools
+            
             resp = await self.gemini_client.generate_text(
                 prompt=task, 
                 system_instruction=self.system_prompt,
@@ -55,5 +58,6 @@ class BaseAgent:
             "name": self.name,
             "purpose": self.purpose,
             "system_prompt": self.system_prompt,
+            "tools": self.tools,
             "agent_type": self.__class__.__name__
         }

@@ -34,7 +34,7 @@ def get_orchestrator(request: Request) -> OrchestratorV3:
         context_builder=ContextBuilder(),
         gemini=gemini,
         parser=DecisionParser(),
-        router=ActionRouter(agent_registry=AgentRegistry(gemini))
+        router=ActionRouter(agent_registry=AgentRegistry(gemini, request.app.state.project_id))
     )
 
 @router.post("", response_model=ChatResponse)
