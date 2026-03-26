@@ -14,11 +14,15 @@ const AgentsPage = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    const tools = [];
+    if (formData.get('tool_google_search')) tools.push('google_search');
+    
     const agentData = {
       name: formData.get('name'),
       purpose: formData.get('purpose'),
       system_prompt: formData.get('system_prompt'),
       avatar: selectedAgent?.avatar,
+      tools: tools
     };
     
     await saveAgent.mutateAsync(agentData);
@@ -83,7 +87,7 @@ const AgentsPage = () => {
         {/* Editor / Visualizador */}
         <div className="lg:col-span-2">
           {selectedAgent ? (
-            <div className="bg-slate-950 border border-slate-800 rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+            <div key={selectedAgent.name || 'new'} className="bg-slate-950 border border-slate-800 rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
               <div className="flex justify-between items-start mb-10">
                 <div className="flex gap-6 items-center">
                   <div className="w-20 h-20 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-2xl shadow-inner">
@@ -149,6 +153,25 @@ const AgentsPage = () => {
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs font-mono focus:outline-none focus:border-indigo-500 transition-all resize-none"
                     placeholder="Defina as diretrizes, limitações e tom de voz do agente..."
                   />
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest pl-1">Ferramentas Ativas (Tools)</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label className={`flex items-center gap-4 p-4 border rounded-xl transition-all cursor-pointer ${selectedAgent.tools?.includes('google_search') ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-slate-800 bg-slate-900'}`}>
+                      <input 
+                        type="checkbox" 
+                        name="tool_google_search" 
+                        disabled={!isEditing}
+                        defaultChecked={selectedAgent.tools?.includes('google_search')}
+                        className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-offset-slate-950"
+                      />
+                      <div>
+                        <p className="text-xs font-bold text-slate-200 uppercase tracking-tight">Google Search</p>
+                        <p className="text-[9px] text-slate-500 uppercase tracking-widest">Navegação em tempo real</p>
+                      </div>
+                    </label>
+                  </div>
                 </div>
 
                 {isEditing && (
