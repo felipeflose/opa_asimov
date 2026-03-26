@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Dict, Any, List, Union
+from typing import Any, Union
 from pydantic import BaseModel
 import structlog
 from core.gemini_client import GeminiClient
@@ -19,7 +19,7 @@ from storage_v3.gcs import GCSClient
 
 class BaseAgent:
     """Classe base v3 simplificada para todos os agentes especializados"""
-    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: List[str] = None, rag: Dict = None, gcs_client: Optional[GCSClient] = None, status: str = "ready", training_progress: int = 100):
+    def __init__(self, name: str, purpose: str, system_prompt: str, gemini_client: GeminiClient, tools: list[str] = None, rag: dict = None, gcs_client: Any = None, status: str = "ready", training_progress: int = 100):
         self.name = name
         self.purpose = purpose
         self.system_prompt = system_prompt
