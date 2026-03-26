@@ -1373,6 +1373,22 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 frontend_path = os.path.join(current_dir, "frontend", "dist")
 
 if os.path.exists(frontend_path):
+    from fastapi.responses import FileResponse
+    from fastapi.exceptions import HTTPException
+    
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_path, "assets")), name="assets")
+    
+    @app.exception_handler(404)
+    async def custom_404_handler(request: Request, exc: HTTPException):
+        if request.url.path.startswith("/api"):
+            from fastapi.responses import JSONResponse
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
+            
+        index_file = os.path.join(frontend_path, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+        return {"error": "Frontend route not found"}
+
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
 else:
     @app.get("/")
