@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDashboard } from '../api/hooks/useDashboard';
+import ActivityFeed from '../components/ActivityFeed';
 
 const KpiCard = ({ label, value, trend, icon, color = 'indigo' }) => {
   return (
