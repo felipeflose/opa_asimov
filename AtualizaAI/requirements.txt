@@ -14,4 +14,5 @@ python-dotenv==1.0.0
 psutil==6.0.0
 numpy==1.26.4
 pandas==2.2.2
+networkx==3.3
 # Removed: pyspark, faiss-cpu, scikit-learn, pyarrow, langchain (as per v3 specs)
