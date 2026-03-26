@@ -6,6 +6,7 @@ import structlog
 from api.auth import require_auth
 from core.orchestrator_v3.orchestrator import OrchestratorV3, InputProcessor, ContextBuilder, DecisionParser, ActionRouter
 from core.gemini_client import GeminiClient
+from agents_v3.registry import AgentRegistry
 
 logger = structlog.get_logger()
 router = APIRouter(prefix="/api/chat", tags=["Orchestrator"])
@@ -33,7 +34,7 @@ def get_orchestrator(request: Request) -> OrchestratorV3:
         context_builder=ContextBuilder(),
         gemini=gemini,
         parser=DecisionParser(),
-        router=ActionRouter()
+        router=ActionRouter(agent_registry=AgentRegistry(gemini))
     )
 
 @router.post("/", response_model=ChatResponse)

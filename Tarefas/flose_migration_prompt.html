@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flose AI — Prompt de Migração Completa v3.0</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap');
+
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ef;
+    --accent: #e63946;
+    --accent2: #2563eb;
+    --muted: #6b7280;
+    --border: #d1cec8;
+    --code-bg: #1a1a2e;
+    --code-text: #a8dadc;
+    --warn: #f59e0b;
+    --success: #10b981;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 0;
+  }
+
+  /* COVER */
+  .cover {
+    background: var(--ink);
+    color: var(--paper);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230,57,70,0.15) 0%, transparent 70%);
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -100px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
+  }
+
+  .cover-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .cover h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(32px, 5vw, 64px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .cover h1 span { color: var(--accent); }
+
+  .cover-sub {
+    font-size: 18px;
+    font-weight: 300;
+    color: rgba(245,243,239,0.6);
+    max-width: 600px;
+    margin-bottom: 60px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(245,243,239,0.4);
+    z-index: 1;
+    position: relative;
+    border-top: 1px solid rgba(245,243,239,0.1);
+    padding-top: 30px;
+  }
+
+  .cover-meta span { display: flex; flex-direction: column; gap: 4px; }
+  .cover-meta strong { color: var(--paper); font-size: 13px; letter-spacing: 0; }
+
+  /* GRID DECORATION */
+  .cover-grid {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+      linear-gradient(rgba(245,243,239,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,243,239,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* MAIN CONTENT */
+  .doc {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 40px;
+  }
+
+  /* SECTION HEADERS */
+  .section-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 32px 0 12px;
+    color: var(--ink);
+  }
+
+  h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 24px 0 8px;
+  }
+
+  p { margin-bottom: 16px; }
+
+  /* SECTION DIVIDER */
+  .section {
+    margin-bottom: 80px;
+    padding-bottom: 80px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  /* CALLOUTS */
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: rgba(230,57,70,0.05);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .callout.warn {
+    border-color: var(--warn);
+    background: rgba(245,158,11,0.05);
+  }
+
+  .callout.success {
+    border-color: var(--success);
+    background: rgba(16,185,129,0.05);
+  }
+
+  .callout.info {
+    border-color: var(--accent2);
+    background: rgba(37,99,235,0.05);
+  }
+
+  .callout strong {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+
+  .callout.warn strong { color: var(--warn); }
+  .callout.success strong { color: var(--success); }
+  .callout.info strong { color: var(--accent2); }
+
+  /* CODE BLOCKS */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    padding: 24px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 20px 0;
+    position: relative;
+  }
+
+  pre .comment { color: #6272a4; font-style: italic; }
+  pre .keyword { color: #ff79c6; }
+  pre .string { color: #f1fa8c; }
+  pre .num { color: #bd93f9; }
+  pre .func { color: #50fa7b; }
+  pre .var { color: #8be9fd; }
+
+  code {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.06);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  pre code { background: none; padding: 0; color: inherit; }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+
+  th {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 10px 16px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:hover td { background: rgba(0,0,0,0.02); }
+
+  td:first-child { font-weight: 600; font-size: 12px; }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .badge-red { background: rgba(230,57,70,0.1); color: var(--accent); border: 1px solid rgba(230,57,70,0.2); }
+  .badge-blue { background: rgba(37,99,235,0.1); color: var(--accent2); border: 1px solid rgba(37,99,235,0.2); }
+  .badge-green { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+  .badge-yellow { background: rgba(245,158,11,0.1); color: var(--warn); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* LIST */
+  ul, ol {
+    padding-left: 24px;
+    margin-bottom: 16px;
+  }
+
+  li { margin-bottom: 6px; }
+
+  li::marker {
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* PROMPT BOX */
+  .prompt-box {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 32px;
+    border-radius: 12px;
+    margin: 24px 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    position: relative;
+  }
+
+  .prompt-box::before {
+    content: 'PROMPT';
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    background: var(--accent);
+    color: white;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+
+  .prompt-box p { margin-bottom: 12px; color: rgba(245,243,239,0.85); }
+  .prompt-box strong { color: var(--paper); }
+  .prompt-box em { color: var(--code-text); font-style: normal; }
+
+  /* TOC */
+  .toc {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 40px;
+    margin-bottom: 80px;
+  }
+
+  .toc h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(245,243,239,0.08);
+    gap: 16px;
+    text-decoration: none;
+    color: rgba(245,243,239,0.7);
+    font-size: 14px;
+  }
+
+  .toc-item:hover { color: var(--paper); }
+
+  .toc-item span:last-child {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .toc-item span:first-child {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+  }
+
+  .toc-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: rgba(245,243,239,0.3);
+    flex-shrink: 0;
+    width: 24px;
+  }
+
+  /* ARCH DIAGRAM */
+  .arch-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0;
+    background: white;
+  }
+
+  .arch-row {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .arch-node {
+    flex: 1;
+    min-width: 120px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .arch-node.primary { border-color: var(--accent); background: rgba(230,57,70,0.04); }
+  .arch-node.secondary { border-color: var(--accent2); background: rgba(37,99,235,0.04); }
+  .arch-node.neutral { border-color: var(--border); background: #fafafa; }
+
+  .arch-arrow {
+    text-align: center;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 48px;
+  }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .check-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .check-box.done {
+    background: var(--success);
+    border-color: var(--success);
+  }
+
+  /* PRINT */
+  @media print {
+    .cover { page-break-after: always; min-height: auto; padding: 40px; }
+    .doc { padding: 20px; }
+    pre { white-space: pre-wrap; }
+  }
+
+  /* PRIORITY PILLS */
+  .priority { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+    font-weight: 700;
+  }
+  .pill-1 { color: var(--accent); border-color: var(--accent); background: rgba(230,57,70,0.06); }
+  .pill-2 { color: var(--warn); border-color: var(--warn); background: rgba(245,158,11,0.06); }
+  .pill-3 { color: var(--accent2); border-color: var(--accent2); background: rgba(37,99,235,0.06); }
+  .pill-4 { color: var(--success); border-color: var(--success); background: rgba(16,185,129,0.06); }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-tag">// documento técnico — confidencial</div>
+  <h1>Flose AI Platform<br><span>Migração Completa</span><br>v3.0 — BFF Architecture</h1>
+  <p class="cover-sub">Prompt de engenharia completo para refatoração, simplificação e modernização do sistema multi-agente. Do monólito atual para uma arquitetura limpa, testável e escalável.</p>
+  <div class="cover-meta">
+    <span><label>Versão Atual</label><strong>v2.1 (Monolítica)</strong></span>
+    <span><label>Versão Destino</label><strong>v3.0 (BFF + Clean Arch)</strong></span>
+    <span><label>Data</label><strong>Março 2026</strong></span>
+    <span><label>Prioridade</label><strong>CRÍTICA</strong></span>
+    <span><label>Complexidade</label><strong>Alta</strong></span>
+  </div>
+</div>
+
+<!-- MAIN DOCUMENT -->
+<div class="doc">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>// Índice do Documento</h3>
+    <a class="toc-item" href="#diagnostico">
+      <span><span class="toc-num">01</span>Diagnóstico: Problemas Críticos do Sistema Atual</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#arquitetura">
+      <span><span class="toc-num">02</span>Nova Arquitetura: BFF + Clean Architecture</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#backend">
+      <span><span class="toc-num">03</span>Prompt: Refatoração do Backend (Python/FastAPI)</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#bff">
+      <span><span class="toc-num">04</span>Prompt: Construção da Camada BFF</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#frontend">
+      <span><span class="toc-num">05</span>Prompt: Reescrita do Frontend React</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#orquestrador">
+      <span><span class="toc-num">06</span>Prompt: Simplificação do Orquestrador</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#agentes">
+      <span><span class="toc-num">07</span>Prompt: Sistema de Agentes Simplificado</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#storage">
+      <span><span class="toc-num">08</span>Prompt: Storage & Estado</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#deploy">
+      <span><span class="toc-num">09</span>Prompt: CI/CD e Deploy Simplificado</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#migracao">
+      <span><span class="toc-num">10</span>Plano de Migração Passo a Passo</span>
+      <span>→</span>
+    </a>
+    <a class="toc-item" href="#master-prompt">
+      <span><span class="toc-num">11</span>MASTER PROMPT — Use este para começar</span>
+      <span>→</span>
+    </a>
+  </div>
+
+  <!-- SECTION 1: DIAGNOSTICO -->
+  <div class="section" id="diagnostico">
+    <span class="section-num">// 01 — DIAGNÓSTICO</span>
+    <h2>Problemas Críticos<br>do Sistema Atual</h2>
+
+    <p>Após análise completa do codebase (<code>entrypoint.py</code>, <code>App.jsx</code>, orquestrador, agentes, storage e CI/CD), foram identificados os seguintes anti-padrões críticos que tornam o sistema frágil, difícil de manter e caro de operar:</p>
+
+    <div class="callout">
+      <strong>⚠ Problema #1 — God Files</strong>
+      <p>O <code>entrypoint.py</code> tem mais de <strong>700 linhas</strong> com 40+ endpoints, lógica de negócio, autenticação, manipulação de GCS, orquestração de agentes e servir arquivos estáticos — tudo misturado. O <code>App.jsx</code> tem <strong>2.500+ linhas</strong> com UI, estado global, lógica de negócio e chamadas de API sem separação.</p>
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠ Problema #2 — Nenhuma Separação de Responsabilidades</strong>
+      <p>Não existe separação entre camadas (UI → BFF → Serviços → Storage). A autenticação é feita de 3 formas diferentes. O estado é gerenciado de forma ad-hoc com <code>useState</code> local, <code>sessionStorage</code>, <code>localStorage</code> e estado Streamlit simultâneos.</p>
+    </div>
+
+    <div class="callout">
+      <strong>⚠ Problema #3 — Orquestrador Sobrecarregado</strong>
+      <p>O <code>CognitiveOrchestrator</code> faz: sanitização, embedding, busca vetorial, memória episódica, memória compartilhada, DORA metrics, knowledge graph, afinidade de agentes, FinOps, retry de API e lógica de decisão — tudo em um único método <code>process_command()</code>. É impossível testar ou debugar isoladamente.</p>
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠ Problema #4 — Frontend Monolítico sem Estado Gerenciado</strong>
+      <p>O <code>App.jsx</code> tem 50+ <code>useState</code> hooks no escopo raiz. Sem Context, Redux ou Zustand. Cada tab recarrega dados completos. O <code>handleOrchestratorCommand</code> é referenciado mas nunca definido — o código já está quebrado.</p>
+    </div>
+
+    <div class="callout">
+      <strong>⚠ Problema #5 — Segurança Frágil</strong>
+      <p>Token passado via query param como fallback (<code>?token=...</code>). O <code>API_TOKEN</code> é definido no escopo global do processo. O <code>validate_token()</code> aceita token nulo se <code>MASTER_KEY</code> não estiver configurada. A página Streamlit salva credenciais em <code>.env</code> local via <code>subprocess</code>.</p>
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠ Problema #6 — Zero Testes</strong>
+      <p>Apenas 2 arquivos de teste (<code>test_gcs.py</code> e <code>test_finops.py</code>) com cobertura mínima. Nenhum teste de integração, nenhum teste de endpoints da API, nenhum teste dos agentes.</p>
+    </div>
+
+    <div class="callout">
+      <strong>⚠ Problema #7 — Duplicação e Inconsistência</strong>
+      <p>Dois sistemas de dashboard paralelos: Streamlit (<code>src/dashboard/</code>) e React (<code>frontend/</code>). Dois sistemas de autenticação. Dois sistemas de log. O grafo de conhecimento tem nós "lixo" filtrados em runtime em vez de na inserção.</p>
+    </div>
+
+    <h3>Resumo do Impacto</h3>
+    <table>
+      <tr><th>Área</th><th>Estado Atual</th><th>Risco</th></tr>
+      <tr><td>entrypoint.py</td><td>700+ linhas, 40+ endpoints misturados</td><td><span class="badge badge-red">CRÍTICO</span></td></tr>
+      <tr><td>App.jsx</td><td>2500+ linhas, estado caótico</td><td><span class="badge badge-red">CRÍTICO</span></td></tr>
+      <tr><td>Orquestrador</td><td>15+ responsabilidades num método</td><td><span class="badge badge-red">CRÍTICO</span></td></tr>
+      <tr><td>Autenticação</td><td>3 métodos inconsistentes</td><td><span class="badge badge-red">CRÍTICO</span></td></tr>
+      <tr><td>Testes</td><td>~2% cobertura</td><td><span class="badge badge-yellow">ALTO</span></td></tr>
+      <tr><td>Streamlit + React</td><td>Dois dashboards paralelos</td><td><span class="badge badge-yellow">ALTO</span></td></tr>
+      <tr><td>Dependências</td><td>Pyspark, Iceberg em requirements para MVP</td><td><span class="badge badge-blue">MÉDIO</span></td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 2: ARQUITETURA -->
+  <div class="section" id="arquitetura">
+    <span class="section-num">// 02 — ARQUITETURA ALVO</span>
+    <h2>BFF + Clean Architecture</h2>
+
+    <p>O padrão <strong>Backend For Frontend (BFF)</strong> é a solução ideal aqui. Em vez de um único backend monolítico que serve tanto o React quanto o Telegram, criamos camadas separadas com responsabilidades claras:</p>
+
+    <div class="arch-box">
+      <div class="arch-row">
+        <div class="arch-node primary">React SPA<br><small>UI apenas</small></div>
+        <div class="arch-node primary">Telegram Bot<br><small>Webhook</small></div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row">
+        <div class="arch-node secondary">BFF / API Gateway<br><small>FastAPI — Roteamento, Auth, Rate Limit</small></div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row">
+        <div class="arch-node neutral">Orchestrator Service<br><small>Decisão + Roteamento de Agentes</small></div>
+        <div class="arch-node neutral">Agent Registry<br><small>CRUD de Agentes</small></div>
+        <div class="arch-node neutral">FinOps Service<br><small>Custo + Billing</small></div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row">
+        <div class="arch-node neutral">GCS Client<br><small>Storage único</small></div>
+        <div class="arch-node neutral">Gemini API<br><small>LLM único</small></div>
+        <div class="arch-node neutral">Telegram API<br><small>Bot</small></div>
+      </div>
+    </div>
+
+    <h3>Estrutura de Diretórios Alvo</h3>
+    <pre>
+flose-ai/
+├── <span class="func">api/</span>                    <span class="comment"># BFF — FastAPI</span>
+│   ├── main.py             <span class="comment"># App + routers</span>
+│   ├── auth.py             <span class="comment"># JWT auth única</span>
+│   ├── routers/
+│   │   ├── agents.py       <span class="comment"># /api/agents CRUD</span>
+│   │   ├── tasks.py        <span class="comment"># /api/tasks CRUD</span>
+│   │   ├── chat.py         <span class="comment"># /api/chat endpoint</span>
+│   │   ├── finops.py       <span class="comment"># /api/finops</span>
+│   │   └── webhook.py      <span class="comment"># /telegram_webhook</span>
+│   └── middleware/
+│       ├── rate_limit.py
+│       └── cors.py
+│
+├── <span class="func">core/</span>                   <span class="comment"># Business Logic</span>
+│   ├── orchestrator.py     <span class="comment"># Orquestrador simples</span>
+│   ├── agent_runner.py     <span class="comment"># Execução de agentes</span>
+│   ├── gemini_client.py    <span class="comment"># Wrapper Gemini</span>
+│   └── knowledge_graph.py  <span class="comment"># Grafo</span>
+│
+├── <span class="func">services/</span>               <span class="comment"># Serviços de Domínio</span>
+│   ├── agent_service.py
+│   ├── task_service.py
+│   └── finops_service.py
+│
+├── <span class="func">storage/</span>                <span class="comment"># Acesso a Dados</span>
+│   ├── gcs.py              <span class="comment"># GCS client único</span>
+│   └── cache.py            <span class="comment"># Cache em memória</span>
+│
+├── <span class="func">agents/</span>                 <span class="comment"># Agentes Especializados</span>
+│   ├── base.py
+│   ├── telegram_agent.py
+│   ├── vision_agent.py
+│   └── finops_guardian.py
+│
+├── <span class="func">frontend/</span>               <span class="comment"># React SPA (sem Streamlit)</span>
+│   ├── src/
+│   │   ├── store/          <span class="comment"># Zustand state</span>
+│   │   ├── api/            <span class="comment"># API hooks (React Query)</span>
+│   │   ├── pages/          <span class="comment"># Route pages</span>
+│   │   └── components/     <span class="comment"># UI components</span>
+│   └── package.json
+│
+├── <span class="func">tests/</span>                  <span class="comment"># Testes</span>
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+│
+└── docker-compose.yml      <span class="comment"># Dev local</span></pre>
+
+    <div class="callout success">
+      <strong>✓ Princípios Guia</strong>
+      <ul>
+        <li><strong>Um arquivo = Uma responsabilidade.</strong> Nenhum arquivo ultrapassa 200 linhas.</li>
+        <li><strong>Uma fonte de verdade.</strong> Estado no Zustand, dados no React Query, persistência no GCS.</li>
+        <li><strong>Uma autenticação.</strong> JWT gerado no login, validado via middleware FastAPI.</li>
+        <li><strong>Zero Streamlit.</strong> Removido completamente. Apenas React.</li>
+        <li><strong>Testabilidade.</strong> Cada camada é injetável e mockável.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 3: BACKEND -->
+  <div class="section" id="backend">
+    <span class="section-num">// 03 — PROMPT: BACKEND</span>
+    <h2>Refatoração do Backend<br>Python / FastAPI</h2>
+
+    <div class="prompt-box">
+      <p><strong>Você é um arquiteto de software sênior especializando em Python e FastAPI.</strong> Vou te dar o código atual de um sistema monolítico e você vai refatorá-lo seguindo Clean Architecture e o padrão BFF.</p>
+
+      <p><strong>CONTEXTO DO SISTEMA:</strong> Plataforma multi-agente de IA chamada Flose AI. Roda no Google Cloud Run. Usa Gemini API para LLM, GCS para storage e tem integração com Telegram.</p>
+
+      <p><strong>PROBLEMA ATUAL:</strong> O arquivo <em>entrypoint.py</em> tem 700+ linhas com tudo misturado: autenticação, roteamento, lógica de negócio, acesso a GCS, orquestração de agentes e servir arquivos estáticos do React.</p>
+
+      <p><strong>REGRAS OBRIGATÓRIAS para a refatoração:</strong></p>
+      <p>1. Crie um <em>api/main.py</em> limpo que só monta a app FastAPI e inclui routers</p>
+      <p>2. Implemente autenticação JWT usando <em>python-jose</em> — um único middleware, nenhum fallback via query param</p>
+      <p>3. Crie routers separados: <em>agents.py</em>, <em>tasks.py</em>, <em>chat.py</em>, <em>finops.py</em>, <em>webhook.py</em></p>
+      <p>4. Cada router tem máximo 150 linhas e delega lógica para uma service class</p>
+      <p>5. Nenhum router acessa GCS diretamente — só via service</p>
+      <p>6. Configure CORS restritivo: apenas a URL do frontend em produção</p>
+      <p>7. Adicione rate limiting: 60 req/min por IP para endpoints públicos, 300/min para autenticados</p>
+      <p>8. Health check endpoint em <em>/health</em> que verifica GCS e Gemini API</p>
+      <p>9. Todos os endpoints retornam Pydantic models — zero dicts soltos</p>
+      <p>10. Logging estruturado em JSON via <em>structlog</em> — nenhum print()</p>
+
+      <p><strong>COMEÇE pelo arquivo <em>api/main.py</em> e <em>api/auth.py</em>. Depois os routers em ordem de prioridade: chat, tasks, agents.</strong></p>
+    </div>
+
+    <h3>Contrato da API (Endpoints Essenciais)</h3>
+    <table>
+      <tr><th>Método</th><th>Path</th><th>Auth</th><th>Descrição</th></tr>
+      <tr><td>POST</td><td>/api/auth/login</td><td>Público</td><td>Retorna JWT</td></tr>
+      <tr><td>POST</td><td>/api/chat</td><td>JWT</td><td>Envia mensagem ao orquestrador</td></tr>
+      <tr><td>GET</td><td>/api/agents</td><td>JWT</td><td>Lista agentes</td></tr>
+      <tr><td>POST</td><td>/api/agents</td><td>JWT</td><td>Cria agente</td></tr>
+      <tr><td>PATCH</td><td>/api/agents/{id}</td><td>JWT</td><td>Atualiza agente</td></tr>
+      <tr><td>GET</td><td>/api/tasks</td><td>JWT</td><td>Lista tasks com filtros</td></tr>
+      <tr><td>POST</td><td>/api/tasks</td><td>JWT</td><td>Cria task</td></tr>
+      <tr><td>PATCH</td><td>/api/tasks/{id}/status</td><td>JWT</td><td>Atualiza status</td></tr>
+      <tr><td>POST</td><td>/api/tasks/{id}/execute</td><td>JWT</td><td>Executa task</td></tr>
+      <tr><td>GET</td><td>/api/finops/summary</td><td>JWT</td><td>Resumo de custos</td></tr>
+      <tr><td>GET</td><td>/api/graph</td><td>JWT</td><td>Knowledge graph</td></tr>
+      <tr><td>POST</td><td>/telegram_webhook</td><td>Token Telegram</td><td>Webhook do bot</td></tr>
+      <tr><td>GET</td><td>/health</td><td>Público</td><td>Health check</td></tr>
+    </table>
+
+    <h3>Exemplo: auth.py correto</h3>
+    <pre>
+<span class="comment"># api/auth.py — JWT única, sem fallbacks</span>
+<span class="keyword">from</span> datetime <span class="keyword">import</span> datetime, timedelta
+<span class="keyword">from</span> jose <span class="keyword">import</span> JWTError, jwt
+<span class="keyword">from</span> fastapi <span class="keyword">import</span> Depends, HTTPException, Security
+<span class="keyword">from</span> fastapi.security <span class="keyword">import</span> HTTPBearer, HTTPAuthorizationCredentials
+
+<span class="var">SECRET_KEY</span> = os.environ[<span class="string">"MASTER_KEY"</span>]  <span class="comment"># Falha explicitamente se ausente</span>
+<span class="var">ALGORITHM</span> = <span class="string">"HS256"</span>
+<span class="var">security</span> = HTTPBearer()
+
+<span class="keyword">def</span> <span class="func">create_token</span>(admin_id: str) -> str:
+    expire = datetime.utcnow() + timedelta(hours=<span class="num">8</span>)
+    <span class="keyword">return</span> jwt.encode(
+        {<span class="string">"sub"</span>: admin_id, <span class="string">"exp"</span>: expire},
+        SECRET_KEY, algorithm=ALGORITHM
+    )
+
+<span class="keyword">async def</span> <span class="func">require_auth</span>(
+    credentials: HTTPAuthorizationCredentials = Security(security)
+) -> str:
+    <span class="keyword">try</span>:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        <span class="keyword">return</span> payload[<span class="string">"sub"</span>]
+    <span class="keyword">except</span> JWTError:
+        <span class="keyword">raise</span> HTTPException(status_code=<span class="num">401</span>, detail=<span class="string">"Token inválido"</span>)</pre>
+  </div>
+
+  <!-- SECTION 4: BFF -->
+  <div class="section" id="bff">
+    <span class="section-num">// 04 — PROMPT: BFF</span>
+    <h2>Construção da<br>Camada BFF</h2>
+
+    <div class="prompt-box">
+      <p><strong>CONTEXTO:</strong> Estou construindo a camada BFF (Backend For Frontend) de uma plataforma de IA. O frontend é React + Vite. O backend core é Python/FastAPI.</p>
+
+      <p><strong>O BFF precisa:</strong></p>
+      <p>1. <em>Agregar dados</em> de múltiplas sources em uma única chamada — ex: <em>/api/dashboard</em> retorna stats + agentes + tasks recentes em uma query</p>
+      <p>2. <em>Transformar</em> os dados do backend para o formato exato que o React precisa — sem lógica de transformação no frontend</p>
+      <p>3. <em>Cachear</em> respostas pesadas em memória por 30 segundos (stats, grafo de conhecimento)</p>
+      <p>4. <em>SSE (Server-Sent Events)</em> para o feed de atividades em tempo real — em vez de polling a cada 5s</p>
+      <p>5. <em>Validação de schema</em> com Pydantic antes de retornar ao frontend</p>
+
+      <p><strong>Implemente o endpoint <em>/api/dashboard</em> que agrega:</strong></p>
+      <p>— Stats do FinOps (tokens, custo, chamadas do dia)</p>
+      <p>— Contagem de agentes ativos</p>
+      <p>— Tasks por status (aberto, em progresso, concluído)</p>
+      <p>— Últimas 5 atividades</p>
+      <p>— Score de saúde do sistema (0-100)</p>
+
+      <p><strong>E o endpoint SSE <em>/api/activity/stream</em> que envia eventos a cada 10s com novas atividades.</strong></p>
+
+      <p>Use <em>asyncio</em> para paralelizar as queries. Use <em>functools.lru_cache</em> com TTL para o cache. Documente cada endpoint com OpenAPI <em>summary</em> e <em>description</em>.</p>
+    </div>
+
+    <h3>Modelo de Dados BFF</h3>
+    <pre>
+<span class="comment"># schemas/dashboard.py</span>
+<span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel
+<span class="keyword">from</span> typing <span class="keyword">import</span> List
+
+<span class="keyword">class</span> <span class="func">DashboardStats</span>(BaseModel):
+    tokens_today: int
+    cost_today_usd: float
+    api_calls: int
+    agents_total: int
+    tasks_open: int
+    tasks_in_progress: int
+    tasks_done: int
+    health_score: float  <span class="comment"># 0.0 - 100.0</span>
+
+<span class="keyword">class</span> <span class="func">ActivityItem</span>(BaseModel):
+    id: str
+    agent: str
+    message: str
+    timestamp: str
+    type: str  <span class="comment"># "telegram" | "execution" | "system"</span>
+
+<span class="keyword">class</span> <span class="func">DashboardResponse</span>(BaseModel):
+    stats: DashboardStats
+    recent_activity: List[ActivityItem]
+    graph_node_count: int
+    last_updated: str</pre>
+  </div>
+
+  <!-- SECTION 5: FRONTEND -->
+  <div class="section" id="frontend">
+    <span class="section-num">// 05 — PROMPT: FRONTEND</span>
+    <h2>Reescrita do<br>Frontend React</h2>
+
+    <div class="prompt-box">
+      <p><strong>Você é um engenheiro frontend sênior.</strong> Preciso reescrever um dashboard React que está com 2500+ linhas em um único arquivo <em>App.jsx</em> e 50+ useState hooks soltos.</p>
+
+      <p><strong>Stack alvo:</strong> React 18 + Vite + Zustand (estado) + React Query (dados) + React Router v6 (rotas) + Recharts (gráficos). Sem Redux, sem Context manual.</p>
+
+      <p><strong>PROBLEMA PRINCIPAL:</strong> Todo estado global (token, stats, agents, tasks, activity, selectedTask, viewingAgent, etc.) está misturado em um único componente <em>App</em>. Não existe separação de páginas — tudo é controlado por <em>if (activeTab === 'X')</em>.</p>
+
+      <p><strong>REFATORAÇÃO NECESSÁRIA:</strong></p>
+
+      <p><strong>1. Estado com Zustand:</strong> Crie uma store <em>useAppStore</em> com: auth (token, isAuthenticated), ui (activeTab, toasts, modals), e separada uma store <em>useAgentStore</em> e <em>useTaskStore</em> para dados de domínio.</p>
+
+      <p><strong>2. Dados com React Query:</strong> Substitua todos os <em>fetch + useState</em> por hooks: <em>useAgents()</em>, <em>useTasks()</em>, <em>useDashboard()</em>, <em>useGraph()</em>. Configure <em>staleTime: 30_000</em> e <em>refetchInterval: 30_000</em> no dashboard. Use <em>useMutation</em> para POST/PATCH.</p>
+
+      <p><strong>3. Roteamento com React Router:</strong> Substitua o sistema de tabs por rotas reais: <em>/dashboard</em>, <em>/agents</em>, <em>/tasks</em>, <em>/finops</em>, <em>/settings</em>. Rota protegida <em>ProtectedRoute</em> que redireciona para <em>/login</em> se não autenticado.</p>
+
+      <p><strong>4. Componentes Atômicos:</strong> Cada componente em seu próprio arquivo. Máximo 150 linhas por componente. Hierarquia: <em>pages/Dashboard.jsx</em> usa <em>components/KpiCard.jsx</em> que usa <em>components/ui/Badge.jsx</em>.</p>
+
+      <p><strong>COMECE pela estrutura de arquivos e a store Zustand. Depois a página Dashboard com React Query.</strong></p>
+    </div>
+
+    <h3>Estrutura de Estado Zustand</h3>
+    <pre>
+<span class="comment">// store/useAppStore.js</span>
+<span class="keyword">import</span> { create } <span class="keyword">from</span> <span class="string">'zustand'</span>
+<span class="keyword">import</span> { persist } <span class="keyword">from</span> <span class="string">'zustand/middleware'</span>
+
+<span class="keyword">export const</span> <span class="func">useAuthStore</span> = create(
+  persist(
+    (set) => ({
+      token: <span class="keyword">null</span>,
+      isAuthenticated: <span class="keyword">false</span>,
+      login: (token) => set({ token, isAuthenticated: <span class="keyword">true</span> }),
+      logout: () => set({ token: <span class="keyword">null</span>, isAuthenticated: <span class="keyword">false</span> }),
+    }),
+    {
+      name: <span class="string">'flose-auth'</span>,
+      storage: sessionStorageAdapter, <span class="comment">// session apenas</span>
+    }
+  )
+)
+
+<span class="comment">// store/useUIStore.js — sem persist</span>
+<span class="keyword">export const</span> <span class="func">useUIStore</span> = create((set) => ({
+  toasts: [],
+  selectedTask: <span class="keyword">null</span>,
+  viewingAgent: <span class="keyword">null</span>,
+  isCommandPaletteOpen: <span class="keyword">false</span>,
+  addToast: (toast) => set(s => ({ toasts: [...s.toasts, toast] })),
+  removeToast: (id) => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })),
+  setSelectedTask: (task) => set({ selectedTask: task }),
+  setViewingAgent: (agent) => set({ viewingAgent: agent }),
+}))</pre>
+
+    <h3>Exemplo de Hook React Query</h3>
+    <pre>
+<span class="comment">// api/hooks/useAgents.js</span>
+<span class="keyword">import</span> { useQuery, useMutation, useQueryClient } <span class="keyword">from</span> <span class="string">'@tanstack/react-query'</span>
+<span class="keyword">import</span> { apiClient } <span class="keyword">from</span> <span class="string">'../client'</span>
+
+<span class="keyword">export function</span> <span class="func">useAgents</span>() {
+  <span class="keyword">return</span> useQuery({
+    queryKey: [<span class="string">'agents'</span>],
+    queryFn: () => apiClient.get(<span class="string">'/api/agents'</span>).then(r => r.data),
+    staleTime: <span class="num">60_000</span>,
+  })
+}
+
+<span class="keyword">export function</span> <span class="func">useUpdateAgent</span>() {
+  <span class="keyword">const</span> qc = useQueryClient()
+  <span class="keyword">return</span> useMutation({
+    mutationFn: ({ id, data }) => apiClient.patch(<span class="string">`/api/agents/${id}`</span>, data),
+    onSuccess: () => qc.invalidateQueries([<span class="string">'agents'</span>]),
+  })
+}</pre>
+  </div>
+
+  <!-- SECTION 6: ORQUESTRADOR -->
+  <div class="section" id="orquestrador">
+    <span class="section-num">// 06 — PROMPT: ORQUESTRADOR</span>
+    <h2>Simplificação do<br>Orquestrador Cognitivo</h2>
+
+    <div class="prompt-box">
+      <p><strong>O orquestrador atual tem 15+ responsabilidades misturadas.</strong> Preciso decomposição radical.</p>
+
+      <p><strong>ATUAL (problemático):</strong> Um método <em>process_command()</em> com 200+ linhas que faz: sanitização de input, busca vetorial, memória episódica, memória compartilhada, histórico de chat, chamada Gemini, validação Pydantic, roteamento de ação, execução de agente, tracking de afinidade, log no BigQuery, update do knowledge graph, e episódio na memória.</p>
+
+      <p><strong>ALVO (limpo):</strong> Separe em classes distintas com injeção de dependência:</p>
+
+      <p><em>InputProcessor</em> — sanitiza e prepara o contexto (máx 50 linhas)</p>
+      <p><em>ContextBuilder</em> — monta contexto de memória + histórico (máx 80 linhas)</p>
+      <p><em>GeminiClient</em> — wrapper para chamadas à API com retry (máx 60 linhas)</p>
+      <p><em>DecisionParser</em> — valida e parseia o JSON de decisão (máx 50 linhas)</p>
+      <p><em>ActionRouter</em> — executa a ação decidida (máx 100 linhas)</p>
+      <p><em>Orchestrator</em> — compõe as classes acima (máx 80 linhas)</p>
+
+      <p><strong>REGRAS:</strong></p>
+      <p>— Cada classe recebe suas dependências no construtor</p>
+      <p>— Nenhuma classe acessa <em>os.environ</em> diretamente — recebe config via construtor</p>
+      <p>— Todos os métodos têm type hints completos</p>
+      <p>— Erros são específicos: <em>GeminiTimeoutError</em>, <em>InvalidDecisionError</em>, <em>AgentNotFoundError</em></p>
+      <p>— O método público é <em>async def process(command: str) → DecisionResult</em></p>
+
+      <p><strong>Implemente as 6 classes com docstrings e type hints. Use dataclasses para configs.</strong></p>
+    </div>
+
+    <h3>Interface Simplificada do Orquestrador</h3>
+    <pre>
+<span class="comment"># core/orchestrator.py — interface pública limpa</span>
+<span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass
+<span class="keyword">from</span> typing <span class="keyword">import</span> Optional, List
+
+<span class="keyword">@dataclass</span>
+<span class="keyword">class</span> <span class="func">OrchestratorConfig</span>:
+    model_name: str = <span class="string">"gemini-1.5-flash"</span>
+    max_retries: int = <span class="num">3</span>
+    max_input_chars: int = <span class="num">4000</span>
+    context_window: int = <span class="num">4</span>  <span class="comment"># msgs de histórico</span>
+
+<span class="keyword">@dataclass</span>
+<span class="keyword">class</span> <span class="func">DecisionResult</span>:
+    action: str
+    response: str
+    agent_name: Optional[str] = <span class="keyword">None</span>
+    concepts: List[str] = <span class="keyword">None</span>
+    cost_usd: float = <span class="num">0.0</span>
+
+<span class="keyword">class</span> <span class="func">Orchestrator</span>:
+    <span class="keyword">def</span> <span class="func">__init__</span>(
+        self,
+        config: OrchestratorConfig,
+        gemini: GeminiClient,
+        context_builder: ContextBuilder,
+        action_router: ActionRouter,
+    ): ...
+
+    <span class="keyword">async def</span> <span class="func">process</span>(
+        self,
+        command: str,
+        history: Optional[List[dict]] = <span class="keyword">None</span>,
+        image_path: Optional[str] = <span class="keyword">None</span>,
+    ) -> DecisionResult: ...</pre>
+  </div>
+
+  <!-- SECTION 7: AGENTES -->
+  <div class="section" id="agentes">
+    <span class="section-num">// 07 — PROMPT: AGENTES</span>
+    <h2>Sistema de Agentes<br>Simplificado</h2>
+
+    <div class="prompt-box">
+      <p><strong>CONTEXTO:</strong> O sistema atual tem agentes complexos com auto-avaliação, métricas, certificação, marketplace, evolução automática e lógica de afinidade — tudo antes de ter os fundamentos funcionando.</p>
+
+      <p><strong>PRINCÍPIO DE MIGRAÇÃO: Faça o simples primeiro, complexo depois.</strong></p>
+
+      <p><strong>Fase 1 — Base (implemente agora):</strong></p>
+      <p>Crie uma classe <em>BaseAgent</em> limpa com:</p>
+      <p>— <em>name</em>, <em>purpose</em>, <em>system_prompt</em> como propriedades</p>
+      <p>— <em>async def run(task: str) → AgentResult</em> como único método público</p>
+      <p>— <em>AgentResult</em> com: <em>output: str</em>, <em>tokens_used: int</em>, <em>cost_usd: float</em></p>
+      <p>— Injeção de <em>GeminiClient</em> no construtor — sem chamar os.environ</p>
+      <p>— Log de tokens via callback opcional — sem acoplamento com FinOps</p>
+
+      <p><strong>Fase 2 — Registry (implemente depois):</strong></p>
+      <p>Crie <em>AgentRegistry</em> que carrega/salva agentes do GCS no formato JSON. CRUD simples sem versioning por enquanto.</p>
+
+      <p><strong>REMOVA por enquanto:</strong> auto-avaliação, certification system, marketplace, evolution job, broker, affinity matrix, token budget agent, synergy report. Estes são recursos avançados para depois que o sistema core funcionar.</p>
+
+      <p><strong>Crie:</strong> <em>BaseAgent</em>, <em>AgentRegistry</em>, <em>TelegramAgent</em> (simplificado), <em>VisionAgent</em> e <em>FinOpsGuardian</em> usando a nova estrutura.</p>
+    </div>
+
+    <h3>Agentes Core para Manter</h3>
+    <table>
+      <tr><th>Agente</th><th>Prioridade</th><th>Status</th></tr>
+      <tr><td>BaseAgent</td><td><span class="badge badge-red">P1</span></td><td>Reescrever do zero</td></tr>
+      <tr><td>TelegramAgent</td><td><span class="badge badge-red">P1</span></td><td>Simplificar (remover napkin, pipeline, conselho)</td></tr>
+      <tr><td>VisionAgent</td><td><span class="badge badge-red">P1</span></td><td>Manter, cleanup</td></tr>
+      <tr><td>FinOpsGuardian</td><td><span class="badge badge-yellow">P2</span></td><td>Simplificar</td></tr>
+      <tr><td>AudioAgent</td><td><span class="badge badge-yellow">P2</span></td><td>Manter</td></tr>
+      <tr><td>BriefingAgent</td><td><span class="badge badge-blue">P3</span></td><td>Manter</td></tr>
+      <tr><td>KnowledgeBrokerAgent</td><td>P4</td><td><span class="badge badge-red">Remover fase 1</span></td></tr>
+      <tr><td>EvolutionJob</td><td>P4</td><td><span class="badge badge-red">Remover fase 1</span></td></tr>
+      <tr><td>TokenBudgetAgent</td><td>P4</td><td><span class="badge badge-red">Remover fase 1</span></td></tr>
+      <tr><td>DebateAgent</td><td>P4</td><td><span class="badge badge-red">Remover fase 1</span></td></tr>
+      <tr><td>WeeklyReportAgent</td><td>P4</td><td><span class="badge badge-red">Remover fase 1</span></td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 8: STORAGE -->
+  <div class="section" id="storage">
+    <span class="section-num">// 08 — PROMPT: STORAGE</span>
+    <h2>Storage e Estado<br>Centralizado</h2>
+
+    <div class="prompt-box">
+      <p><strong>Refatore o sistema de storage seguindo estes princípios:</strong></p>
+
+      <p><strong>1. GCS Client único e limpo:</strong></p>
+      <p>Crie <em>storage/gcs.py</em> com uma classe <em>GCSClient</em> simples. Métodos: <em>get(path) → Optional[Any]</em>, <em>put(path, data)</em>, <em>delete(path)</em>, <em>list(prefix) → List[str]</em>. Cache interno com TTL como parâmetro. Sem namespace por usuário hardcoded — recebe namespace como argumento do construtor. Todos os métodos têm type hints. Erros lançam <em>StorageError</em> específico.</p>
+
+      <p><strong>2. Elimine o VectorStore por enquanto:</strong></p>
+      <p>FAISS + embeddings do Gemini é poderoso mas desnecessário para o MVP. O knowledge graph + histórico de chat em GCS já provê contexto suficiente. Remova o VectorStore, EpisodicMemory e SharedMemory da fase 1. Documente como feature future.</p>
+
+      <p><strong>3. Simplifique o KnowledgeGraph:</strong></p>
+      <p>Mantenha o grafo mas simplifique: sem chamadas ao Gemini para categorizar conceitos (muito caro). Use um mapa estático simples de categorização. Limite o grafo a 500 nós — se ultrapassar, remova os mais antigos. Salve/carregue do GCS em JSON simples.</p>
+
+      <p><strong>4. FinOps simplificado:</strong></p>
+      <p>Um único JSON no GCS com <em>{date: {tokens, cost, calls}}</em>. Método <em>log_usage(tokens_in, tokens_out)</em>. Preços hardcoded com constante nomeada. Sem BigQuery na fase 1. Sem billing API na fase 1.</p>
+
+      <p><strong>O resultado deve ser: menos de 400 linhas de código de storage total.</strong></p>
+    </div>
+
+    <h3>Schema de Storage Simplificado</h3>
+    <pre>
+<span class="comment"># Estrutura GCS — simples e previsível</span>
+gs://flose-{project_id}/
+├── agents/
+│   ├── registry.json       <span class="comment"># Lista de agentes</span>
+│   └── {name}.json         <span class="comment"># Config individual</span>
+├── tasks/
+│   └── registry.json       <span class="comment"># Lista de tasks</span>
+├── knowledge/
+│   └── graph.json          <span class="comment"># Knowledge graph</span>
+└── logs/
+    ├── finops/{date}.json  <span class="comment"># Custo por dia</span>
+    └── executions/{id}.json</pre>
+  </div>
+
+  <!-- SECTION 9: DEPLOY -->
+  <div class="section" id="deploy">
+    <span class="section-num">// 09 — PROMPT: CI/CD</span>
+    <h2>Deploy Simplificado<br>e Confiável</h2>
+
+    <div class="prompt-box">
+      <p><strong>Refatore o CI/CD do GitHub Actions seguindo estas regras:</strong></p>
+
+      <p><strong>PROBLEMAS ATUAIS no deploy.yml:</strong></p>
+      <p>— O Cloud Scheduler é configurado no mesmo job de deploy (falha se já existir e para tudo)</p>
+      <p>— Não há verificação se o deploy foi bem-sucedido antes de configurar o webhook Telegram</p>
+      <p>— Secrets são passados como env vars em vez de Secret Manager refs</p>
+      <p>— Não há smoke test após o deploy</p>
+
+      <p><strong>NOVO deploy.yml deve ter os jobs:</strong></p>
+      <p><em>job: test</em> — roda pytest, falha o pipeline se teste falhar</p>
+      <p><em>job: build</em> (depends: test) — build frontend + imagem Docker</p>
+      <p><em>job: deploy</em> (depends: build) — deploy Cloud Run com health check</p>
+      <p><em>job: configure</em> (depends: deploy) — configura webhook Telegram e scheduler de forma idempotente</p>
+      <p><em>job: notify</em> (depends: deploy) — notifica Telegram com resultado</p>
+
+      <p><strong>Cada job tem <em>if: success()</em> exceto notify que tem <em>if: always()</em>.</strong></p>
+
+      <p>O deploy só completa se <em>GET /health</em> retornar 200 em até 60 segundos. O Telegram webhook é configurado com <em>drop_pending_updates=true</em> e <em>allowed_updates=["message","callback_query"]</em>.</p>
+
+      <p>O Dockerfile deve usar multi-stage build: stage 1 builda o frontend, stage 2 é Python slim com apenas o necessário.</p>
+    </div>
+
+    <h3>Dockerfile Multi-Stage Correto</h3>
+    <pre>
+<span class="comment"># Stage 1: Build Frontend</span>
+<span class="keyword">FROM</span> node:<span class="num">20</span>-alpine <span class="keyword">AS</span> frontend-build
+<span class="keyword">WORKDIR</span> /app/frontend
+<span class="keyword">COPY</span> frontend/package*.json ./
+<span class="keyword">RUN</span> npm ci --only=production
+<span class="keyword">COPY</span> frontend/ .
+<span class="keyword">RUN</span> npm run build
+
+<span class="comment"># Stage 2: Python Backend</span>
+<span class="keyword">FROM</span> python:<span class="num">3.11</span>-slim
+<span class="keyword">WORKDIR</span> /app
+
+<span class="comment"># Dependências do sistema (mínimas)</span>
+<span class="keyword">RUN</span> apt-get update && apt-get install -y --no-install-recommends \
+    curl && rm -rf /var/lib/apt/lists/*
+
+<span class="comment"># Python deps em camada separada para cache</span>
+<span class="keyword">COPY</span> requirements.txt .
+<span class="keyword">RUN</span> pip install --no-cache-dir -r requirements.txt
+
+<span class="comment"># Código da aplicação</span>
+<span class="keyword">COPY</span> api/ ./api/
+<span class="keyword">COPY</span> core/ ./core/
+<span class="keyword">COPY</span> agents/ ./agents/
+<span class="keyword">COPY</span> storage/ ./storage/
+<span class="keyword">COPY</span> services/ ./services/
+
+<span class="comment"># Frontend buildado</span>
+<span class="keyword">COPY</span> --from=frontend-build /app/frontend/dist ./frontend/dist
+
+<span class="keyword">ENV</span> PORT=<span class="num">8080</span>
+<span class="keyword">EXPOSE</span> <span class="num">8080</span>
+<span class="keyword">CMD</span> [<span class="string">"uvicorn"</span>, <span class="string">"api.main:app"</span>, <span class="string">"--host"</span>, <span class="string">"0.0.0.0"</span>, <span class="string">"--port"</span>, <span class="string">"8080"</span>]</pre>
+
+    <h3>Requirements Limpo</h3>
+    <pre>
+<span class="comment"># requirements.txt — apenas o necessário</span>
+fastapi==<span class="num">0.115</span>
+uvicorn[standard]==<span class="num">0.30</span>
+python-jose[cryptography]==<span class="num">3.3</span>
+google-cloud-storage==<span class="num">2.18</span>
+google-generativeai==<span class="num">0.8</span>
+python-telegram-bot==<span class="num">21.0</span>
+pydantic==<span class="num">2.9</span>
+httpx==<span class="num">0.27</span>
+tenacity==<span class="num">9.0</span>
+pillow==<span class="num">10.4</span>
+structlog==<span class="num">24.4</span>
+python-dotenv==<span class="num">1.0</span>
+
+<span class="comment"># Removidos: pyspark, faiss-cpu, scikit-learn,</span>
+<span class="comment"># pyarrow, google-cloud-billing, streamlit,</span>
+<span class="comment"># streamlit-agraph, google-cloud-run, google-cloud-monitoring</span>
+<span class="comment"># (adicionar de volta apenas quando a feature for construída)</span></pre>
+  </div>
+
+  <!-- SECTION 10: PLANO -->
+  <div class="section" id="migracao">
+    <span class="section-num">// 10 — PLANO DE MIGRAÇÃO</span>
+    <h2>Execução Passo<br>a Passo</h2>
+
+    <div class="callout success">
+      <strong>✓ Princípio</strong>
+      <p>Nunca quebrar o sistema em produção. Cada fase é deployável e funcional por si só.</p>
+    </div>
+
+    <h3>Fase 1 — Fundamentos (Semana 1-2)</h3>
+    <div class="priority">
+      <span class="pill pill-1">CRÍTICO</span>
+      <span class="pill pill-2">~40 horas</span>
+    </div>
+
+    <ul class="checklist">
+      <li><div class="check-box"></div><div>Criar estrutura de diretórios nova em branch separada</div></li>
+      <li><div class="check-box"></div><div>Implementar <code>storage/gcs.py</code> limpo com testes</div></li>
+      <li><div class="check-box"></div><div>Implementar <code>api/auth.py</code> com JWT</div></li>
+      <li><div class="check-box"></div><div>Implementar <code>core/gemini_client.py</code> com retry</div></li>
+      <li><div class="check-box"></div><div>Implementar <code>BaseAgent</code> simples</div></li>
+      <li><div class="check-box"></div><div>Implementar <code>Orchestrator</code> decomposto (6 classes)</div></li>
+      <li><div class="check-box"></div><div>Criar routers FastAPI: auth, chat, agents, tasks</div></li>
+      <li><div class="check-box"></div><div>Testes unitários para GCS, Auth e Orchestrator</div></li>
+      <li><div class="check-box"></div><div>Dockerfile multi-stage funcional</div></li>
+      <li><div class="check-box"></div><div>Deploy e smoke test em Cloud Run</div></li>
+    </ul>
+
+    <h3>Fase 2 — Frontend (Semana 3)</h3>
+    <div class="priority">
+      <span class="pill pill-1">ALTO</span>
+      <span class="pill pill-2">~20 horas</span>
+    </div>
+
+    <ul class="checklist">
+      <li><div class="check-box"></div><div>Instalar React Query + Zustand + React Router</div></li>
+      <li><div class="check-box"></div><div>Criar stores Zustand: auth, UI</div></li>
+      <li><div class="check-box"></div><div>Criar API hooks: useAgents, useTasks, useDashboard</div></li>
+      <li><div class="check-box"></div><div>Criar páginas como rotas reais</div></li>
+      <li><div class="check-box"></div><div>Quebrar App.jsx em componentes < 150 linhas cada</div></li>
+      <li><div class="check-box"></div><div>Remover todo polling manual — usar React Query</div></li>
+      <li><div class="check-box"></div><div>SSE para activity feed</div></li>
+    </ul>
+
+    <h3>Fase 3 — Features Avançadas (Semana 4+)</h3>
+    <div class="priority">
+      <span class="pill pill-3">MÉDIO</span>
+      <span class="pill pill-2">~30 horas</span>
+    </div>
+
+    <ul class="checklist">
+      <li><div class="check-box"></div><div>Reintroduzir Knowledge Graph simplificado</div></li>
+      <li><div class="check-box"></div><div>FinOps com breakdown por agente</div></li>
+      <li><div class="check-box"></div><div>DORA metrics</div></li>
+      <li><div class="check-box"></div><div>Telegram Agent com handlers completos</div></li>
+      <li><div class="check-box"></div><div>Certificação de agentes (versão simplificada)</div></li>
+    </ul>
+
+    <h3>O que Nunca Reintroduzir</h3>
+    <div class="callout">
+      <strong>⚠ Não reintroduza sem necessidade comprovada</strong>
+      <ul>
+        <li><strong>Streamlit</strong> — Morto. React é o frontend.</li>
+        <li><strong>Pyspark + Iceberg</strong> — Infraestrutura demais para o volume atual. Use BigQuery direto se precisar.</li>
+        <li><strong>VectorStore FAISS local</strong> — Vertex AI Vector Search ou pgvector quando o volume justificar.</li>
+        <li><strong>Debate Agent</strong> — Aumenta custo e latência sem benefício mensurável no MVP.</li>
+        <li><strong>Evolution Job / Broker</strong> — Complexidade sem ROI comprovado.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 11: MASTER PROMPT -->
+  <div class="section" id="master-prompt">
+    <span class="section-num">// 11 — MASTER PROMPT</span>
+    <h2>Use Este Prompt<br>Para Começar Agora</h2>
+
+    <p>Copie e cole este prompt completo no Claude para iniciar a migração. Ele contém todo o contexto necessário:</p>
+
+    <div class="prompt-box">
+      <p><strong>Você é um arquiteto de software sênior especializado em Python, FastAPI e React. Estou migrando o sistema Flose AI Platform de uma arquitetura monolítica caótica para uma arquitetura BFF + Clean Architecture.</strong></p>
+
+      <p><strong>CONTEXTO DO SISTEMA:</strong></p>
+      <p>— Plataforma multi-agente de IA rodando no Google Cloud Run</p>
+      <p>— Backend: Python/FastAPI. Frontend: React/Vite. LLM: Gemini API. Storage: GCS. Bot: Telegram</p>
+      <p>— Autenticação via MASTER_KEY do GCP Secret Manager</p>
+
+      <p><strong>PROBLEMA ATUAL (resumido):</strong></p>
+      <p>— <em>entrypoint.py</em>: 700+ linhas, 40 endpoints, tudo misturado</p>
+      <p>— <em>App.jsx</em>: 2500+ linhas, 50+ useState, sem roteamento real</p>
+      <p>— Orquestrador: 15+ responsabilidades num método de 200 linhas</p>
+      <p>— Zero separação de camadas, autenticação inconsistente, sem testes</p>
+
+      <p><strong>ARQUITETURA ALVO:</strong></p>
+      <p>— <em>api/</em>: FastAPI BFF com routers separados (agents, tasks, chat, finops, webhook)</p>
+      <p>— <em>core/</em>: Orchestrator decomposto em 6 classes (InputProcessor, ContextBuilder, GeminiClient, DecisionParser, ActionRouter, Orchestrator)</p>
+      <p>— <em>storage/</em>: GCSClient único e limpo</p>
+      <p>— <em>frontend/src/</em>: Zustand + React Query + React Router + componentes < 150 linhas</p>
+
+      <p><strong>REGRAS ABSOLUTAS:</strong></p>
+      <p>— Nenhum arquivo ultrapassa 200 linhas</p>
+      <p>— Autenticação JWT única — sem fallback via query param</p>
+      <p>— Todos os métodos têm type hints completos</p>
+      <p>— Erros específicos: nenhum <em>except Exception: pass</em></p>
+      <p>— Sem print() — use structlog</p>
+      <p>— Sem Streamlit — apenas React</p>
+      <p>— Sem FAISS/pyspark/Iceberg na fase 1</p>
+
+      <p><strong>COMECE pela Fase 1, tarefa 1:</strong></p>
+      <p>Crie o arquivo <em>storage/gcs.py</em> com a classe <em>GCSClient</em> limpa. Deve ter: <em>get(path) → Optional[dict]</em>, <em>put(path, data: dict) → bool</em>, <em>delete(path) → bool</em>, <em>list(prefix: str) → List[str]</em>. Cache em memória com TTL como parâmetro do construtor. Lança <em>StorageError</em> em falhas. Inclua docstrings e type hints completos. Inclua testes unitários com mock do GCS no mesmo arquivo ou em <em>tests/unit/test_gcs.py</em>.</p>
+
+      <p>Após GCSClient, siga a ordem: <em>api/auth.py</em> → <em>core/gemini_client.py</em> → <em>agents/base.py</em> → <em>core/orchestrator.py</em> (decomposto) → <em>api/routers/</em>.</p>
+    </div>
+
+    <div class="callout success">
+      <strong>✓ Dica de Uso</strong>
+      <p>Adicione ao master prompt o código atual dos arquivos relevantes com: <strong>"Aqui está o código atual do [arquivo]. Refatore-o seguindo as regras acima:"</strong> e cole o conteúdo do arquivo. Faça um arquivo por conversa para manter o contexto limpo.</p>
+    </div>
+
+    <h3>Prompts Complementares por Área</h3>
+    <table>
+      <tr><th>Área</th><th>Prompt Adicional</th></tr>
+      <tr><td>GCS Client</td><td>"Refatore o storage/gcs.py atual. Mantenha o cache TTL mas remova o namespace hardcoded e adicione type hints."</td></tr>
+      <tr><td>Autenticação</td><td>"Substitua a autenticação atual por JWT usando python-jose. Um único middleware. Sem fallback via query param."</td></tr>
+      <tr><td>Orquestrador</td><td>"Decomponha o método process_command() de 200 linhas em 6 classes distintas com responsabilidade única cada."</td></tr>
+      <tr><td>App.jsx</td><td>"Quebre este App.jsx de 2500 linhas em páginas separadas com React Router, Zustand para estado e React Query para dados."</td></tr>
+      <tr><td>Testes</td><td>"Crie testes pytest para o GCSClient, Orchestrator e todos os endpoints da API usando httpx TestClient e mocks."</td></tr>
+      <tr><td>Docker</td><td>"Crie um Dockerfile multi-stage: stage 1 builda o React, stage 2 é Python slim. Health check em /health."</td></tr>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align: center; padding: 60px 0 20px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border);">
+    <p>FLOSE AI PLATFORM — MIGRATION DOCUMENT v3.0</p>
+    <p style="margin-top: 8px;">Março 2026 — Confidencial</p>
+  </div>
+
+</div>
+</body>
+</html>
