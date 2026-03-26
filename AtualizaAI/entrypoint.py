@@ -21,6 +21,20 @@ from src.agents.vision_agent import VisionAgent
 app = FastAPI()
 API_TOKEN = os.getenv("MASTER_KEY", "fallback_token_change_immediately")
 
+# --- Injeção de Routers V3 (BFF Merge) ---
+from api.routers import auth_router, agents_router, tasks_router, chat_router, finops_router, activity_router
+app.include_router(auth_router.router)
+app.include_router(agents_router.router)
+app.include_router(tasks_router.router)
+app.include_router(chat_router.router)
+app.include_router(finops_router.router)
+app.include_router(activity_router.router)
+
+# Estado global para routers v3
+app.state.master_key = API_TOKEN
+app.state.project_id = os.getenv("GCP_PROJECT_ID")
+app.state.api_key = os.getenv("GEMINI_API_KEY")
+
 tg_agent = None
 
 async def get_tg_agent():
