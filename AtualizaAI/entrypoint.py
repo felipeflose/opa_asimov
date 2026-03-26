@@ -1381,6 +1381,10 @@ if os.path.exists(frontend_path):
     # Catch-all route para roteamento do React (SPA)
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
+        if full_path.startswith("api/"):
+            from fastapi.responses import JSONResponse
+            return JSONResponse({"detail": "Not Found API Route"}, status_code=404)
+            
         file_path = os.path.join(frontend_path, full_path)
         # Se for a raiz ou o caminho for vazio, serve index.html
         if not full_path or full_path == "/":
