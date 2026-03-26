@@ -26,7 +26,7 @@ def get_agent_service(request: Request) -> AgentService:
     gcs = GCSClient(bucket)
     return AgentService(gcs)
 
-@router.get("/", response_model=List[AgentResponse])
+@router.get("", response_model=List[AgentResponse])
 async def list_agents(
     service: AgentService = Depends(get_agent_service),
     admin_email: str = Depends(require_auth)
@@ -34,7 +34,7 @@ async def list_agents(
     """Lista todos os agentes ativos no sistema"""
     return await service.list_agents()
 
-@router.post("/", response_model=AgentResponse)
+@router.post("", response_model=AgentResponse)
 async def create_agent(
     agent: AgentCreate, 
     service: AgentService = Depends(get_agent_service),
