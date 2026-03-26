@@ -8,8 +8,10 @@ export function useAgents() {
       const { data } = await apiClient.get('/api/agents');
       return data;
     },
-    // Cache de 60 segundos antes de considerar obsoleto
-    staleTime: 60 * 1000,
+    // Cache de 5 segundos antes de considerar obsoleto
+    staleTime: 5 * 1000,
+    // Sincronização automática a cada 10 segundos (Real-time Feel)
+    refetchInterval: 10 * 1000,
   });
 }
 
