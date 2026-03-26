@@ -98,37 +98,53 @@ class OrchestratorV3:
         self.router = router
 
     async def process_command(self, text: str, history: Optional[list] = None, image_path: Optional[str] = None) -> dict:
-        # 1. Input Processing
-        clean_text = self.input_proc.process(text)
-        
-        # 2. Context Building
-        prompt = self.context_builder.build(clean_text, history)
-        
-        # 3. LLM Generation
-        # Definimos o formato JSON no system_instruction para Gemini v3
-        system_instruction = (
-            "Responda SEMPRE em JSON válido.\n"
-            "Formato: {\"action\": \"reply|delegate|search\", \"response\": \"...\", \"agent_involved\": \"optional_name\"}"
-        )
-        
-        ai_resp = await self.gemini.generate_text(prompt, system_instruction=system_instruction, image_path=image_path)
-        
-        # 4. Decision Parsing
-        decision = self.parser.parse(ai_resp.text)
-        
-        # 5. Action Routing
-        final_message = await self.router.route(decision)
-        
-        # Metrics & Log
-        result = {
-            "message": final_message,
-            "decision": decision,
-            "metrics": {
-                "tokens_in": ai_resp.tokens_in,
-                "tokens_out": ai_resp.tokens_out,
-                "cost_usd": ai_resp.cost_usd
+        try:
+            # 1. Input Processing
+            clean_text = self.input_proc.process(text)
+            
+            # 2. Context Building
+            prompt = self.context_builder.build(clean_text, history)
+            
+            # 3. LLM Generation
+            system_instruction = (
+                "Responda SEMPRE em JSON válido.\n"
+                "Formato: {\"action\": \"reply|delegate|search\", \"response\": \"...\", \"agent_involved\": \"optional_name\"}"
+            )
+            
+            try:
+                ai_resp = await self.gemini.generate_text(prompt, system_instruction=system_instruction, image_path=image_path)
+            except Exception as ge:
+                error_msg = str(ge)
+                if "429" in error_msg or "ResourceExhausted" in error_msg:
+                    return {"action": "reply", "response": "🛑 **Limite de Créditos/Cota Atingido**: O saldo do Gemini acabou ou o limite de requisições por minuto foi excedido no GCP.", "error": error_msg}
+                if "503" in error_msg or "DeadlineExceeded" in error_msg:
+                    return {"action": "reply", "response": "☁️ **Gemini Indisponível**: A API do Google está instável ou demorou demais para responder. Tente novamente em 10 segundos.", "error": error_msg}
+                return {"action": "reply", "response": f"⚠️ **Erro na Conexão com IA**: {error_msg}", "error": error_msg}
+
+            # 4. Decision Parsing
+            decision = self.parser.parse(ai_resp.text)
+            
+            # 5. Action Routing
+            final_message = await self.router.route(decision)
+            
+            # Metrics & Log
+            result = {
+                "message": final_message,
+                "decision": decision,
+                "metrics": {
+                    "tokens_in": ai_resp.tokens_in,
+                    "tokens_out": ai_resp.tokens_out,
+                    "cost_usd": ai_resp.cost_usd
+                }
             }
-        }
-        
-        logger.info("command_executed", action=decision.get("action"))
-        return result
+            
+            logger.info("command_executed", action=decision.get("action"))
+            return result
+
+        except Exception as e:
+            logger.error("orchestrator_critical_error", error=str(e))
+            return {
+                "action": "reply",
+                "response": f"❌ **Erro Crítico no Orquestrador**: {str(e)}. Por favor, verifique os logs do sistema.",
+                "error": str(e)
+            }

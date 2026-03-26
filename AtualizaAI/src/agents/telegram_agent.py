@@ -408,7 +408,10 @@ class TelegramAgent:
 
             # Se o Orchestrator falhou, responde de forma limpa
             if not decision or decision.get("error"):
-                await self.safe_reply(update, "🤔 Não consegui entender o comando. Pode reformular?")
+                error_msg = decision.get("response") if decision else None
+                if not error_msg:
+                    error_msg = "🤔 Não consegui processar seu comando no momento. Por favor, tente reformular ou verifique a conexão."
+                await self.safe_reply(update, error_msg)
                 return
 
             action = decision.get("action", "respond")
