@@ -105,3 +105,11 @@ jobs:
           MESSAGE="✅ *Deploy Concluído* %0A🚀 *Projeto:* ${{ env.PROJECT_ID }} %0A🔖 *Versão (SHA):* $VERSION %0A⏱️ *Horário:* $TIMESTAMP"
           curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=$MESSAGE&parse_mode=Markdown"
+
+      - name: Log DORA Metrics (Self-Report)
+        if: success()
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.IMAGE_NAME }} --platform managed --region ${{ env.REGION }} --project=${{ env.PROJECT_ID }} --format="value(status.url)")
+          curl -X POST "${SERVICE_URL}/api/webhook/github" \
+            -H "Content-Type: application/json" \
+            -d "{\"ref\": \"refs/heads/main\", \"after\": \"${{ github.sha }}\", \"commits\": []}"
