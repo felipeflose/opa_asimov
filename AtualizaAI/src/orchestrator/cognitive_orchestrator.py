@@ -141,6 +141,7 @@ class CognitiveOrchestrator:
         - FinOpsGuardian: Tudo sobre custos, faturamento e otimização de nuvem.
         - TaskManager: Tudo sobre o status das tarefas, criação de TRDs e organização do backlog.
         - QualityInspector: Tudo sobre auditoria, fiscalização de entregas e correção de processos.
+        - SystemArchitectAgent: Tudo sobre a arquitetura técnica, código backend/frontend e funcionamento interno do sistema v3.
 
         FORMATO OBRIGATÓRIO DE RESPOSTA (JSON)
         {
