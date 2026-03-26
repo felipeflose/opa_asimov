@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Optional, Dict
 import structlog
 
 logger = structlog.get_logger()
@@ -80,10 +80,11 @@ class ActionRouter:
         response = decision.get("response", "")
         agent_name = decision.get("agent_involved")
 
-        if action == "delegate" and agent_name:
-            # Futura implementação de execução de agentes v3
-            # self.agent_registry.run_agent(agent_name)
-            return f"{response}\n(Delegando para {agent_name}...)"
+        if action == "delegate" and agent_name and self.agent_registry:
+            # Implementação real de execução de agentes v3
+            # Delegando a resposta original (proposta) como input para o agente especializado
+            agent_output = await self.agent_registry.run_agent(agent_name, response)
+            return agent_output
         
         return response
 
