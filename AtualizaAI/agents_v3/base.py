@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from pydantic import BaseModel
 import structlog
 from core.gemini_client import GeminiClient
