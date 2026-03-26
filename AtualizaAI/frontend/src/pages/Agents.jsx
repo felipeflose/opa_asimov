@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import apiClient from '../client';
 import { useAgents, useSaveAgent, useDeleteAgent } from '../api/hooks/useAgents';
 
 const AgentsPage = () => {
+  const queryClient = useQueryClient();
   const { data: agents, isLoading } = useAgents();
   const saveAgent = useSaveAgent();
   const deleteAgent = useDeleteAgent();
   
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('config'); // 'config' ou 'rag'
 
   const handleFileUpload = async (e) => {
