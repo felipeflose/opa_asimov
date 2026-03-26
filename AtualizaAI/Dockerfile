@@ -19,14 +19,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Cópia do código estruturado V3
+# Cópia do código estruturado V3 + Legado (Src)
 COPY api/ ./api/
 COPY core/ ./core/
-COPY agents_v3/ ./agents/
-COPY storage_v3/ ./storage/
+COPY src/ ./src/
+COPY agents_v3/ ./agents_v3/
+COPY storage_v3/ ./storage_v3/
 COPY services/ ./services/
+COPY entrypoint.py .
 
 # Copia o build do frontend gerado no Stage 1
+# No entrypoint, ele procura em ./frontend/dist
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 # Configurações de ambiente
@@ -34,5 +37,5 @@ ENV PORT=8080
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8080
 
-# Comando de inicialização do BFF V3
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Comando de inicialização unificado (Telegram + BFF + Frontend)
+CMD ["python", "entrypoint.py"]
