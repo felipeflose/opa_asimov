@@ -34,10 +34,9 @@ const AgentsPage = () => {
     if (!link || !selectedAgent?.name) return;
     
     try {
-      const formData = new FormData();
-      formData.append('link', link);
-      await apiClient.post(`/api/agents/${selectedAgent.name}/link`, formData);
+      await apiClient.post(`/api/agents/${selectedAgent.name}/link`, { link });
       queryClient.invalidateQueries(['agents']);
+      alert('Link adicionado com sucesso!');
     } catch (err) {
       alert('Erro ao adicionar link: ' + err.message);
     }

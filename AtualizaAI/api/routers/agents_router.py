@@ -87,15 +87,19 @@ async def upload_agent_file(
         logger.error("agent_upload_error", agent=name, error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
+class LinkCreate(BaseModel):
+    link: str
+
 @router.post("/{name}/link")
 async def add_agent_link(
     name: str,
-    link: str = Form(...),
+    req: LinkCreate,
     service: AgentService = Depends(get_agent_service),
     admin_email: str = Depends(require_auth)
 ):
-    """Adiciona um link ao RAG do agente"""
+    """Adicionamento de link ao RAG do agente via JSON"""
     try:
+        link = req.link
         agent_list = await service.list_agents()
         for agent in agent_list:
             if agent["name"] == name:
