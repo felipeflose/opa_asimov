@@ -13,21 +13,26 @@ const AgentsPage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const tools = [];
-    if (formData.get('tool_google_search')) tools.push('google_search');
-    
-    const agentData = {
-      name: formData.get('name'),
-      purpose: formData.get('purpose'),
-      system_prompt: formData.get('system_prompt'),
-      avatar: selectedAgent?.avatar,
-      tools: tools
-    };
-    
-    await saveAgent.mutateAsync(agentData);
-    setIsEditing(false);
-    setSelectedAgent(null);
+    try {
+      const formData = new FormData(e.target);
+      const tools = [];
+      if (formData.get('tool_google_search')) tools.push('google_search');
+      
+      const agentData = {
+        name: formData.get('name'),
+        purpose: formData.get('purpose'),
+        system_prompt: formData.get('system_prompt'),
+        avatar: selectedAgent?.avatar,
+        tools: tools
+      };
+      
+      await saveAgent.mutateAsync(agentData);
+      setIsEditing(false);
+      setSelectedAgent(null);
+    } catch (err) {
+      console.error(err);
+      alert(`Erro ao salvar agente: ${err.response?.data?.detail || err.message}`);
+    }
   };
 
   const handleDelete = async (name) => {

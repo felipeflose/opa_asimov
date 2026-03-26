@@ -18,7 +18,7 @@ export function useSaveAgent() {
   
   return useMutation({
     mutationFn: async (agentData) => {
-      const { data } = await apiClient.post('/api/agents/', agentData);
+      const { data } = await apiClient.post('/api/agents', agentData);
       return data;
     },
     onSuccess: () => {
