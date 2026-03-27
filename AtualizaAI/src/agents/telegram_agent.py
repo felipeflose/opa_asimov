@@ -494,7 +494,7 @@ class TelegramAgent:
             if "ResourceExhausted" in str(e) or "spending cap" in str(e) or "429" in str(e):
                 user_friendly_error = "🛑 **Saldo Insuficiente / Cota Excedida**\n\nNossos tokens (ou orçamento do GCP) acabaram para este ciclo ou o projeto atingiu o teto de faturamento. Por favor, verifique o Console Billing do GCP."
             else:
-                user_friendly_error = "⚠️ Tive um problema interno técnico. Tente novamente."
+                user_friendly_error = f"⚠️ Erro técnico interno no bot: `{str(e)[:150]}`. Use `/debug` para mais detalhes."
 
             try:
                 await self.safe_reply(update, user_friendly_error)
