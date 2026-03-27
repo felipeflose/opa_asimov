@@ -43,14 +43,14 @@ class FinOpsManager:
         
         return total_cost
 
-    def get_gcp_infrastructure_cost(self):
+    def get_gcp_infrastructure_cost(self, monthly=False):
         """Busca custos reais diretamente na tabela de exportação do BigQuery."""
         project_id = os.getenv("GCP_PROJECT_ID")
         dataset = os.getenv("BQ_BILLING_DATASET", "flose_analytics")
         table = os.getenv("BQ_BILLING_TABLE")
         
         if not project_id:
-            return 0.12
+            return 0.12 if not monthly else 3.50
 
         try:
             from google.cloud import bigquery
@@ -61,60 +61,91 @@ class FinOpsManager:
                 tables = client.list_tables(dataset)
                 billing_tables = [t.table_id for t in tables if t.table_id.startswith("gcp_billing_export_v1_")]
                 if billing_tables:
-                    # Pega a primeira tabela de exportaçao padrão encontrada
+                    billing_tables.sort(reverse=True) # Pega a mais recente
                     table = billing_tables[0]
                 else:
-                    return 0.14 # Ainda não populado pelo Google (leva até 24h)
+                    return 0.14 if not monthly else 4.10
 
-            # Query faturamento de HOJE (UTC)
-            query = f"SELECT SUM(cost) as total FROM `{project_id}.{dataset}.{table}` WHERE _PARTITIONDATE = CURRENT_DATE()"
+            # Query filtrada por tempo
+            if monthly:
+                query = f"SELECT SUM(cost) as total FROM `{project_id}.{dataset}.{table}` WHERE _PARTITIONDATE >= DATE_TRUNC(CURRENT_DATE(), MONTH)"
+            else:
+                query = f"SELECT SUM(cost) as total FROM `{project_id}.{dataset}.{table}` WHERE _PARTITIONDATE = CURRENT_DATE()"
+            
             query_job = client.query(query)
             for row in query_job.result():
                 return round(row.total or 0.0, 2)
             return 0.0
         except Exception as e:
             print(f"⚠️ BQ Billing Error: {e}")
-            return 0.15
+            return 0.15 if not monthly else 5.20
 
+    def get_monthly_stats(self):
+        """Calcula o acumulado do mês corrente (IA + Infra)."""
+        data = {}
+        if self.gcs_client and self.gcs_client.exists(self.log_path):
+            data = self.gcs_client.read_json(self.log_path) or {}
+            
+        now = datetime.now()
+        current_month = now.strftime("%Y-%m")
+        
+        month_tokens = 0
+        month_ia_cost = 0.0
+        
+        for date_str, stats in data.items():
+            if date_str.startswith(current_month):
+                # Alguns logs podem ter o formato com 'total_cost', outros apenas 'cost'
+                month_tokens += stats.get("tokens", 0)
+                month_ia_cost += stats.get("cost", stats.get("ia_cost", 0.0))
+        
+        infra_total = self.get_gcp_infrastructure_cost(monthly=True)
+        return {
+            "tokens": month_tokens,
+            "ia_cost": month_ia_cost,
+            "infra_cost": infra_total,
+            "total": month_ia_cost + infra_total
+        }
 
     def get_daily_summary(self):
-        # Primeiro, verifica se há erro de cota ou limite de gastos no ar
-        # Se as chamadas de teste falharem com 429, o bot deve avisar.
-        
         if self.gcs_client and self.gcs_client.exists(self.log_path):
             data = self.gcs_client.read_json(self.log_path)
             today = datetime.now().strftime("%Y-%m-%d")
             
-            # Se hoje está no histórico e o custo total está perigosamente alto
             if today in data:
-                infra_cost = self.get_gcp_infrastructure_cost()
+                infra_cost = self.get_gcp_infrastructure_cost(monthly=False)
                 data[today]["infra_cost"] = infra_cost
                 data[today]["total_cost"] = round(data[today]["cost"] + infra_cost, 2)
                 
-                # Alerta Crítico Proativo: Se custo total de hoje > $8.00 (80% da cota comum)
+                # Alerta Crítico Proativo
                 if data[today]["total_cost"] > 8.0:
                     data[today]["alert"] = "⚠️ CUIDADO: Flobse AI atingindo 80% do limite diário do GCP."
                     
             return data
         return {}
-    def check_billing_exhaustion(self, error_str: str) -> bool:
-        """Verifica se o erro é derivado do Spending Cap do GCP."""
-        return "spending cap" in error_str.lower() or "ResourceExhausted" in error_str or "429" in error_str
 
     def get_finops_report(self) -> str:
-        """Gera um resumo textual do estado financeiro atual para o Orquestrador."""
+        """Gera um resumo textual do estado financeiro atual (Hoje + Mês) para o Orquestrador."""
+        # 1. Dados do Dia
         data = self.get_daily_summary()
         today = datetime.now().strftime("%Y-%m-%d")
         
-        if today in data:
-            day_data = data[today]
-            tokens = day_data.get("tokens", 0)
-            cost_ia = day_data.get("cost", 0.0)
-            cost_infra = day_data.get("infra_cost", 0.0)
-            total = day_data.get("total_cost", 0.0)
-            status = "⚠️ ALERTA" if total > 8.0 else "✅ SEGURO"
-            
-            return f"Gasto Hoje: ${total:.2f} (IA: ${cost_ia:.2f}, Infra: ${cost_infra:.2f}) | Tokens: {tokens:,} | Status: {status}"
+        # 2. Dados do Mês
+        month_stats = self.get_monthly_stats()
         
-        return "Gasto Hoje: $0.00 | Status: ✅ SEGURO (Sem atividade registrada)"
+        summary_msg = ""
+        if today in data:
+            day = data[today]
+            summary_msg = f"Hoje: ${day.get('total_cost', 0):.2f} (IA: ${day.get('cost', 0):.2f}, Infra: ${day.get('infra_cost', 0):.2f})"
+        else:
+            summary_msg = "Hoje: $0.00"
+
+        # Adiciona info do mês
+        summary_msg += f" | Mês: ${month_stats['total']:.2f} (IA: ${month_stats['ia_cost']:.2f}, Infra: ${month_stats['infra_cost']:.2f})"
+        
+        status = "⚠️ ALERTA" if month_stats['total'] > 150.0 else "✅ SEGURO" # Sugestão de limite mensal $150
+        return f"{summary_msg} | Status: {status}"
+
+    def check_billing_exhaustion(self, error_str: str) -> bool:
+        """Verifica se o erro é derivado do Spending Cap do GCP."""
+        return "spending cap" in error_str.lower() or "ResourceExhausted" in error_str or "429" in error_str
 
