@@ -344,9 +344,13 @@ class CognitiveOrchestrator:
                 last_error = str(e)
                 print(f"[!] Erro no process_command (Tentativa {retry_count}): {last_error}")
                 if retry_count > max_retries:
+                    error_msg = f"Erro técnico no Orchestrator: {last_error}"
+                    if "ResourceExhausted" in last_error or "429" in last_error:
+                         error_msg = "🛑 Limite de tokens ou faturamento excedido no GCP. Verifique o console FinOps."
+                    
                     return {
                         "action": "respond",
-                        "response": "Desculpe, tive um problema técnico ao processar sua solicitação no momento.",
+                        "response": error_msg,
                         "error": str(last_error)
                     }
                 time.sleep(2) # Pausa maior entre falhas de lógica/schema
