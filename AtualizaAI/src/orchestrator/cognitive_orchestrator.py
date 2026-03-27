@@ -233,11 +233,11 @@ class CognitiveOrchestrator:
         agents = []
         demands = []
         if self.gcs_client:
-            agent_registry = self.gcs_client.read_json("agents/registry.json")
+            agent_registry = self.gcs_client.read_json("agents/registry_v3.json")
             if agent_registry:
                 agents = agent_registry.get("agents", [])
             
-            demand_registry = self.gcs_client.read_json("demands/registry.json")
+            demand_registry = self.gcs_client.read_json("demands/registry_v3.json")
             if demand_registry:
                 demands = demand_registry.get("demands", [])
 
@@ -460,9 +460,9 @@ class CognitiveOrchestrator:
                 }
                 
                 if self.gcs_client:
-                    reg = self.gcs_client.read_json("demands/registry.json") or {"demands": []}
+                    reg = self.gcs_client.read_json("demands/registry_v3.json") or {"demands": []}
                     reg['demands'].append(validation_task)
-                    self.gcs_client.upload_json(reg, "demands/registry.json")
+                    self.gcs_client.upload_json(reg, "demands/registry_v3.json")
 
                 final_result = decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
                 if is_auto:
@@ -476,13 +476,13 @@ class CognitiveOrchestrator:
             else:
                 print(f"Updating agent via Orchestrator: {agent_name}")
                 if self.gcs_client:
-                    registry = self.gcs_client.read_json("agents/registry.json")
+                    registry = self.gcs_client.read_json("agents/registry_v3.json")
                     for agent in registry.get("agents", []):
-                        if agent["agent_name"] == agent_name:
+                        if agent.get("name") == agent_name or agent.get("agent_name") == agent_name:
                             if config.get("purpose"): agent["purpose"] = config["purpose"]
                             if config.get("system_prompt"): agent["system_prompt"] = config["system_prompt"]
                             break
-                    self.gcs_client.upload_json(registry, "agents/registry.json")
+                    self.gcs_client.upload_json(registry, "agents/registry_v3.json")
                 final_result = decision.get("response") or f"Agente '{agent_name}' atualizado conforme solicitado."
 
         elif action == "generate_demand":
@@ -512,11 +512,10 @@ class CognitiveOrchestrator:
             }
             
             if self.gcs_client:
-                self.gcs_client.upload_json(demand_data, f"demands/{demand_data['id']}.json")
-                # Update general registry
-                registry = self.gcs_client.read_json("demands/registry.json") or {"demands": []}
+                # Update general registry v3
+                registry = self.gcs_client.read_json("demands/registry_v3.json") or {"demands": []}
                 registry['demands'].append(demand_data)
-                self.gcs_client.upload_json(registry, "demands/registry.json")
+                self.gcs_client.upload_json(registry, "demands/registry_v3.json")
                 
             final_result = decision.get("response") or f"Demanda TRD '{title}' ({dtype}) registrada com sucesso."
 
@@ -527,8 +526,8 @@ class CognitiveOrchestrator:
             
             combined_responses = []
             for agent_name in panel_agents:
-                registry = self.gcs_client.read_json("agents/registry.json") if self.gcs_client else None
-                agent_config = next((a for a in registry.get("agents", []) if a["agent_name"] == agent_name), None) if registry else None
+                registry = self.gcs_client.read_json("agents/registry_v3.json") if self.gcs_client else None
+                agent_config = next((a for a in registry.get("agents", []) if (a.get("name") == agent_name or a.get("agent_name") == agent_name)), None) if registry else None
                 
                 if agent_config:
                     agent = AgentCore(
@@ -579,12 +578,12 @@ class CognitiveOrchestrator:
             
             print(f"Delegating to agent: {agent_name}")
             
-            # Tenta carregar o agente do Registry
+            # Tenta carregar o agente do Registry v3
             agent_data = None
             if self.gcs_client:
-                registry = self.gcs_client.read_json("agents/registry.json")
+                registry = self.gcs_client.read_json("agents/registry_v3.json")
                 if registry:
-                    agent_data = next((a for a in registry.get("agents", []) if a['agent_name'] == agent_name), None)
+                    agent_data = next((a for a in registry.get("agents", []) if (a.get("name") == agent_name or a.get("agent_name") == agent_name)), None)
 
             if agent_data:
                 # Instancia e executa autonomamente
@@ -752,7 +751,7 @@ class CognitiveOrchestrator:
         if not self.gcs_client: return "Erro: GCS Client offline."
         
         try:
-            registry = self.gcs_client.read_json("agents/registry.json") or {"agents": []}
+            registry = self.gcs_client.read_json("agents/registry_v3.json") or {"agents": []}
             agents_to_call = registry.get("agents", [])[:5] # Limite de 5 para não estourar tokens/limites
             
             async def call_agent_task(agent_data):

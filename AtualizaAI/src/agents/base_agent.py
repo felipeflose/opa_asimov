@@ -23,15 +23,13 @@ class BaseAgent:
                 metrics = agent_data["metrics"]
 
         return {
-            "agent_name": self.name,
+            "name": self.name,
             "purpose": self.purpose,
             "system_prompt": self.system_prompt,
             "avatar": self.avatar,
             "tools": self.tools,
-            "memory": self.memory_path,
-            "token_cost_profile": "standard",
-            "certified": False, # TASK-55
-            "status": "Draft",   # Status inicial (Draft -> Certified)
+            "status": "in_training", # Nasce na sala de aula
+            "training_progress": 0,
             "metrics": metrics,
             "created_at": datetime.now().isoformat()
         }
@@ -49,11 +47,11 @@ class BaseAgent:
             # 2. Salva estado atual
             self.gcs_client.upload_json(agent_snapshot, f"agents/{self.name}.json")
 
-            # 3. Sincroniza registry global
-            registry = self.gcs_client.read_json("agents/registry.json") or {"agents": []}
+            # 3. Sincroniza registry global v3
+            registry = self.gcs_client.read_json("agents/registry_v3.json") or {"agents": []}
             found = False
             for i, a in enumerate(registry['agents']):
-                if a['agent_name'] == self.name:
+                if a['name'] == self.name:
                     registry['agents'][i] = agent_snapshot
                     found = True
                     break
@@ -61,7 +59,7 @@ class BaseAgent:
             if not found:
                 registry['agents'].append(agent_snapshot)
                 
-            self.gcs_client.upload_json(registry, "agents/registry.json")
+            self.gcs_client.upload_json(registry, "agents/registry_v3.json")
 
     def run(self, task):
         """Executa uma tarefa usando a inteligência e personalidade deste agente."""
@@ -136,14 +134,14 @@ class BaseAgent:
                 history["history"].append(perf_log)
                 self.gcs_client.upload_json(history, f"agents/performance/{self.name}.json")
 
-                # Sincroniza registry global
-                registry = self.gcs_client.read_json("agents/registry.json")
+                # Sincroniza registry global v3
+                registry = self.gcs_client.read_json("agents/registry_v3.json")
                 if registry:
                     for a in registry.get("agents", []):
-                        if a["agent_name"] == self.name:
+                        if a["name"] == self.name:
                             a["metrics"] = agent_data["metrics"]
                             break
-                    self.gcs_client.upload_json(registry, "agents/registry.json")
+                    self.gcs_client.upload_json(registry, "agents/registry_v3.json")
 
             return result, evaluation
         except Exception as e:
