@@ -430,17 +430,17 @@ class TelegramAgent:
             
             elif action == "create_agent":
                 result = self.orchestrator.execute_decision(decision)
-                await self.safe_reply(update, f"🏗️ {result}")
+                await self.safe_reply(update, f"🏗️ {result}", parse_mode='Markdown')
             
             elif action == "generate_demand":
                 result = self.orchestrator.execute_decision(decision)
                 demand = decision.get("demand_info") or {}
                 title = demand.get("title", "Nova demanda")
-                await self.safe_reply(update, f"📝 Demanda registrada: {title}\n\n{result}")
+                await self.safe_reply(update, f"📝 Demanda registrada: {title}\n\n{result}", parse_mode='Markdown')
     
             else: # execute
                 result = self.orchestrator.execute_decision(decision)
-                await self.safe_reply(update, f"⚙️ {result}")
+                await self.safe_reply(update, f"⚙️ {result}", parse_mode='Markdown')
             
             # --- NOVO: Auto-Renderização de Diagramas ---
             if isinstance(result, str) and "```mermaid" in result:

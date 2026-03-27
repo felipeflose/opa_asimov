@@ -464,7 +464,14 @@ class CognitiveOrchestrator:
                     reg['demands'].append(validation_task)
                     self.gcs_client.upload_json(reg, "demands/registry_v3.json")
 
+                bucket = self.gcs_client.bucket_name if self.gcs_client else "N/A"
+                file_path = f"users/{self.gcs_client.user_id}/agents/{agent_name}.json" if self.gcs_client else "N/A"
+                
+                info_extra = f"\n📦 **Bucket**: `{bucket}`\n📄 **Arquivo**: `{file_path}`"
+                
                 final_result = decision.get("response") or f"Agente '{agent_name}' criado e registrado no backlog."
+                final_result += info_extra
+                
                 if is_auto:
                     final_result = "🚀 [AUTO-CREATE] " + final_result
         
