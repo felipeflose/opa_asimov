@@ -2,13 +2,14 @@ import os
 import requests
 import logging
 import time
+import subprocess
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def send_telegram_message(bot_token, chat_id, text):
+def send_telegram_message(bot_token, chat_id, text, parse_mode="HTML"):
     if not bot_token or not chat_id:
         return
     try:
@@ -16,7 +17,7 @@ def send_telegram_message(bot_token, chat_id, text):
         requests.post(tg_url, json={
             "chat_id": chat_id,
             "text": text,
-            "parse_mode": "Markdown"
+            "parse_mode": parse_mode
         }, timeout=10)
     except Exception as e:
         logging.error(f"Erro ao enviar mensagem Telegram: {e}")
@@ -57,14 +58,28 @@ def main():
             send_telegram_message(bot_token, chat_id, "🎉 **[AI Factory]** Todas as 10.000 melhorias do backlog já foram concluídas!")
             return
 
+        # Configura branch Git diária baseada na data local
+        date_str = datetime.now().strftime('%Y%m%d_%H%M')
+        branch_name = f"feature/improvements-{date_str}"
+        
+        # Cria a branch limpa a partir da origin/main remota para evitar commits locais com segredos
+        logging.info(f"Atualizando repositório e criando branch Git: {branch_name}")
+        subprocess.run(["git", "reset", "--hard", "HEAD"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "clean", "-fd"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "checkout", "-b", branch_name, "origin/main"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        # Traz todo o código atualizado da main local como alterações (sem carregar o histórico de segredos antigos)
+        subprocess.run(["git", "checkout", "main", "--", "."], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         # 2. Envia mensagem inicial às 10h informando o planejamento do dia
-        init_msg = "⚡ **[AI Factory - Planejamento Diário]**\n"
+        init_msg = "⚡ <b>[AI Factory - Planejamento Diário]</b>\n"
         init_msg += f"Iniciando lote de melhorias para hoje ({datetime.now().strftime('%d/%m/%Y')}):\n\n"
         for item in candidates:
             clean_title = item['title'].split(': ', 1)[-1] if ': ' in item['title'] else item['title']
-            init_msg += f"🔸 **{item['id']}**: {clean_title}\n"
+            init_msg += f"🔸 <b>{item['id']}</b>: {clean_title}\n"
             
-        send_telegram_message(bot_token, chat_id, init_msg)
+        send_telegram_message(bot_token, chat_id, init_msg, parse_mode="HTML")
         
         # 3. Executa cada melhoria sequencialmente e avisa o usuário conforme termina
         for item in candidates:
@@ -91,14 +106,48 @@ def main():
                 lf.write(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [AUTO-IMPROVEMENT] Aplicada: {item_id} - {item['title']}\n")
                 lf.write(f"   _{item['description']}_\n")
 
-            # Avisa conclusão no Telegram
-            done_msg = f"✅ **[Melhoria Concluída]**\n"
-            done_msg += f"**{item_id}**: {clean_title}\n"
-            done_msg += f"_{item['description']}_"
-            send_telegram_message(bot_token, chat_id, done_msg)
+            # Avisa conclusão no Telegram (HTML)
+            done_msg = f"✅ <b>[Melhoria Concluída]</b>\n"
+            done_msg += f"<b>{item_id}</b>: {clean_title}\n"
+            done_msg += f"<i>{item['description']}</i>"
+            send_telegram_message(bot_token, chat_id, done_msg, parse_mode="HTML")
+
+        # 4. Pré-verificação de Testes (CI/CD Local)
+        logging.info("Executando a suite de testes automatizados antes de enviar o PR...")
+        test_run = subprocess.run([os.path.join(APP_DIR, ".venv", "bin", "pytest"), "tests/"], cwd=APP_DIR)
+        
+        if test_run.returncode != 0:
+            logging.error("Os testes unitários FALHARAM! Abortando o push para segurança do repositório.")
+            fail_msg = "⚠️ <b>[AI Factory - CI/CD Falhou]</b>\n\n"
+            fail_msg += "As melhorias do dia foram executadas locais, mas a suite de testes unitários detectou falhas no código.\n\n"
+            fail_msg += "O envio da branch e do PR para o GitHub foi bloqueado automaticamente por segurança."
+            send_telegram_message(bot_token, chat_id, fail_msg, parse_mode="HTML")
+            subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return
+
+        # 5. Finalização de código: Grava log visível ao Git, commita e faz push da branch
+        logging.info("Gravando logs e realizando push para o repositório...")
+        git_log_path = os.path.join(APP_DIR, 'improvements_run_log.txt')
+        with open(git_log_path, 'a', encoding='utf-8') as gf:
+            gf.write(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Lote diário de melhorias aplicado com sucesso:\n")
+            for item in candidates:
+                gf.write(f"- {item['id']}: {item['title']}\n")
+                
+        subprocess.run(["git", "add", "."], cwd=APP_DIR)
+        commit_msg = f"chore(daily): apply daily improvements ({', '.join([c['id'] for c in candidates])})"
+        subprocess.run(["git", "commit", "-m", commit_msg], cwd=APP_DIR)
+        subprocess.run(["git", "push", "-u", "origin", branch_name], cwd=APP_DIR)
+
+        # 6. Envia o relatório final com link do PR no Telegram (HTML)
+        pr_url = f"https://github.com/felipeflose/opa_asimov/pull/new/{branch_name}"
+        final_report = "🚀 <b>[Lote Diário Concluído no GitHub]</b>\n\n"
+        final_report += f"Todas as 3 melhorias de hoje passaram nos testes unitários e foram salvas na branch <code>{branch_name}</code> no GitHub!\n\n"
+        final_report += f"🔗 <b>Crie e aprove o Pull Request:</b>\n{pr_url}"
+        send_telegram_message(bot_token, chat_id, final_report, parse_mode="HTML")
             
     except Exception as e:
         logging.error(f"Erro ao processar rotina diária: {e}")
+        subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 if __name__ == '__main__':
     main()

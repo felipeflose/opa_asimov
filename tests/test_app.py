@@ -4,9 +4,11 @@ import pytest
 from app import app, validate_bot_state
 
 @pytest.fixture
-def client(monkeypatch):
+def client(monkeypatch, temp_graph_path):
     """Cria um cliente de testes para o Flask."""
     app.config["TESTING"] = True
+    # Garante que o Flask use o arquivo de grafo temporário nos testes
+    monkeypatch.setattr("app.JSON_PATH", temp_graph_path)
     # Limpa o tracker de rate limit para evitar erros de 429 Too Many Requests durante os testes
     from app import _rate_limit_tracker
     _rate_limit_tracker.clear()

@@ -4,7 +4,8 @@ import os
 import re
 import shutil
 from datetime import datetime
-from agent_core import load_graph, save_graph, slugify, JSON_PATH
+from agent_core import load_graph, save_graph, slugify
+import agent_core
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def rotate_logs():
 
 def _backup_graph():
     """Cria backup do grafo antes de operações destrutivas com política de retenção inteligente."""
-    if not os.path.isfile(JSON_PATH):
+    if not os.path.isfile(agent_core.JSON_PATH):
         return None
     os.makedirs(BACKUP_DIR, exist_ok=True)
     
@@ -66,7 +67,7 @@ def _backup_graph():
         
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_path = os.path.join(BACKUP_DIR, f"obsidian_graph_{ts}.json")
-    shutil.copy2(JSON_PATH, backup_path)
+    shutil.copy2(agent_core.JSON_PATH, backup_path)
     logger.info(f"Backup criado: {backup_path}")
     
     # Retenção configurável

@@ -14,8 +14,4 @@ scratch/
 .antigravitycli/
 backups/
 metrics_history.json
-improvement_backlog.json
-pending_approval.json
-generate_obsidian_graph.py
-version_lab.py
-archive/
+
