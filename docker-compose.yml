@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Servidor Flask Web / Painel de Controle (Cockpit)
+  flos-cockpit:
+    build: .
+    container_name: flos-cockpit
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8091}:${PORT:-8091}"
+    volumes:
+      - ./obsidian_graph.json:/app/obsidian_graph.json
+      - ./vault_embeddings.json:/app/vault_embeddings.json
+      - ./vault_temp:/app/vault_temp
+      - ./summaries:/app/summaries
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    environment:
+      - PORT=${PORT:-8091}
+      - FLASK_DEBUG=${FLASK_DEBUG:-false}
+    command: ["python", "app.py"]
+
+  # Telegram Bot (Agent Bot)
+  flos-bot:
+    build: .
+    container_name: flos-bot
+    restart: unless-stopped
+    volumes:
+      - ./obsidian_graph.json:/app/obsidian_graph.json
+      - ./vault_embeddings.json:/app/vault_embeddings.json
+      - ./vault_temp:/app/vault_temp
+      - ./summaries:/app/summaries
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    command: ["python", "agent_bot.py"]
+
+  # Serviço Opcional de Ollama Local (Descomente caso queira encapsular no Docker)
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama-local
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_storage:/root/.ollama
+  #   restart: unless-stopped
+
+# volumes:
+#   ollama_storage:

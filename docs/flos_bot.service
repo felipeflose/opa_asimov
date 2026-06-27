@@ -1,0 +1,17 @@
+[Unit]
+Description=Flos Telegram Agent Bot
+After=network.target
+
+[Service]
+Type=simple
+User=felipeflose
+WorkingDirectory=/Users/felipeflose/obsidian_graph_app
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/Users/felipeflose/obsidian_graph_app/.venv/bin/python3 agent_bot.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/Users/felipeflose/obsidian_graph_app/logs/bot_systemd.log
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

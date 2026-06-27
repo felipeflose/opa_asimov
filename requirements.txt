@@ -1,5 +1,11 @@
-fastmcp
-flask
-flask_sqlalchemy
-google
-wikipedia
+flask==3.1.3
+psutil==7.2.2
+requests==2.32.5
+python-dotenv==1.2.1
+python-telegram-bot==22.5
+pypdf==6.10.2
+beautifulsoup4==4.14.3
+openai-whisper==20250625
+edge-tts==7.2.8
+docling==2.69.1
+numpy==2.0.2

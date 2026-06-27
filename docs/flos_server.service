@@ -1,0 +1,19 @@
+[Unit]
+Description=Flos Cockpit Flask Web Server
+After=network.target
+
+[Service]
+Type=simple
+User=felipeflose
+WorkingDirectory=/Users/felipeflose/obsidian_graph_app
+Environment=PORT=8091
+Environment=FLASK_DEBUG=false
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/Users/felipeflose/obsidian_graph_app/.venv/bin/python3 app.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/Users/felipeflose/obsidian_graph_app/logs/server_systemd.log
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,220 @@
+openapi: 3.0.3
+info:
+  title: AI Factory Knowledge Graph API
+  description: API REST para gerenciar o Grafo de Conhecimento Neural de Felipe Flose, incluindo telemetria, orquestração de processos assíncronos e insights baseados em IA.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8091
+    description: Servidor de Desenvolvimento Local
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /:
+    get:
+      summary: Painel da UI do Grafo
+      description: Retorna o painel HTML interativo do D3.js pré-carregado com os dados do grafo do disco.
+      security: []
+      responses:
+        '200':
+          description: Sucesso. Retorna HTML do painel.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /api/graph:
+    get:
+      summary: Dados Completos do Grafo
+      description: Retorna a estrutura completa do grafo em formato JSON (nós, arestas e metadados). Suporta compactação Gzip.
+      security: []
+      responses:
+        '200':
+          description: Sucesso. Retorna nós e arestas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodes:
+                    type: array
+                    items:
+                      type: object
+                  edges:
+                    type: array
+                    items:
+                      type: object
+                  metadata:
+                    type: object
+
+  /api/node-insight:
+    post:
+      summary: Insights baseados em IA
+      description: Solicita à IA da Groq um insight rápido sobre um nó do grafo e como ele se conecta ao perfil de Felipe.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - type
+              properties:
+                title:
+                  type: string
+                  example: Python
+                type:
+                  type: string
+                  example: tool
+      responses:
+        '200':
+          description: Insight gerado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  insight:
+                    type: string
+                  node:
+                    type: string
+
+  /api/run-update:
+    post:
+      summary: Iniciar Atualização do Grafo
+      description: Dispara o pipeline assíncrono completo para processar novos arquivos do Vault e regenerar o grafo.
+      responses:
+        '200':
+          description: Processo disparado ou já em execução.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: started
+                  msg:
+                    type: string
+                  pid:
+                    type: integer
+        '401':
+          description: Não autorizado (API key inválida ou ausente).
+        '429':
+          description: Rate limit atingido.
+
+  /api/run-fast:
+    post:
+      summary: Iniciar Atualização Rápida
+      description: Dispara o pipeline assíncrono no modo rápido (fast) ignorando etapas demoradas de IA.
+      responses:
+        '200':
+          description: Processo disparado com sucesso.
+        '401':
+          description: Não autorizado.
+
+  /api/run-edge:
+    post:
+      summary: Iniciar Auditoria de Arestas
+      description: Dispara o Auditor de Linhagem assíncrono para higienizar edges, órfãos e cross-links.
+      responses:
+        '200':
+          description: Auditor disparado com sucesso.
+        '401':
+          description: Não autorizado.
+
+  /api/kill-all:
+    post:
+      summary: Cancelar Processos Ativos
+      description: Finaliza imediatamente todos os subprocessos ativos disparados pelo servidor Flask.
+      responses:
+        '200':
+          description: Processos encerrados com sucesso.
+        '401':
+          description: Não autorizado.
+
+  /api/status:
+    get:
+      summary: Status do Servidor e Telemetria
+      description: Retorna informações em tempo real de CPU, RAM, temperatura, integridade do Bot Telegram e estatísticas básicas do grafo.
+      security: []
+      responses:
+        '200':
+          description: Status retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/save-positions:
+    post:
+      summary: Salvar Posições customizadas do Frontend
+      description: Grava as coordenadas fixas (fx, fy) de nós que foram arrastados no frontend.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                positions:
+                  type: object
+      responses:
+        '200':
+          description: Posições salvas com sucesso.
+        '401':
+          description: Não autorizado.
+
+  /api/summaries:
+    get:
+      summary: Listar Resumos de Disciplinas
+      description: Retorna a lista de resumos em formato HTML gerados pelo pipeline.
+      security: []
+      responses:
+        '200':
+          description: Lista de resumos gerados.
+
+  /api/summary/{filename}:
+    get:
+      summary: Visualizar Resumo HTML
+      description: Serve um arquivo de resumo específico. Protegido contra path traversal.
+      security: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Arquivo retornado com sucesso.
+        '400':
+          description: Erro de validação de caminho.
+
+  /api/health:
+    get:
+      summary: Endpoint de Health Check
+      description: Retorna o status de integridade do Ollama, Vault, Grafo, espaço em disco e Bot Telegram.
+      security: []
+      responses:
+        '200':
+          description: Status de saúde.
+
+  /api/metrics-history:
+    get:
+      summary: Histórico de Métricas de CPU e RAM
+      description: Retorna o histórico recente de telemetria persistido em disco.
+      security: []
+      responses:
+        '200':
+          description: Lista de métricas.
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key

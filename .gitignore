@@ -1,28 +1,21 @@
-# General
+.env
 .venv/
 __pycache__/
-*.pyc
 *.log
-*.tmp
-.env
-node_modules/
-dist/
-
-# Project Specific
-AtualizaAI/tmp_vectors/
-AtualizaAI/scripts_aux/
-AtualizaAI/brain/
-.agents/
-.agent/
-.gemini/
-
-# Misc
-*.jpg
-*.png
-*.zip
-*.tgz
-*.gz
-dist/
-build/
-.vscode/
-.idea/
+server.log
+server_stderr.log
+server_stdout.log
+logs/
+summaries/
+agent_bot_state.json
+vault_embeddings.json
+obsidian_graph.json
+scratch/
+.antigravitycli/
+backups/
+metrics_history.json
+improvement_backlog.json
+pending_approval.json
+generate_obsidian_graph.py
+version_lab.py
+archive/
