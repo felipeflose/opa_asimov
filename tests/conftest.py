@@ -73,6 +73,14 @@ def temp_graph_path(monkeypatch):
         temp_file = os.path.join(tmpdir, "obsidian_graph_temp.json")
         original_json_path = agent_core.JSON_PATH
         monkeypatch.setattr(agent_core, "JSON_PATH", temp_file)
+        
+        # Patch também no app.py para evitar problemas de namespace nos testes
+        try:
+            import app
+            monkeypatch.setattr(app, "JSON_PATH", temp_file)
+        except Exception:
+            pass
+            
         yield temp_file
         # Garante que volte ao original
         agent_core.JSON_PATH = original_json_path

@@ -9,11 +9,11 @@ def test_backup_graph_disk_warning(temp_graph_path, monkeypatch, caplog):
     # Primeiro grava algo para poder fazer backup
     save_graph([{"id": "a"}], [])
     
-    # Mock do shutil.disk_usage para retornar menos de 500 MB (ex: 100 MB)
+    # Mock do shutil.disk_usage no escopo do agent_sanitizer
     def mock_disk_usage(path):
         return (1000 * 1024 * 1024, 900 * 1024 * 1024, 100 * 1024 * 1024)
         
-    monkeypatch.setattr(shutil, "disk_usage", mock_disk_usage)
+    monkeypatch.setattr("agent_sanitizer.shutil.disk_usage", mock_disk_usage)
     
     # Importante: limpar caplog e setar level de log
     import logging
