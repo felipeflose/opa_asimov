@@ -1,0 +1,1191 @@
+{
+  "nodes": [
+    {
+      "id": "mestre",
+      "title": "Felipe Flose",
+      "type": "mestre",
+      "fx": 960,
+      "fy": 500,
+      "depth": 0,
+      "integrated": true
+    },
+    {
+      "id": "mba_hub",
+      "title": "🎓 MBA EM IA",
+      "type": "mba",
+      "depth": 1,
+      "integrated": true,
+      "fx": 180.6869705964076,
+      "fy": 361.31969846090874
+    },
+    {
+      "id": "work_hub",
+      "title": "💼 TRABALHO",
+      "type": "work",
+      "depth": 1,
+      "integrated": true
+    },
+    {
+      "id": "tool_hub",
+      "title": "🛠️ TECNOLOGIAS",
+      "type": "tool",
+      "depth": 1,
+      "integrated": true,
+      "fx": 768.652219042697,
+      "fy": 1080.7338166509653
+    },
+    {
+      "id": "classificar_hub",
+      "title": "📂 GERAL",
+      "type": "classificar",
+      "depth": 1,
+      "integrated": true,
+      "fx": 961.0108008097145,
+      "fy": 267.7200813924094
+    },
+    {
+      "id": "cv_certificacoes_n8n",
+      "title": "CV Certificacoes n8n",
+      "type": "tool",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Certificacoes_n8n.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Certificacoes_n8n.md"
+      ]
+    },
+    {
+      "id": "mba_geral_engenharia_de_prompts_engenharia_de_prompts",
+      "title": "MBA Geral Engenharia de Prompts Engenharia de Prompts",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Engenharia de Prompts_Engenharia de Prompts.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Engenharia de Prompts_Engenharia de Prompts.md"
+      ]
+    },
+    {
+      "id": "mba_geral_introdu_o_slides_nat_lia_godoy_introdu_o_slides_nat_lia_godoy",
+      "title": "MBA Geral Introdução - Slides - Natália Godoy Introdução - Slides - Natália Godoy",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Introdução - Slides - Natália Godoy_Introdução - Slides - Natália Godoy.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Introdução - Slides - Natália Godoy_Introdução - Slides - Natália Godoy.md"
+      ]
+    },
+    {
+      "id": "chats_code_claude",
+      "title": "chats code CLAUDE",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/chats_code_CLAUDE.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/chats_code_CLAUDE.md"
+      ]
+    },
+    {
+      "id": "cv_experiencia_profissional_talent_group_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional Talent Group Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Talent Group Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Talent Group Consultor Analista de BI.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_engenharia_de_prompt",
+      "title": "CV Habilidades e Competencias Engenharia de Prompt",
+      "type": "tool",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Engenharia de Prompt.md",
+      "essence": "Ferramenta Técnica",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Engenharia de Prompt.md"
+      ]
+    },
+    {
+      "id": "cv_experiencia_profissional_profarma_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional Profarma Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Profarma Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Profarma Consultor Analista de BI.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_python",
+      "title": "CV Habilidades e Competencias Python",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Python.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Python.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_snowflake",
+      "title": "CV Habilidades e Competencias Snowflake",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Snowflake.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Snowflake.md"
+      ]
+    },
+    {
+      "id": "openclaw_agents",
+      "title": "OpenClaw AGENTS",
+      "type": "tool",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_AGENTS.md",
+      "essence": "Ferramenta Técnica",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_AGENTS.md"
+      ]
+    },
+    {
+      "id": "mba_geral_analisando_dados_com_pandas_analisando_dados_com_pandas",
+      "title": "MBA Geral Analisando Dados com Pandas Analisando Dados com Pandas",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Analisando Dados com Pandas_Analisando Dados com Pandas.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Analisando Dados com Pandas_Analisando Dados com Pandas.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_dbt_data_build_tool",
+      "title": "CV Habilidades e Competencias dbt (data build tool)",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_dbt (data build tool).md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_dbt (data build tool).md"
+      ]
+    },
+    {
+      "id": "cv_experiencia_profissional_locaweb_analista_de_bi",
+      "title": "CV Experiencia Profissional Locaweb Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Locaweb Analista de BI.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Locaweb Analista de BI.md"
+      ]
+    },
+    {
+      "id": "mba_geral_python_starter_python_starter",
+      "title": "MBA Geral Python Starter Python Starter",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Python Starter_Python Starter.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Python Starter_Python Starter.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_sistemas_multi_agentes_crewai_agno",
+      "title": "CV Habilidades e Competencias Sistemas Multi-Agentes (CrewAI, Agno)",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Sistemas Multi-Agentes (CrewAI, Agno).md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Sistemas Multi-Agentes (CrewAI, Agno).md"
+      ]
+    },
+    {
+      "id": "mba_geral_material_complementar_exerc_cio_vibe_coding_aula_3_material_complementar_exerc_cio_vibe_coding_aula_3",
+      "title": "MBA Geral Material Complementar - Exercício Vibe Coding - Aula 3 Material Complementar - Exercício Vibe Coding - Aula 3",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Material Complementar - Exercício Vibe Coding - Aula 3_Material Complementar - Exercício Vibe Coding - Aula 3.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Material Complementar - Exercício Vibe Coding - Aula 3_Material Complementar - Exercício Vibe Coding - Aula 3.md"
+      ]
+    },
+    {
+      "id": "mba_geral_computa_o_quantica_com_carlos_rischioto_computa_o_quantica_com_carlos_rischioto",
+      "title": "MBA Geral Computação Quantica, com Carlos Rischioto Computação Quantica, com Carlos Rischioto",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Computação Quantica, com Carlos Rischioto_Computação Quantica, com Carlos Rischioto.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Computação Quantica, com Carlos Rischioto_Computação Quantica, com Carlos Rischioto.md"
+      ],
+      "fx": 566.6170371850915,
+      "fy": 131.20496680728098
+    },
+    {
+      "id": "mba_geral_criando_seu_setup_para_programa_o_python_criando_seu_setup_para_programa_o_python",
+      "title": "MBA Geral Criando seu Setup para Programação Python  Criando seu Setup para Programação Python ",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Criando seu Setup para Programação Python _Criando seu Setup para Programação Python .md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Criando seu Setup para Programação Python _Criando seu Setup para Programação Python .md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_n8n",
+      "title": "CV Habilidades e Competencias n8n",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_n8n.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_n8n.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_amazon_web_services_aws",
+      "title": "CV Habilidades e Competencias Amazon Web Services (AWS)",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Amazon Web Services (AWS).md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Amazon Web Services (AWS).md"
+      ]
+    },
+    {
+      "id": "mba_geral_e_book_da_disciplina_fundamentos_de_intelig_ncia_artificial_pdf_e_book_da_disciplina_fundamentos_de_intelig_ncia_artificial_pdf",
+      "title": "MBA Geral E-book da Disciplina - Fundamentos de Inteligência Artificial (PDF) E-book da Disciplina - Fundamentos de Inteligência Artificial (PDF)",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_E-book da Disciplina - Fundamentos de Inteligência Artificial (PDF)_E-book da Disciplina - Fundamentos de Inteligência Artificial (PDF).md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_E-book da Disciplina - Fundamentos de Inteligência Artificial (PDF)_E-book da Disciplina - Fundamentos de Inteligência Artificial (PDF).md"
+      ]
+    },
+    {
+      "id": "mba_geral_hugging_face_hugging_face",
+      "title": "MBA Geral Hugging Face Hugging Face",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Hugging Face_Hugging Face.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Hugging Face_Hugging Face.md"
+      ],
+      "fx": 650.9403410362158,
+      "fy": 279.0391612216218
+    },
+    {
+      "id": "mba_geral_aula_2_slides_viviane_machado_aula_2_slides_viviane_machado",
+      "title": "MBA Geral Aula 2 - Slides - Viviane Machado Aula 2 - Slides - Viviane Machado",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aula 2 - Slides - Viviane Machado_Aula 2 - Slides - Viviane Machado.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aula 2 - Slides - Viviane Machado_Aula 2 - Slides - Viviane Machado.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_databricks",
+      "title": "CV Habilidades e Competencias Databricks",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Databricks.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Databricks.md"
+      ]
+    },
+    {
+      "id": "mba_geral_introdu_o_a_multi_agent_systems_com_crewai_introdu_o_a_multi_agent_systems_com_crewai",
+      "title": "MBA Geral Introdução a Multi-agent Systems com CrewAI Introdução a Multi-agent Systems com CrewAI",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Introdução a Multi-agent Systems com CrewAI_Introdução a Multi-agent Systems com CrewAI.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Introdução a Multi-agent Systems com CrewAI_Introdução a Multi-agent Systems com CrewAI.md"
+      ]
+    },
+    {
+      "id": "openclaw_openclaw_user",
+      "title": "OpenClaw OpenClaw USER",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_OpenClaw_USER.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_OpenClaw_USER.md"
+      ]
+    },
+    {
+      "id": "system_agent_edge",
+      "title": "SYSTEM agent EDGE",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/SYSTEM_agent_EDGE.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/SYSTEM_agent_EDGE.md"
+      ]
+    },
+    {
+      "id": "mba_geral_aprendendo_em_um_mundo_digital_aprendendo_em_um_mundo_digital",
+      "title": "MBA Geral Aprendendo em um mundo digital Aprendendo em um mundo digital",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aprendendo em um mundo digital_Aprendendo em um mundo digital.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aprendendo em um mundo digital_Aprendendo em um mundo digital.md"
+      ]
+    },
+    {
+      "id": "cv_experiencia_profissional_fc_nuvem_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional FC Nuvem Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_FC Nuvem Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_FC Nuvem Consultor Analista de BI.md"
+      ]
+    },
+    {
+      "id": "logs_2026_04_15_setup_memoria_antigravity",
+      "title": "logs 2026-04-15-setup-memoria-antigravity",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/logs_2026-04-15-setup-memoria-antigravity.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/logs_2026-04-15-setup-memoria-antigravity.md"
+      ]
+    },
+    {
+      "id": "openclaw_memory",
+      "title": "OpenClaw MEMORY",
+      "type": "tool",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_MEMORY.md",
+      "essence": "Ferramenta Técnica",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_MEMORY.md"
+      ]
+    },
+    {
+      "id": "mba_geral_aplica_es_de_ia_com_langchain_aplica_es_de_ia_com_langchain",
+      "title": "MBA Geral Aplicações de IA com LangChain Aplicações de IA com LangChain",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aplicações de IA com LangChain_Aplicações de IA com LangChain.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aplicações de IA com LangChain_Aplicações de IA com LangChain.md"
+      ]
+    },
+    {
+      "id": "cv_experiencia_profissional_niteo_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional Niteo Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Niteo Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Niteo Consultor Analista de BI.md"
+      ]
+    },
+    {
+      "id": "cv_habilidades_e_competencias_apache_airflow",
+      "title": "CV Habilidades e Competencias Apache Airflow",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Apache Airflow.md",
+      "essence": "Marcos de Carreira",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Apache Airflow.md"
+      ]
+    },
+    {
+      "id": "mba_geral_explorando_a_api_da_openai_explorando_a_api_da_openai",
+      "title": "MBA Geral Explorando a API da OpenAI Explorando a API da OpenAI",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Explorando a API da OpenAI_Explorando a API da OpenAI.md",
+      "essence": "Conhecimento de MBA",
+      "paths": [
+        "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Explorando a API da OpenAI_Explorando a API da OpenAI.md"
+      ]
+    },
+    {
+      "id": "cv_certificacoes_pre_sales_technical_expert",
+      "title": "CV Certificacoes Pre Sales Technical Expert",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Certificacoes_Pre Sales Technical Expert.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_habilidades_e_competencias_inteligencia_artificial_generativa_genai",
+      "title": "CV Habilidades e Competencias Inteligencia Artificial Generativa (GenAI)",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Inteligencia Artificial Generativa (GenAI).md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_certificacoes_claude_code",
+      "title": "CV Certificacoes Claude Code",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Certificacoes_Claude Code.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_habilidades_e_competencias_microsoft_azure",
+      "title": "CV Habilidades e Competencias Microsoft Azure",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Microsoft Azure.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_habilidades_e_competencias_langchain",
+      "title": "CV Habilidades e Competencias LangChain",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_LangChain.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "mba_geral_criando_aplicativos_web_com_streamlit_criando_aplicativos_web_com_streamlit",
+      "title": "MBA Geral Criando Aplicativos Web com Streamlit Criando Aplicativos Web com Streamlit",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Criando Aplicativos Web com Streamlit_Criando Aplicativos Web com Streamlit.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_fundamentos_de_intelige_ncia_artificial_fundamentos_de_intelige_ncia_artificial",
+      "title": "MBA Geral Fundamentos de Inteligência Artificial Fundamentos de Inteligência Artificial",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Fundamentos de Inteligência Artificial_Fundamentos de Inteligência Artificial.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_declara_o_de_matr_cula_declara_o_de_matr_cula",
+      "title": "MBA Geral Declaração de Matrícula Declaração de Matrícula",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Declaração de Matrícula_Declaração de Matrícula.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_apis_para_iniciantes_http_requests_e_apis_com_python_apis_para_iniciantes_http_requests_e_apis_com_python",
+      "title": "MBA Geral APIs para iniciantes - HTTP, Requests e APIs com Python APIs para iniciantes - HTTP, Requests e APIs com Python",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_APIs para iniciantes - HTTP, Requests e APIs com Python_APIs para iniciantes - HTTP, Requests e APIs com Python.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "cv_habilidades_e_competencias_sql_server",
+      "title": "CV Habilidades e Competencias SQL Server",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_SQL Server.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_formacao_academica_graduacao_analise_e_desenvolvimento_de_sistemas",
+      "title": "CV Formacao Academica Graduacao Analise e Desenvolvimento de Sistemas",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Formacao Academica_Graduacao Analise e Desenvolvimento de Sistemas.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "mba_machine_learning_aplicado_a_neg_cios_machine_learning_aplicado_a_neg_cios_machine_learning_aplicado_a_neg_cios",
+      "title": "MBA Machine Learning Aplicado a Negócios Machine Learning Aplicado a Negócios Machine Learning Aplicado a Negócios",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Machine Learning Aplicado a Negócios_Machine Learning Aplicado a Negócios_Machine Learning Aplicado a Negócios.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_materiais_complementares_materiais_complementares",
+      "title": "MBA Geral Materiais Complementares Materiais Complementares",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Materiais Complementares_Materiais Complementares.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "cv_experiencia_profissional_blueshift_brasil_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional BlueShift Brasil Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_BlueShift Brasil Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "mba_geral_aula_3_slides_natalia_godoy_aula_3_slides_natalia_godoy",
+      "title": "MBA Geral Aula 3 - Slides - Natalia Godoy Aula 3 - Slides - Natalia Godoy",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aula 3 - Slides - Natalia Godoy_Aula 3 - Slides - Natalia Godoy.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "cv_experiencia_profissional_gtm_holdings_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional GTM Holdings Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_GTM Holdings Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_certificacoes_large_language_models_llms",
+      "title": "CV Certificacoes Large Language Models (LLMs)",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Certificacoes_Large Language Models (LLMs).md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_idiomas_ingles",
+      "title": "CV Idiomas Ingles",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Idiomas_Ingles.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_experiencia_profissional_keyrus_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional Keyrus Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Keyrus Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "openclaw_openclaw_memory",
+      "title": "OpenClaw OpenClaw MEMORY",
+      "type": "tool",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_OpenClaw_MEMORY.md",
+      "essence": "Ferramenta Técnica"
+    },
+    {
+      "id": "openclaw_user",
+      "title": "OpenClaw USER",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_USER.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_docker_do_zero_como_usar_e_criar_containers_rodando_python_docker_do_zero_como_usar_e_criar_containers_rodando_python",
+      "title": "MBA Geral Docker do Zero  como usar e criar containers rodando Python Docker do Zero  como usar e criar containers rodando Python",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Docker do Zero_ como usar e criar containers rodando Python_Docker do Zero_ como usar e criar containers rodando Python.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_aula_1_slides_elaine_coimbra_aula_1_slides_elaine_coimbra",
+      "title": "MBA Geral Aula 1 - Slides - Elaine Coimbra Aula 1 - Slides - Elaine Coimbra",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Aula 1 - Slides - Elaine Coimbra_Aula 1 - Slides - Elaine Coimbra.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "cv_experiencia_profissional_leega_arquiteto_de_solucoes",
+      "title": "CV Experiencia Profissional Leega Arquiteto de Solucoes",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_Leega Arquiteto de Solucoes.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_experiencia_profissional_k2_partnering_consultor_analista_de_bi",
+      "title": "CV Experiencia Profissional K2 Partnering Consultor Analista de BI",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Experiencia Profissional_K2 Partnering Consultor Analista de BI.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "cv_certificacoes_gcp_professional_cloud_database_engineer",
+      "title": "CV Certificacoes GCP Professional Cloud Database Engineer",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Certificacoes_GCP Professional Cloud Database Engineer.md",
+      "essence": "Marcos de Carreira"
+    },
+    {
+      "id": "mba_geral_agents_de_ia_com_python_e_langchain_agents_de_ia_com_python_e_langchain",
+      "title": "MBA Geral Agents de IA com Python e LangChain Agents de IA com Python e LangChain",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Agents de IA com Python e LangChain_Agents de IA com Python e LangChain.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_introdu_o_l_gica_de_programa_o_introdu_o_l_gica_de_programa_o",
+      "title": "MBA Geral Introdução à lógica de programação Introdução à lógica de programação",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_Introdução à lógica de programação_Introdução à lógica de programação.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "openclaw_openclaw_agents",
+      "title": "OpenClaw OpenClaw AGENTS",
+      "type": "tool",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/OpenClaw_OpenClaw_AGENTS.md",
+      "essence": "Ferramenta Técnica"
+    },
+    {
+      "id": "system_prompts",
+      "title": "SYSTEM prompts",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/SYSTEM_prompts.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "mba_geral_ias_para_imagens_e_udio_com_hugging_face_ias_para_imagens_e_udio_com_hugging_face",
+      "title": "MBA Geral IAs para Imagens e Áudio com Hugging Face IAs para Imagens e Áudio com Hugging Face",
+      "type": "mba",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/MBA_Geral_IAs para Imagens e Áudio com Hugging Face_IAs para Imagens e Áudio com Hugging Face.md",
+      "essence": "Conhecimento de MBA"
+    },
+    {
+      "id": "cv_habilidades_e_competencias_google_cloud_platform_gcp",
+      "title": "CV Habilidades e Competencias Google Cloud Platform (GCP)",
+      "type": "work",
+      "integrated": true,
+      "depth": 3,
+      "path": "/Users/felipeflose/obsidian_graph_app/vault_temp/CV_Habilidades e Competencias_Google Cloud Platform (GCP).md",
+      "essence": "Marcos de Carreira"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mestre",
+      "target": "mba_hub",
+      "reasoning": "Estrutura Core",
+      "cross_link": false
+    },
+    {
+      "source": "mestre",
+      "target": "work_hub",
+      "reasoning": "Estrutura Core",
+      "cross_link": false
+    },
+    {
+      "source": "mestre",
+      "target": "tool_hub",
+      "reasoning": "Estrutura Core",
+      "cross_link": false
+    },
+    {
+      "source": "mestre",
+      "target": "classificar_hub",
+      "reasoning": "Estrutura Core",
+      "cross_link": false
+    },
+    {
+      "source": "tool_hub",
+      "target": "cv_certificacoes_n8n",
+      "reasoning": "",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_engenharia_de_prompts_engenharia_de_prompts",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_introdu_o_slides_nat_lia_godoy_introdu_o_slides_nat_lia_godoy",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "chats_code_claude",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_talent_group_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "tool_hub",
+      "target": "cv_habilidades_e_competencias_engenharia_de_prompt",
+      "reasoning": "Conceito Central de TOOL",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_profarma_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_python",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_snowflake",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "tool_hub",
+      "target": "openclaw_agents",
+      "reasoning": "Conceito Central de TOOL",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_analisando_dados_com_pandas_analisando_dados_com_pandas",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_dbt_data_build_tool",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_locaweb_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_python_starter_python_starter",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_sistemas_multi_agentes_crewai_agno",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_material_complementar_exerc_cio_vibe_coding_aula_3_material_complementar_exerc_cio_vibe_coding_aula_3",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_computa_o_quantica_com_carlos_rischioto_computa_o_quantica_com_carlos_rischioto",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_criando_seu_setup_para_programa_o_python_criando_seu_setup_para_programa_o_python",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_n8n",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_amazon_web_services_aws",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_e_book_da_disciplina_fundamentos_de_intelig_ncia_artificial_pdf_e_book_da_disciplina_fundamentos_de_intelig_ncia_artificial_pdf",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_hugging_face_hugging_face",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_aula_2_slides_viviane_machado_aula_2_slides_viviane_machado",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_databricks",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_introdu_o_a_multi_agent_systems_com_crewai_introdu_o_a_multi_agent_systems_com_crewai",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "openclaw_openclaw_user",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "system_agent_edge",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_aprendendo_em_um_mundo_digital_aprendendo_em_um_mundo_digital",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_fc_nuvem_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "logs_2026_04_15_setup_memoria_antigravity",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "tool_hub",
+      "target": "openclaw_memory",
+      "reasoning": "Conceito Central de TOOL",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_aplica_es_de_ia_com_langchain_aplica_es_de_ia_com_langchain",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_niteo_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_apache_airflow",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_explorando_a_api_da_openai_explorando_a_api_da_openai",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_certificacoes_pre_sales_technical_expert",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_inteligencia_artificial_generativa_genai",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_certificacoes_claude_code",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_microsoft_azure",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_langchain",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_criando_aplicativos_web_com_streamlit_criando_aplicativos_web_com_streamlit",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_fundamentos_de_intelige_ncia_artificial_fundamentos_de_intelige_ncia_artificial",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_declara_o_de_matr_cula_declara_o_de_matr_cula",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_apis_para_iniciantes_http_requests_e_apis_com_python_apis_para_iniciantes_http_requests_e_apis_com_python",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_sql_server",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_formacao_academica_graduacao_analise_e_desenvolvimento_de_sistemas",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_machine_learning_aplicado_a_neg_cios_machine_learning_aplicado_a_neg_cios_machine_learning_aplicado_a_neg_cios",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_materiais_complementares_materiais_complementares",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_blueshift_brasil_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_aula_3_slides_natalia_godoy_aula_3_slides_natalia_godoy",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_gtm_holdings_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_certificacoes_large_language_models_llms",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_idiomas_ingles",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_keyrus_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "tool_hub",
+      "target": "openclaw_openclaw_memory",
+      "reasoning": "Conceito Central de TOOL",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "openclaw_user",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_docker_do_zero_como_usar_e_criar_containers_rodando_python_docker_do_zero_como_usar_e_criar_containers_rodando_python",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_aula_1_slides_elaine_coimbra_aula_1_slides_elaine_coimbra",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_leega_arquiteto_de_solucoes",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_experiencia_profissional_k2_partnering_consultor_analista_de_bi",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_certificacoes_gcp_professional_cloud_database_engineer",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_agents_de_ia_com_python_e_langchain_agents_de_ia_com_python_e_langchain",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_introdu_o_l_gica_de_programa_o_introdu_o_l_gica_de_programa_o",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "tool_hub",
+      "target": "openclaw_openclaw_agents",
+      "reasoning": "Conceito Central de TOOL",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "system_prompts",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "mba_hub",
+      "target": "mba_geral_ias_para_imagens_e_udio_com_hugging_face_ias_para_imagens_e_udio_com_hugging_face",
+      "reasoning": "Conceito Central de MBA",
+      "cross_link": false
+    },
+    {
+      "source": "work_hub",
+      "target": "cv_habilidades_e_competencias_google_cloud_platform_gcp",
+      "reasoning": "Conceito Central de WORK",
+      "cross_link": false
+    }
+  ],
+  "metadata": {
+    "last_update": "04/05/2026 19:41:46",
+    "status": "Sincronização Finalizada"
+  }
+}
