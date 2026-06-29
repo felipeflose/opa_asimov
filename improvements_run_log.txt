@@ -381,3 +381,9 @@
    _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
 [2026-06-29 17:46:44] [AUTO-IMPROVEMENT] Aplicada: TECH-009 - Adicionar endpoint /api/health/db para verificar SQLite
    _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
+[2026-06-29 17:47:32] [AUTO-IMPROVEMENT] Aplicada: IMP-10025 - IMP-10025: O agente agent_rag.py não tem circuit breaker para falhas de
+   _O agente agent_rag.py não tem circuit breaker para falhas de API — uma queda do Groq deixa o sistema inteiro bloqueado._
+[2026-06-29 17:47:35] [AUTO-IMPROVEMENT] Aplicada: IMP-10023 - IMP-10023: Não existe runbook para os incidentes mais comuns — cada vez
+   _Não existe runbook para os incidentes mais comuns — cada vez que o SQLite trava, o time vai no trial-and-error._
+[2026-06-29 17:47:36] [AUTO-IMPROVEMENT] Aplicada: IMP-10024 - IMP-10024: O app.py tem mais de 1300 linhas — é impossível encontrar a 
+   _O app.py tem mais de 1300 linhas — é impossível encontrar a rota certa sem fazer Ctrl+F. Isso precisa ser separado em blueprints._
