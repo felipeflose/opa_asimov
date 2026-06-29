@@ -1194,5 +1194,149 @@
     "area": "QA",
     "complaint": "A cobertura de código está em 23% segundo o último relatório — estamos deployando às cegas em mais de 75% do código.",
     "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.721148+00:00",
+    "user": "Fernanda Alves",
+    "avatar": "🔐",
+    "role": "Security Engineer",
+    "area": "Security",
+    "complaint": "O bot do Telegram não verifica o chat_id do remetente — qualquer pessoa com o link pode enviar comandos ao sistema.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.721278+00:00",
+    "user": "Gustavo Lima",
+    "avatar": "📱",
+    "role": "Mobile Developer",
+    "area": "Mobile",
+    "complaint": "O bot do Telegram tem um menu de comandos gigante que não cabe na tela de celulares compactos. Precisa de paginação.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.721485+00:00",
+    "user": "Rafael Barbosa",
+    "avatar": "⚙️",
+    "role": "DevOps Engineer",
+    "area": "DevOps",
+    "complaint": "O Dockerfile usa 'python:latest' — isso vai quebrar na próxima atualização maior do Python. Precisamos fixar a versão.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.721606+00:00",
+    "user": "Beatriz Ferreira",
+    "avatar": "🎨",
+    "role": "Frontend Developer",
+    "area": "Frontend",
+    "complaint": "O estado visual do grafo (posição dos nós, zoom) não é salvo em localStorage — a cada reload tudo reseta do zero.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.721724+00:00",
+    "user": "Thiago Nascimento",
+    "avatar": "📊",
+    "role": "Data Engineer",
+    "area": "Data",
+    "complaint": "Falta um job de limpeza de embeddings obsoletos no vault_embeddings.json — notas deletadas continuam como vetores mortos.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.722024+00:00",
+    "user": "Anderson Oliveira",
+    "avatar": "🔧",
+    "role": "Site Reliability Engineer",
+    "area": "SRE",
+    "complaint": "Não existe runbook para os incidentes mais comuns — cada vez que o SQLite trava, o time vai no trial-and-error.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.722141+00:00",
+    "user": "Juliana Moreira",
+    "avatar": "💻",
+    "role": "Full Stack Developer",
+    "area": "Full Stack",
+    "complaint": "Não existe separação entre variáveis de configuração de dev e prod — já quebramos o servidor de produção apontando pro banco errado.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.722276+00:00",
+    "user": "Lucas Rezende",
+    "avatar": "🤖",
+    "role": "ML Engineer",
+    "area": "RAG/AI",
+    "complaint": "O agente agent_rag.py não tem circuit breaker para falhas de API — uma queda do Groq deixa o sistema inteiro bloqueado.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.722471+00:00",
+    "user": "Marcelo Teixeira",
+    "avatar": "🏗️",
+    "role": "Tech Lead",
+    "area": "Backend",
+    "complaint": "A comunicação entre agentes é feita via arquivos JSON no disco — isso vai criar race conditions sérios com múltiplos agentes rodando.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.722766+00:00",
+    "user": "Natalia Pimentel",
+    "avatar": "📈",
+    "role": "Data Scientist",
+    "area": "Data",
+    "complaint": "Não há visualização de evolução do grafo ao longo do tempo — impossível ver como o conhecimento cresceu e mudou.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.722895+00:00",
+    "user": "Henrique Monteiro",
+    "avatar": "☁️",
+    "role": "Cloud Architect",
+    "area": "DevOps",
+    "complaint": "Não há estratégia de deploy blue-green ou canary — cada update é um big bang que coloca o sistema offline sem rollback fácil.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.723011+00:00",
+    "user": "Vanessa Correia",
+    "avatar": "🏃",
+    "role": "Scrum Master",
+    "area": "Product",
+    "complaint": "Não existe definição de done para as melhorias geradas pelo sistema — itens ficam em pending para sempre sem critério de aceite.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.723213+00:00",
+    "user": "Simone Batista",
+    "avatar": "📚",
+    "role": "Knowledge Manager",
+    "area": "Product",
+    "complaint": "Notas arquivadas continuam aparecendo no grafo como se fossem ativas — isso polui a visualização com conteúdo obsoleto.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.723328+00:00",
+    "user": "Paulo Freitas",
+    "avatar": "🤖",
+    "role": "Bot Developer",
+    "area": "Mobile",
+    "complaint": "O bot não trata mensagens simultâneas corretamente — se dois usuários mandam mensagem ao mesmo tempo, um deles recebe a resposta do outro.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.723619+00:00",
+    "user": "Isabela Gomes",
+    "avatar": "🕸️",
+    "role": "Graph Visualization Specialist",
+    "area": "UI/UX",
+    "complaint": "As arestas direcionadas não têm setas visíveis — impossível saber qual nota linka para qual apenas olhando o grafo.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:35:00.724097+00:00",
+    "user": "Viviane Araujo",
+    "avatar": "🌱",
+    "role": "Open Source Contributor",
+    "area": "Full Stack",
+    "complaint": "O projeto não tem licença definida — tecnicamente ninguém pode usar, modificar ou contribuir legalmente sem permissão explícita.",
+    "status": "pending"
   }
 ]

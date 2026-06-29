@@ -297,3 +297,9 @@
    _Implementar limites de taxa de requisição para o endpoint `/api/improvements` para proteger o servidor contra abuso._
 [2026-06-29 17:34:45] [AUTO-IMPROVEMENT] Aplicada: IMP-10006 - IMP-10006: Otimizar cache de LLM com TTL dinâmico
    _Ajustar a estratégia de cache de respostas do LLM para um TTL dinâmico baseado na relevância do contexto._
+[2026-06-29 17:35:17] [AUTO-IMPROVEMENT] Aplicada: TECH-020 - Adicionar graceful shutdown ao servidor Flask
+   _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
+[2026-06-29 17:35:19] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
+   _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._
+[2026-06-29 17:35:24] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
+   _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
