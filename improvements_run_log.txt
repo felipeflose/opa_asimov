@@ -171,3 +171,17 @@
    _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
 [2026-06-29 17:24:43] [AUTO-IMPROVEMENT] Aplicada: TECH-011 - Adicionar log estruturado em JSON para requests do Flask
    _Substituir o logger padrão por structured JSON logging para facilitar análise futura._
+[2026-06-29 17:25:15] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
+   _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
+[2026-06-29 17:25:16] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
+   _Proteger dados do escritório virtual com token JWT de curta duração._
+[2026-06-29 17:25:19] [AUTO-IMPROVEMENT] Aplicada: TECH-015 - Adicionar modo escuro automático baseado no horário do sistema
+   _Detectar horário local e aplicar tema escuro após 18h automaticamente._
+[2026-06-29 17:25:19] [AUTO-IMPROVEMENT] Aplicada: TECH-005 - Melhorar contraste de texto no tema escuro do dashboard
+   _Aumentar ratio de contraste para WCAG AA em todos os textos de status e labels._
+[2026-06-29 17:25:21] [AUTO-IMPROVEMENT] Aplicada: IMP-10001 - IMP-10001: Refatorar e limpar notas órfãs no Vault do RAG
+   _Implementar um processo de limpeza e validação para remover notas órfãs (sem arestas/referências) do repositório do sistema de conhecimento (Vault) para garantir a integridade do grafo de conhecimento._
+[2026-06-29 17:25:21] [AUTO-IMPROVEMENT] Aplicada: IMP-10001 - IMP-10001: Otimizar latência da rota do grafo
+   _Analisar e otimizar o caminho de execução da rota do grafo para reduzir o tempo de resposta, investigando possíveis gargalos de concorrência ou I/O._
+[2026-06-29 17:25:24] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
+   _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
