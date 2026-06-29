@@ -165,9 +165,14 @@ def main():
         subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, capture_output=True)
         subprocess.run(["git", "branch", "-D", branch_name], cwd=APP_DIR, capture_output=True)
         
-        # Devolve as issues do Jira ao status 'A fazer'
+        # Devolve as issues do Jira ao status 'A fazer' e adiciona comentário de falha
         for item in candidates:
             jira.transition_issue(item["id"], "A fazer")
+            comment_text = (
+                f"[QA Gate: FALHA] A suíte de testes automáticos falhou para o lote que continha esta melhoria.\n"
+                f"Status retornado para o Backlog para correção pelo time de Dev."
+            )
+            jira.add_comment(item["id"], comment_text)
             
         # Sincroniza backlog local
         updated_backlog = jira.get_issues()
@@ -177,21 +182,40 @@ def main():
 
     # ── Se passou nos testes: Commit & Push na feature branch (não na main!) ──
     if applied_items:
-        ids = ", ".join(i["id"] for i in applied_items)
-        commit_msg = f"chore(auto): dev sprint [{ids}] — {len(applied_items)} improvements"
+        # Formata a mensagem de commit incluindo as chaves das issues no início (ex: KAN-29 KAN-28 KAN-27: chore...)
+        # Isso aciona o link nativo do Jira com o GitHub
+        keys_prefix = " ".join(i["id"] for i in applied_items)
+        commit_msg = f"{keys_prefix}: chore(auto): dev sprint adjustments — {len(applied_items)} improvements applied"
+        
         subprocess.run(["git", "add", "."], cwd=APP_DIR, capture_output=True)
         result = subprocess.run(["git", "commit", "-m", commit_msg], cwd=APP_DIR, capture_output=True, text=True)
         
+        commit_sha = "N/A"
         if "nothing to commit" not in (result.stdout + result.stderr):
             # PUSH na branch de feature!
             subprocess.run(["git", "push", "origin", branch_name], cwd=APP_DIR, capture_output=True)
             logging.info(f"✅ Ajustes guardados com sucesso na branch: {branch_name}")
+            
+            # Obtém o SHA do commit gerado
+            sha_resp = subprocess.run(["git", "rev-parse", "HEAD"], cwd=APP_DIR, capture_output=True, text=True)
+            commit_sha = sha_resp.stdout.strip()
         else:
             logging.info("Nada novo a commitar fisicamente.")
             
-        # Transiciona issues para 'Concluído' no Jira
+        # Transiciona issues para 'Concluído' no Jira e adiciona o histórico e link no card
         for item in candidates:
             jira.transition_issue(item["id"], "Concluído")
+            
+            # Constrói o histórico/comentário rico do card
+            comment_text = (
+                f"[QA Gate: APROVADO] Ajustes validados por testes unitários e homologados com sucesso!\n\n"
+                f"GitHub Integration Info:\n"
+                f"- Branch: {branch_name}\n"
+                f"- Commit SHA: {commit_sha}\n"
+                f"- Detalhes da melhoria: {item['description']}\n\n"
+                f"Modificado de forma automática pela AI Factory."
+            )
+            jira.add_comment(item["id"], comment_text)
             
         # Volta para main para o próximo ciclo
         subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, capture_output=True)

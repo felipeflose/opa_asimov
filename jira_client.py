@@ -209,3 +209,34 @@ class JiraClient:
         except Exception as e:
             logging.error(f"Erro ao transicionar issue no Jira: {e}")
         return False
+
+    def add_comment(self, issue_key, comment_text):
+        """Adiciona um comentário a uma issue no Jira (V3 REST API)."""
+        url = f"{self.host}/rest/api/3/issue/{issue_key}/comment"
+        payload = {
+            "body": {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": comment_text
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+        try:
+            r = requests.post(url, headers=self.headers, auth=self.auth, json=payload, timeout=15)
+            if r.status_code == 201:
+                logging.info(f"Comentário adicionado à issue {issue_key} no Jira.")
+                return True
+            else:
+                logging.error(f"Erro ao adicionar comentário no Jira em {issue_key} (Status {r.status_code}): {r.text}")
+        except Exception as e:
+            logging.error(f"Erro ao fazer request de comentário no Jira para {issue_key}: {e}")
+        return False
