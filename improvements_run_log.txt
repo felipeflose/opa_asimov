@@ -459,3 +459,12 @@
    _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
 [2026-06-29 17:58:42] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
    _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+
+[2026-06-29 18:02:35] [AUTO-IMPROVEMENT] Aplicada: KAN-31 - Falta uma retrospectiva automatizada baseada nos dados de fe
+   _Falta uma retrospectiva automatizada baseada nos dados de feedback — o sistema coleta dados mas não aprende com eles sistematicamente._
+
+[2026-06-29 18:02:35] [AUTO-IMPROVEMENT] Aplicada: KAN-32 - A API REST do Flask não tem versionamento — se mudarmos o sc
+   _A API REST do Flask não tem versionamento — se mudarmos o schema do /api/graph, todos os clientes quebram simultaneamente._
+
+[2026-06-29 18:02:37] [AUTO-IMPROVEMENT] Aplicada: KAN-30 - Falta configuração de auto-scaling — em picos de uso o servi
+   _Falta configuração de auto-scaling — em picos de uso o servidor único vai afundar sem nenhuma forma de recuperação automática._
