@@ -153,3 +153,9 @@
    _Adicionar testes unitários para o módulo Flask App Dashboard para otimizar durabilidade do cache utilizando docker multi-stage builds._
 [2026-06-29 17:23:40] [AUTO-IMPROVEMENT] Aplicada: IMP-00039 - IMP-00039: Adicionar testes unitários para Flask App Dashboard
    _Adicionar testes unitários para o módulo Flask App Dashboard para otimizar velocidade de renderização utilizando estruturação de JSON com Pydantic._
+[2026-06-29 17:24:14] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
+   _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+[2026-06-29 17:24:19] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:24:21] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
+   _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
