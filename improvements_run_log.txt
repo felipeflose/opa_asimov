@@ -405,3 +405,9 @@
    _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
 [2026-06-29 17:50:42] [AUTO-IMPROVEMENT] Aplicada: TECH-004 - Adicionar paginação ao endpoint /api/improvements
    _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
+[2026-06-29 17:51:38] [AUTO-IMPROVEMENT] Aplicada: TECH-015 - Adicionar modo escuro automático baseado no horário do sistema
+   _Detectar horário local e aplicar tema escuro após 18h automaticamente._
+[2026-06-29 17:51:39] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:51:44] [AUTO-IMPROVEMENT] Aplicada: TECH-013 - Adicionar tooltip nos nós do grafo mostrando data de criação
+   _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
