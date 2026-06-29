@@ -291,3 +291,9 @@
    _Implementar um sistema de logging estruturado para rastrear o fluxo de execução dos agentes._
 [2026-06-29 17:33:43] [AUTO-IMPROVEMENT] Aplicada: IMP-10005 - IMP-10005: Refatorar a comunicação entre agentes
    _Melhorar a comunicação e a coordenação entre os diferentes módulos de agente._
+[2026-06-29 17:34:37] [AUTO-IMPROVEMENT] Aplicada: IMP-10004 - IMP-10004: Implementar validação de integridade no Vault RAG
+   _Adicionar um processo de limpeza e validação para remover notas órfãs no repositório de conhecimento do sistema Vault._
+[2026-06-29 17:34:41] [AUTO-IMPROVEMENT] Aplicada: IMP-10005 - IMP-10005: Implementar Rate Limiting no endpoint de Backlog
+   _Implementar limites de taxa de requisição para o endpoint `/api/improvements` para proteger o servidor contra abuso._
+[2026-06-29 17:34:45] [AUTO-IMPROVEMENT] Aplicada: IMP-10006 - IMP-10006: Otimizar cache de LLM com TTL dinâmico
+   _Ajustar a estratégia de cache de respostas do LLM para um TTL dinâmico baseado na relevância do contexto._
