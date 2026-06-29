@@ -351,3 +351,9 @@
    _O servidor Flask não está usando connection pooling no SQLite — vejo 'database is locked' nos logs toda vez que dois agents rodam juntos._
 [2026-06-29 17:41:28] [AUTO-IMPROVEMENT] Aplicada: IMP-10014 - IMP-10014: Os tooltips dos nós somem antes de eu conseguir ler o conteú
    _Os tooltips dos nós somem antes de eu conseguir ler o conteúdo. O delay de hover está absurdamente curto no D3.js._
+[2026-06-29 17:42:39] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
+   _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
+[2026-06-29 17:42:43] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
+   _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
+[2026-06-29 17:42:44] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
+   _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
