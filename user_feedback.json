@@ -1300,5 +1300,131 @@
     "area": "Full Stack",
     "complaint": "Não existe arquivo CONTRIBUTING.md — contribuidores externos não sabem o padrão de código, branch naming ou como abrir PRs.",
     "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.574433+00:00",
+    "user": "Aline Rodrigues",
+    "avatar": "👩‍🎨",
+    "role": "UI Designer",
+    "area": "UI/UX",
+    "complaint": "O botão 'Resetar Grafo' fica numa posição muito parecida com o botão 'Deletar Nota'. Já cliquei errado duas vezes hoje.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.575453+00:00",
+    "user": "Thiago Nascimento",
+    "avatar": "📊",
+    "role": "Data Engineer",
+    "area": "Data",
+    "complaint": "O SQLite não está configurado com WAL mode — em escritas simultâneas o banco trava e o servidor retorna 500.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.575908+00:00",
+    "user": "Juliana Moreira",
+    "avatar": "💻",
+    "role": "Full Stack Developer",
+    "area": "Full Stack",
+    "complaint": "Não existe separação entre variáveis de configuração de dev e prod — já quebramos o servidor de produção apontando pro banco errado.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.576254+00:00",
+    "user": "Marcelo Teixeira",
+    "avatar": "🏗️",
+    "role": "Tech Lead",
+    "area": "Backend",
+    "complaint": "A comunicação entre agentes é feita via arquivos JSON no disco — isso vai criar race conditions sérios com múltiplos agentes rodando.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.576385+00:00",
+    "user": "Camila Duarte",
+    "avatar": "♿",
+    "role": "Accessibility Specialist",
+    "area": "UI/UX",
+    "complaint": "Não existe modo de alto contraste — o tema neon escuro é bonito mas inacessível para quem tem sensibilidade à luz.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.576517+00:00",
+    "user": "Diego Cavalcante",
+    "avatar": "⚡",
+    "role": "Performance Engineer",
+    "area": "Backend",
+    "complaint": "O endpoint /api/graph gera o JSON do grafo inteiro a cada request sem nenhum cache — para 1000 notas isso é reconstrução O(n²) toda vez.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.576652+00:00",
+    "user": "Natalia Pimentel",
+    "avatar": "📈",
+    "role": "Data Scientist",
+    "area": "Data",
+    "complaint": "Não há visualização de evolução do grafo ao longo do tempo — impossível ver como o conhecimento cresceu e mudou.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.576783+00:00",
+    "user": "Henrique Monteiro",
+    "avatar": "☁️",
+    "role": "Cloud Architect",
+    "area": "DevOps",
+    "complaint": "Não existe IaC (Terraform, Pulumi) — o ambiente de produção foi montado manualmente e é impossível recriar de forma reprodutível.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.577301+00:00",
+    "user": "Paulo Freitas",
+    "avatar": "🤖",
+    "role": "Bot Developer",
+    "area": "Mobile",
+    "complaint": "Comandos com parâmetros como /busca <termo> não têm validação de tamanho — um termo muito longo trava o processamento RAG.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.577437+00:00",
+    "user": "Rodrigo Esteves",
+    "avatar": "🌐",
+    "role": "Infrastructure Engineer",
+    "area": "DevOps",
+    "complaint": "Não há configuração de firewall documentada — a porta 8091 está aberta para qualquer IP sem restrição.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.577570+00:00",
+    "user": "Amanda Ribeiro",
+    "avatar": "🔭",
+    "role": "Observability Engineer",
+    "area": "SRE",
+    "complaint": "O server.log mistura logs de INFO, DEBUG e ERROR sem estrutura JSON — ferramentas de log management não conseguem parsear.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.577893+00:00",
+    "user": "Tiago Borges",
+    "avatar": "✍️",
+    "role": "Prompt Engineer",
+    "area": "RAG/AI",
+    "complaint": "Não há sistema de prompt versioning — mudamos o prompt e não conseguimos comparar qual versão anterior dava respostas melhores.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.578170+00:00",
+    "user": "Leandro Fontes",
+    "avatar": "🤖",
+    "role": "Test Automation Engineer",
+    "area": "QA",
+    "complaint": "Não existe teste de contrato para a API Flask — mudanças no schema do /api/graph quebram o frontend sem nenhum teste alertando.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:36:00.578324+00:00",
+    "user": "Viviane Araujo",
+    "avatar": "🌱",
+    "role": "Open Source Contributor",
+    "area": "Full Stack",
+    "complaint": "Falta um arquivo de CHANGELOG bem mantido — não consigo entender o que mudou entre versões sem ler commit por commit.",
+    "status": "pending"
   }
 ]
