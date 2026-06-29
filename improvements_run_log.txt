@@ -63,3 +63,9 @@
    _Modularizar o módulo Telegram Bot para otimizar concorrência de leitura/escrita utilizando logs estruturados JSON._
 [2026-06-29 17:13:39] [AUTO-IMPROVEMENT] Aplicada: IMP-00024 - IMP-00024: Reduzir gargalos de Health Monitor
    _Reduzir gargalos de o módulo Health Monitor para otimizar latência de resposta utilizando locks de leitura compartilhados._
+[2026-06-29 17:14:40] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
+   _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
+[2026-06-29 17:14:43] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
+   _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
+[2026-06-29 17:14:45] [AUTO-IMPROVEMENT] Aplicada: TECH-011 - Adicionar log estruturado em JSON para requests do Flask
+   _Substituir o logger padrão por structured JSON logging para facilitar análise futura._

@@ -537,6 +537,9 @@
 
                 <div class="avatar" id="avatar-qa" style="position: absolute; bottom: 60px; right: 125px; width: 45px; height: 45px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(16,185,129,0.4); border: 2px solid white; cursor: pointer;">🧪</div>
                 
+                <!-- Container para PMs Dinâmicos (dentro da room-pm, canto superior direito) -->
+                <div id="pm-avatars-container" style="position: absolute; top: 40px; right: 30px; width: 220px; height: 60px; pointer-events: none;"></div>
+
                 <!-- Container para Devs Dinâmicos (dentro da room-dev, canto inferior esquerdo) -->
                 <div id="dev-avatars-container" style="position: absolute; bottom: 30px; left: 30px; width: 250px; height: 80px; pointer-events: none;"></div>
 
@@ -553,14 +556,16 @@
             <!-- ── RANKING + KPIs ─────────────────────────────────── -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
 
-                <!-- RANKING DE USUÁRIOS -->
+                <!-- RANKING: Corrida 10K -->
                 <div class="card" style="border-color: rgba(251,191,36,0.2);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-                        <h2 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;">🏆 Ranking — Meta Diária</h2>
-                        <span class="bot-status-tag" style="background: rgba(251,191,36,0.1); color: rgb(251,191,36); border-color: rgba(251,191,36,0.2); font-size: 0.6rem;">ATUALIZADO AO VIVO</span>
+                        <h2 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                            🏆 Corrida 10K — Chamados Épicos
+                        </h2>
+                        <span class="bot-status-tag" style="background: rgba(251,191,36,0.1); color: rgb(251,191,36); border-color: rgba(251,191,36,0.2); font-size: 0.6rem;">META: 10.000 ACEITOS</span>
                     </div>
                     <div id="ranking-list" style="display: flex; flex-direction: column; gap: 10px;">
-                        <div style="color: var(--text-muted); font-size: 0.8rem;">Carregando ranking...</div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">Aguardando feedbacks...</div>
                     </div>
                 </div>
 
@@ -586,16 +591,23 @@
                         </h2>
                         <span class="bot-status-tag status-online" style="background: rgba(168,85,247,0.1); color: rgb(168,85,247); border-color: rgba(168,85,247,0.2);"><div class="status-dot" style="background: rgb(168,85,247);"></div> ACTIVE</span>
                     </div>
-                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; min-height: 120px; border: 1px solid var(--border);">
-                        <p style="color: rgb(168,85,247); margin: 0 0 5px 0;">[Triage & Backlog Controller]</p>
-                        <div id="pm-console-text" style="color: #f1f5f9; line-height: 1.5; height: 100px; overflow-y: auto;">
-                            > Monitorando inbox de suporte dos usuários...<br>
-                            > Triagem e desduplicação ativa de chaves de feedback.
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; min-height: 100px; border: 1px solid var(--border);">
+                        <p style="color: rgb(168,85,247); margin: 0 0 5px 0;">[Triage & Backlog Controller — Batch Mode]</p>
+                        <div id="pm-console-text" style="color: #f1f5f9; line-height: 1.5; height: 80px; overflow-y: auto;">
+                            > Triagem em batch ativa...<br>
+                            > Dedup por fingerprint + LLM.
                         </div>
                     </div>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 15px;">
-                        Função: Filtrar e auditar reclamações do cliente, remover itens duplicados e priorizar no backlog.
-                    </p>
+                    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">PMs Ativos:</span>
+                            <span id="pm-hired-count" style="font-size: 0.95rem; font-weight: 700; color: white; margin-left: 5px;">1</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" onclick="hirePM()" style="padding: 5px 10px; font-size: 0.7rem; background: rgba(168,85,247,0.15); color: #a855f7; border-color: rgba(168,85,247,0.25);">➕ Contratar</button>
+                            <button class="btn" onclick="firePM()" style="padding: 5px 10px; font-size: 0.7rem; background: rgba(239,68,68,0.1); color: var(--red); border-color: rgba(239,68,68,0.15);">➖ Demitir</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- PERSONA: O DESENVOLVEDOR (DEV) -->
