@@ -601,5 +601,22 @@
     "source_user": "Camila Duarte",
     "created_at": "2026-06-29T18:38:38.717831",
     "completed_at": null
+  },
+  {
+    "id": "KAN-75",
+    "title": "O sistema não coleta métricas de uso de features — não sei q",
+    "description": "O sistema não coleta métricas de uso de features — não sei quais partes do grafo as pessoas mais usam nem o que ignoram.",
+    "details": "Gerado via feedback de Natalia Pimentel (Data Scientist)",
+    "motivation_justification": "O sistema não coleta métricas de uso de features — não sei quais partes do grafo as pessoas mais usam nem o que ignoram.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "28ef2c8a4721",
+    "source_user": "Natalia Pimentel",
+    "created_at": "2026-06-29T18:38:45.735258",
+    "completed_at": null
   }
 ]
