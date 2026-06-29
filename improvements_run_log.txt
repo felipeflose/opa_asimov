@@ -243,3 +243,9 @@
    _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
 [2026-06-29 17:29:19] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
    _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:29:36] [AUTO-IMPROVEMENT] Aplicada: TECH-004 - Adicionar paginação ao endpoint /api/improvements
+   _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
+[2026-06-29 17:29:39] [AUTO-IMPROVEMENT] Aplicada: TECH-013 - Adicionar tooltip nos nós do grafo mostrando data de criação
+   _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
+[2026-06-29 17:29:41] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
+   _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
