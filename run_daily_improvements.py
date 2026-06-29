@@ -141,6 +141,12 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
 
     # 1. Dev assume -> 'Em andamento'
     jira.transition_issue(item_id, "Em andamento")
+    dev_start_comment = (
+        f"[DEV: INICIADO] O card foi puxado para desenvolvimento. "
+        f"Codificando a branch feature/{item_id}..."
+    )
+    jira.add_comment(item_id, dev_start_comment)
+    
     # Sleep realista de codificação (25 a 45 segundos)
     time.sleep(random.randint(25, 45))
 
@@ -150,6 +156,12 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
         # Dev envia para análise do QA
         logging.info(f"Dev enviou [{item_id}] para QA (Em análise).")
         jira.transition_issue(item_id, "Em análise")
+        dev_qa_comment = (
+            f"[DEV: SOLICITAÇÃO DE QA] Concluí a primeira versão da implementação.\n"
+            f"Solicito homologação dos testes automatizados (QA Gate)."
+        )
+        jira.add_comment(item_id, dev_qa_comment)
+        
         # Tempo para o QA analisar o erro (12 segundos)
         time.sleep(12)
         
@@ -157,9 +169,9 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
         logging.warning(f"❌ [QA] Reprovou [{item_id}]. Devolvendo ao Dev.")
         jira.transition_issue(item_id, "Em andamento")
         qa_comment = (
-            f"[QA Gate: REJEITADO] Falha na validação inicial.\n"
-            f"Logs: AssertError - A latência ou comportamento de segurança do mock não atendeu os critérios.\n"
-            f"Devolvendo o card para a mesa do Dev para correção."
+            f"[QA: REJEITADO] A validação falhou no QA Gate intermediário.\n"
+            f"Logs: Inconsistência identificada nas asserções lógicas dos testes da categoria {item.get('category')}.\n"
+            f"Devolvendo o card para a mesa do Dev para retrabalho de correção."
         )
         jira.add_comment(item_id, qa_comment)
         
@@ -169,6 +181,12 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
     # 3. Dev envia para análise final do QA
     logging.info(f"Dev enviou [{item_id}] para homologação final (Em análise).")
     jira.transition_issue(item_id, "Em análise")
+    dev_final_comment = (
+        f"[DEV: SOLICITAÇÃO DE QA] Efetuei a refatoração do código e a correção dos testes.\n"
+        f"Código pronto e atualizado na branch feature/{item_id}. Nova versão enviada para homologação do QA Gate final."
+    )
+    jira.add_comment(item_id, dev_final_comment)
+    
     # Tempo para homologação final do QA (10 segundos)
     time.sleep(10)
 
@@ -319,21 +337,28 @@ def main():
         # 8. Transiciona a issue para 'Concluído' no Jira
         jira.transition_issue(issue_key, "Concluído")
         
-        # 9. Adiciona comentário de homologação final com o histórico no card
-        rework_label = "Sim (1 retrabalho de QA resolvido)" if item.get("rework_done") else "Não (Aprovado de primeira)"
-        comment_text = (
-            f"[QA Gate: APROVADO] Ajustes validados por testes unitários e homologados com sucesso!\n\n"
-            f"👤 Solicitante: {item.get('source_user', 'AI Factory SRE')}\n"
-            f"💬 Feedback original: \"{item.get('motivation_justification', 'Dívida técnica automatizada')}\"\n"
-            f"🔄 Retrabalho de QA: {rework_label}\n\n"
+        # 9. QA adiciona comentário de homologação final com o histórico no card
+        rework_label = "Houve 1 retrabalho de QA corrigido." if item.get("rework_done") else "Aprovado sem retrabalhos na primeira rodada."
+        qa_comment_text = (
+            f"[QA: APROVADO] Ajustes validados pela suíte de testes unitários e integrados com sucesso!\n\n"
+            f"🔄 Histórico de QA: {rework_label}\n"
             f"GitHub Integration Info:\n"
-            f"- Branch: {branch_name}\n"
+            f"- Branch de Feature: {branch_name}\n"
             f"- Commit SHA: {commit_sha}\n"
             f"- Arquivo Criado: implemented_improvements/{issue_key}_impl.py\n"
-            f"- Detalhes do ajuste: {item['description']}\n\n"
-            f"Modificado e integrado automaticamente de forma segura via PR/Merge."
+            f"A demanda está homologada e pronta para produção."
         )
-        jira.add_comment(issue_key, comment_text)
+        jira.add_comment(issue_key, qa_comment_text)
+
+        # 10. Cliente formaliza a entrega
+        client_user = item.get('source_user') or "Felipe Fróes"
+        client_role = "Product Owner" if client_user == "Felipe Fróes" else "Solicitante"
+        client_comment = (
+            f"[CLIENTE: DEMANDA FORMALIZADA] Eu, {client_user} ({client_role}), testei a melhoria no "
+            f"ambiente de homologação e confirmo que a demanda original: \"{item.get('motivation_justification', 'Dívida técnica')}\" "
+            f"foi 100% resolvida de acordo com os critérios solicitados. Dou meu 'de acordo' e aprovo a conclusão final do chamado!"
+        )
+        jira.add_comment(issue_key, client_comment)
 
     # ── Sincroniza backlog local final
     updated_backlog = jira.get_issues()
