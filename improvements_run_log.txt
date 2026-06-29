@@ -185,3 +185,7 @@
    _Analisar e otimizar o caminho de execução da rota do grafo para reduzir o tempo de resposta, investigando possíveis gargalos de concorrência ou I/O._
 [2026-06-29 17:25:24] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
    _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+[2026-06-29 17:25:26] [AUTO-IMPROVEMENT] Aplicada: TECH-020 - Adicionar graceful shutdown ao servidor Flask
+   _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
+[2026-06-29 17:25:26] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
+   _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
