@@ -285,3 +285,9 @@
    _Aumentar ratio de contraste para WCAG AA em todos os textos de status e labels._
 [2026-06-29 17:33:19] [AUTO-IMPROVEMENT] Aplicada: TECH-020 - Adicionar graceful shutdown ao servidor Flask
    _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
+[2026-06-29 17:33:36] [AUTO-IMPROVEMENT] Aplicada: IMP-10006 - IMP-10006: Implementar Rate Limiting nos endpoints da API
+   _Implementar limites de taxa (rate limiting) nos endpoints da API._
+[2026-06-29 17:33:40] [AUTO-IMPROVEMENT] Aplicada: IMP-10004 - IMP-10004: Implementar logging estruturado para agentes
+   _Implementar um sistema de logging estruturado para rastrear o fluxo de execução dos agentes._
+[2026-06-29 17:33:43] [AUTO-IMPROVEMENT] Aplicada: IMP-10005 - IMP-10005: Refatorar a comunicação entre agentes
+   _Melhorar a comunicação e a coordenação entre os diferentes módulos de agente._
