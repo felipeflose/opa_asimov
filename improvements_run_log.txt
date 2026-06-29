@@ -261,3 +261,9 @@
    _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
 [2026-06-29 17:30:38] [AUTO-IMPROVEMENT] Aplicada: TECH-016 - Minificar CSS e JS em produção
    _Usar Flask-Assets ou similar para minificar static/css/style.css e app.js no build._
+[2026-06-29 17:31:05] [AUTO-IMPROVEMENT] Aplicada: IMP-10001 - IMP-10001: Otimizar carregamento de módulos Python
+   _Revisar a estrutura de importações e a distribuição de classes entre os módulos._
+[2026-06-29 17:31:06] [AUTO-IMPROVEMENT] Aplicada: IMP-10002 - IMP-10002: Implementar cache de contexto de LLM persistente
+   _Implementar um cache persistente para contextos de LLM para evitar a reprocessamento de informações._
+[2026-06-29 17:31:12] [AUTO-IMPROVEMENT] Aplicada: IMP-10003 - IMP-10003: Refatorar `agent_core.py` para paralelismo
+   _Substituir operações sequenciais por paralelismo em tarefas de processamento de feedback._
