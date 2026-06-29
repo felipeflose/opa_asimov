@@ -129,3 +129,9 @@
    _Aumentar a observabilidade de o módulo Docker Orchestration para otimizar experiência do usuário (UX) utilizando logs estruturados JSON._
 [2026-06-29 17:19:44] [AUTO-IMPROVEMENT] Aplicada: IMP-00034 - IMP-00034: Implementar melhorias em Authentication Gate
    _Implementar melhorias em o módulo Authentication Gate para otimizar acurácia semântica utilizando logs estruturados JSON._
+[2026-06-29 17:20:37] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
+   _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
+[2026-06-29 17:20:45] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
+   _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+[2026-06-29 17:20:45] [AUTO-IMPROVEMENT] Aplicada: TECH-013 - Adicionar tooltip nos nós do grafo mostrando data de criação
+   _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
