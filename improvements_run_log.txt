@@ -585,3 +585,21 @@
 [2026-06-29 18:44:01] [AUTO-IMPROVEMENT] Aplicada: KAN-85 - O bot não persiste o histórico de conversa por usuário — cad
 
 [2026-06-29 18:44:10] [AUTO-IMPROVEMENT] Aplicada: KAN-79 - O Dockerfile usa 'python:latest' — isso vai quebrar na próxi
+
+[2026-06-29 18:44:36] [AUTO-IMPROVEMENT] Aplicada: KAN-73 - Não existe contrato de API documentado (OpenAPI/Swagger) — c
+
+[2026-06-29 18:44:40] [AUTO-IMPROVEMENT] Aplicada: KAN-72 - O app.py tem mais de 1300 linhas — é impossível encontrar a 
+
+[2026-06-29 18:44:41] [AUTO-IMPROVEMENT] Aplicada: KAN-77 - Não existe processo de data subject request — se um usuário 
+
+[2026-06-29 18:44:41] [AUTO-IMPROVEMENT] Aplicada: KAN-70 - O run_server.sh usa 'nohup' sem PID file — impossível saber 
+
+[2026-06-29 18:44:47] [AUTO-IMPROVEMENT] Aplicada: KAN-69 - A interface web não tem viewport meta tag correta; em iPhone
+
+[2026-06-29 18:44:49] [AUTO-IMPROVEMENT] Aplicada: KAN-71 - Falta um job de limpeza de embeddings obsoletos no vault_emb
+
+[2026-06-29 18:45:13] [AUTO-IMPROVEMENT] Aplicada: KAN-74 - Não há atributos aria-label em nenhum elemento interativo do
+
+[2026-06-29 18:45:17] [AUTO-IMPROVEMENT] Aplicada: KAN-75 - O sistema não coleta métricas de uso de features — não sei q
+
+[2026-06-29 18:45:25] [AUTO-IMPROVEMENT] Aplicada: KAN-76 - Falta um dashboard de latência por endpoint — sei que o sist
