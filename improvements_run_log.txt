@@ -486,3 +486,12 @@
 
 [2026-06-29 18:14:02] [AUTO-IMPROVEMENT] Aplicada: KAN-40 - O agente de indexação do vault bloqueia o event loop do Flas
    _O agente de indexação do vault bloqueia o event loop do Flask durante a execução — o servidor fica completamente irresponsivo._
+
+[2026-06-29 18:16:27] [AUTO-IMPROVEMENT] Aplicada: KAN-37 - A feature de geração de daily digest não tem gatilho confiáv
+   _A feature de geração de daily digest não tem gatilho confiável — às vezes roda, às vezes não, sem nenhum alerta de falha._
+
+[2026-06-29 18:16:31] [AUTO-IMPROVEMENT] Aplicada: KAN-38 - A aplicação não expõe métricas Prometheus — impossível monit
+   _A aplicação não expõe métricas Prometheus — impossível monitorar throughput, error rate e latência em tempo real._
+
+[2026-06-29 18:16:31] [AUTO-IMPROVEMENT] Aplicada: KAN-39 - Falta um ADR (Architectural Decision Record) para as escolha
+   _Falta um ADR (Architectural Decision Record) para as escolhas de SQLite, Flask e D3.js — perdemos o contexto de por que essas decisões foram tomadas._
