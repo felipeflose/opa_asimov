@@ -495,3 +495,14 @@
 
 [2026-06-29 18:16:31] [AUTO-IMPROVEMENT] Aplicada: KAN-39 - Falta um ADR (Architectural Decision Record) para as escolha
    _Falta um ADR (Architectural Decision Record) para as escolhas de SQLite, Flask e D3.js — perdemos o contexto de por que essas decisões foram tomadas._
+
+[2026-06-29 18:18:01] [AUTO-IMPROVEMENT] Aplicada: KAN-66 - Falta um arquivo de CHANGELOG bem mantido — não consigo ente
+   _Falta um arquivo de CHANGELOG bem mantido — não consigo entender o que mudou entre versões sem ler commit por commit._
+
+[2026-06-29 18:18:04] [AUTO-IMPROVEMENT] Aplicada: KAN-65 - Não existe teste de contrato para a API Flask — mudanças no 
+   _Não existe teste de contrato para a API Flask — mudanças no schema do /api/graph quebram o frontend sem nenhum teste alertando._
+
+[2026-06-29 18:18:05] [AUTO-IMPROVEMENT] Aplicada: KAN-64 - Ao clicar num nó, o grafo não centraliza nele automaticament
+   _Ao clicar num nó, o grafo não centraliza nele automaticamente — o usuário tem que arrastar manualmente para encontrar o nó selecionado._
+
+[2026-06-29 18:18:07] [AUTO-MERGE] Homologado: KAN-66
