@@ -441,3 +441,9 @@
    _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
 [2026-06-29 17:56:42] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
    _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
+[2026-06-29 17:57:37] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
+   _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
+[2026-06-29 17:57:43] [AUTO-IMPROVEMENT] Aplicada: TECH-013 - Adicionar tooltip nos nós do grafo mostrando data de criação
+   _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
+[2026-06-29 17:57:46] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
+   _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._
