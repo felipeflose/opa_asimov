@@ -357,3 +357,9 @@
    _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
 [2026-06-29 17:42:44] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
    _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
+[2026-06-29 17:43:33] [AUTO-IMPROVEMENT] Aplicada: IMP-10018 - IMP-10018: O contexto enviado ao LLM inclui notas inteiras sem truncame
+   _O contexto enviado ao LLM inclui notas inteiras sem truncamento — isso desperdiça tokens e pode exceder o limite do modelo._
+[2026-06-29 17:43:34] [AUTO-IMPROVEMENT] Aplicada: IMP-10017 - IMP-10017: O grafo D3.js não funciona bem no mobile — os gestos de pinç
+   _O grafo D3.js não funciona bem no mobile — os gestos de pinça para zoom conflitam com o scroll da página e tudo desanda._
+[2026-06-29 17:43:40] [AUTO-IMPROVEMENT] Aplicada: IMP-10019 - IMP-10019: O Dockerfile usa 'python:latest' — isso vai quebrar na próxi
+   _O Dockerfile usa 'python:latest' — isso vai quebrar na próxima atualização maior do Python. Precisamos fixar a versão._
