@@ -333,3 +333,9 @@
    _Adicionar validação rigorosa na entrada de dados dos agentes._
 [2026-06-29 17:38:42] [AUTO-IMPROVEMENT] Aplicada: IMP-10012 - IMP-10012: Otimizar o uso de memória em agentes
    _Reduzir o consumo de memória dos agentes através da otimização da gestão de objetos._
+[2026-06-29 17:39:40] [AUTO-IMPROVEMENT] Aplicada: TECH-011 - Adicionar log estruturado em JSON para requests do Flask
+   _Substituir o logger padrão por structured JSON logging para facilitar análise futura._
+[2026-06-29 17:39:46] [AUTO-IMPROVEMENT] Aplicada: TECH-009 - Adicionar endpoint /api/health/db para verificar SQLite
+   _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
+[2026-06-29 17:39:46] [AUTO-IMPROVEMENT] Aplicada: IMP-10013 - IMP-10013: Implementar testes de integração para o fluxo completo do agente
+   _Criar testes de integração para o fluxo completo do agente._
