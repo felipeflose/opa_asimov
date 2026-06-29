@@ -510,3 +510,14 @@
 [2026-06-29 18:18:13] [AUTO-MERGE] Homologado: KAN-65
 
 [2026-06-29 18:18:19] [AUTO-MERGE] Homologado: KAN-64
+
+[2026-06-29 18:20:34] [AUTO-IMPROVEMENT] Aplicada: KAN-61 - Notas arquivadas continuam aparecendo no grafo como se fosse
+   _Notas arquivadas continuam aparecendo no grafo como se fossem ativas — isso polui a visualização com conteúdo obsoleto._
+
+[2026-06-29 18:20:34] [AUTO-IMPROVEMENT] Aplicada: KAN-63 - Os agentes não emitem eventos estruturados — cada um loga de
+   _Os agentes não emitem eventos estruturados — cada um loga de forma diferente e correlacionar uma sessão completa é impossível._
+
+[2026-06-29 18:20:39] [AUTO-IMPROVEMENT] Aplicada: KAN-62 - Não existe monitoramento de certificado SSL — se usarmos HTT
+   _Não existe monitoramento de certificado SSL — se usarmos HTTPS algum dia, o cert pode expirar sem ninguém perceber._
+
+[2026-06-29 18:20:44] [AUTO-MERGE] Homologado: KAN-61
