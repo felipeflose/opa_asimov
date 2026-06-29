@@ -135,13 +135,14 @@ class {cleaned_key}Implementation:
 """
 
 def run_improvement_task(item, jira: JiraClient, applied_items):
-    """Executa uma melhoria individualmente em uma thread com idas e vindas no QA."""
+    """Executa uma melhoria individualmente em uma thread com idas e vindas no QA (tempos mais longos e realistas)."""
     item_id = item["id"]
     logging.info(f"Dev codando: [{item_id}] {item['title']}")
 
     # 1. Dev assume -> 'Em andamento'
     jira.transition_issue(item_id, "Em andamento")
-    time.sleep(random.randint(4, 7))
+    # Sleep realista de codificação (25 a 45 segundos)
+    time.sleep(random.randint(25, 45))
 
     # 2. QA Gate Intermediário (35% de chance de reprovação inicial para simular retrabalho)
     qa_fail = random.random() < 0.35
@@ -149,7 +150,8 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
         # Dev envia para análise do QA
         logging.info(f"Dev enviou [{item_id}] para QA (Em análise).")
         jira.transition_issue(item_id, "Em análise")
-        time.sleep(3)
+        # Tempo para o QA analisar o erro (12 segundos)
+        time.sleep(12)
         
         # QA reprova e devolve para 'Em andamento' com comentário explicativo
         logging.warning(f"❌ [QA] Reprovou [{item_id}]. Devolvendo ao Dev.")
@@ -161,13 +163,14 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
         )
         jira.add_comment(item_id, qa_comment)
         
-        # Dev corrige (sleep curto extra de retrabalho)
-        time.sleep(random.randint(4, 6))
+        # Dev corrige (sleep realista de retrabalho: 15 a 25 segundos)
+        time.sleep(random.randint(15, 25))
 
     # 3. Dev envia para análise final do QA
     logging.info(f"Dev enviou [{item_id}] para homologação final (Em análise).")
     jira.transition_issue(item_id, "Em análise")
-    time.sleep(2)
+    # Tempo para homologação final do QA (10 segundos)
+    time.sleep(10)
 
     # Escreve o arquivo físico do código da melhoria no diretório local
     imp_dir = os.path.join(APP_DIR, 'implemented_improvements')
