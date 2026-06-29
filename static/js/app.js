@@ -2164,32 +2164,64 @@ async function loadOfficeData() {
 function renderRanking(ranking) {
     const container = document.getElementById('ranking-list');
     if (!container) return;
-    // Scroll quando houver muitos usuários
-    container.style.maxHeight = '320px';
-    container.style.overflowY = 'auto';
+    container.style.maxHeight = '360px';
+    container.style.overflowY  = 'auto';
 
+    const GOAL = 10_000;
     const medals = ['🥇','🥈','🥉'];
+
+    if (!ranking || ranking.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-muted);font-size:0.8rem;text-align:center;padding:20px;">Nenhum usuário ainda. Aguardando feedbacks...</div>';
+        return;
+    }
+
     container.innerHTML = ranking.map((p, i) => {
-        const barColor = p.pct >= 100 ? '#10b981' : p.pct >= 60 ? '#06b6d4' : p.pct >= 30 ? '#f59e0b' : '#ef4444';
-        const statusLabel = p.pct >= 100 ? '✅ Meta!' : p.pct >= 60 ? '📥 Caminho' : '⚠️ Abaixo';
-        const medal = medals[i] || `<span style="font-size:0.75rem;color:var(--text-muted);">#${i+1}</span>`;
-        const areaBadge = p.area ? `<span style="font-size:0.58rem;background:rgba(6,182,212,0.1);color:var(--cyan);border:1px solid rgba(6,182,212,0.2);border-radius:4px;padding:1px 5px;">${p.area}</span>` : '';
+        const pct      = p.pct_goal ?? 0;
+        const accepted = p.accepted ?? 0;
+        const goal     = p.goal     ?? GOAL;
+        const won      = p.won      ?? false;
+
+        const barColor = won
+            ? 'linear-gradient(90deg,#10b981,#34d399)'
+            : pct >= 50  ? 'linear-gradient(90deg,#06b6d4,#818cf8)'
+            : pct >= 20  ? 'linear-gradient(90deg,#f59e0b,#fb923c)'
+            :               'linear-gradient(90deg,#ef4444,#f87171)';
+
+        const rateColor = p.acceptance_rate >= 80 ? '#10b981'
+                        : p.acceptance_rate >= 50 ? '#f59e0b' : '#ef4444';
+
+        const medal = won ? '🏆' : (medals[i] ?? `<span style="font-size:0.72rem;color:var(--text-muted);">#${i+1}</span>`);
+        const areaBadge = p.area
+            ? `<span style="font-size:0.55rem;background:rgba(6,182,212,0.12);color:var(--cyan);border:1px solid rgba(6,182,212,0.25);border-radius:4px;padding:1px 5px;">${p.area}</span>`
+            : '';
+        const wonBadge  = won
+            ? '<span style="font-size:0.6rem;background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:4px;padding:1px 6px;font-weight:800;">🏆 CAMPEÃO</span>'
+            : '';
+
         return `
-        <div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex;flex-direction:column;gap:5px;padding:9px 12px;border-radius:10px;
+                    background:${won ? 'rgba(251,191,36,0.06)' : 'rgba(255,255,255,0.025)'};
+                    border:1px solid ${won ? 'rgba(251,191,36,0.25)' : 'rgba(255,255,255,0.06)'};">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
-                <span style="font-size:0.82rem;font-weight:700;display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+                <span style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;font-size:0.82rem;font-weight:700;">
                     <span style="font-size:1rem;flex-shrink:0;">${medal}</span>
                     <span style="font-size:0.95rem;flex-shrink:0;">${p.emoji}</span>
                     <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</span>
-                    ${areaBadge}
-                    <span style="font-size:0.62rem;font-weight:400;color:var(--text-muted);flex-shrink:0;">${p.role}</span>
+                    ${areaBadge}${wonBadge}
+                    <span style="font-size:0.6rem;font-weight:400;color:var(--text-muted);flex-shrink:0;">${p.role}</span>
                 </span>
-                <span style="font-size:0.68rem;font-weight:700;color:${barColor};white-space:nowrap;">${p.today}✉ (${p.pct}%)</span>
+                <span style="font-size:0.68rem;font-weight:800;color:${rateColor};white-space:nowrap;">
+                    ${accepted.toLocaleString('pt-BR')}/${goal.toLocaleString('pt-BR')}
+                </span>
             </div>
-            <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:4px;overflow:hidden;">
-                <div style="width:${p.pct}%;height:100%;background:${barColor};border-radius:4px;transition:width 0.6s ease;"></div>
+            <!-- Barra de progresso até 10K -->
+            <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:6px;overflow:hidden;">
+                <div style="width:${pct}%;height:100%;background:${barColor};border-radius:6px;transition:width 0.8s ease;"></div>
             </div>
-            <div style="font-size:0.6rem;color:var(--text-muted);text-align:right;">${statusLabel} • histórico: ${p.total_all_time}</div>
+            <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text-muted);">
+                <span>Taxa aceite: <b style="color:${rateColor};">${p.acceptance_rate}%</b></span>
+                <span>${pct.toFixed(2)}% da meta de 10K${won ? ' ✅' : ''}</span>
+            </div>
         </div>`;
     }).join('');
 }
@@ -2197,27 +2229,70 @@ function renderRanking(ranking) {
 function renderKPIs(ranking) {
     const container = document.getElementById('kpi-list');
     if (!container) return;
-    container.style.maxHeight = '320px';
-    container.style.overflowY = 'auto';
+    container.style.maxHeight = '360px';
+    container.style.overflowY  = 'auto';
+
+    if (!ranking || ranking.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-muted);font-size:0.8rem;text-align:center;padding:20px;">Aguardando dados...</div>';
+        return;
+    }
 
     const palette = ['#f59e0b','#06b6d4','#a855f7','#ec4899','#10b981','#f97316','#8b5cf6','#0ea5e9','#14b8a6','#e11d48'];
     container.innerHTML = ranking.map((p, i) => {
+        const rateColor = p.acceptance_rate >= 80 ? '#10b981' : p.acceptance_rate >= 50 ? '#f59e0b' : '#ef4444';
         const color = palette[i % palette.length];
-        const rateColor = p.acceptance_rate >= 60 ? '#10b981' : p.acceptance_rate >= 30 ? '#f59e0b' : '#ef4444';
         return `
-        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.05);">
-            <span style="font-size:1.2rem;min-width:26px;text-align:center;">${p.emoji}</span>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;
+                    background:rgba(255,255,255,0.025);border-left:3px solid ${color};
+                    border-top:1px solid rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04);">
+            <span style="font-size:1.15rem;min-width:24px;text-align:center;">${p.emoji}</span>
             <div style="flex:1;min-width:0;">
                 <div style="font-size:0.78rem;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-                <div style="font-size:0.62rem;color:var(--text-muted);margin-top:1px;">${p.role}${p.area ? ' • '+p.area : ''}</div>
+                <div style="font-size:0.6rem;color:var(--text-muted);">${p.role}${p.area?' • '+p.area:''} • hoje: <b style="color:white;">${p.today}</b></div>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:110px;">
-                <div style="font-size:0.62rem;color:#10b981;">✅ Aceitos: <b>${p.accepted}</b></div>
-                <div style="font-size:0.62rem;color:#ef4444;">🔄 Duplic.: <b>${p.duplicate}</b></div>
-                <div style="font-size:0.62rem;color:${rateColor};font-weight:700;">Taxa: ${p.acceptance_rate}%</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:100px;">
+                <div style="font-size:0.6rem;color:#10b981;">✅ <b>${(p.accepted||0).toLocaleString('pt-BR')}</b> aceitos</div>
+                <div style="font-size:0.6rem;color:#64748b;">🔄 <b>${p.duplicate||0}</b> duplic.</div>
+                <div style="font-size:0.62rem;color:${rateColor};font-weight:800;">Taxa ${p.acceptance_rate}%</div>
             </div>
         </div>`;
     }).join('');
+}
+
+async function hirePM() {
+    try {
+        const r   = await fetch('/api/office/hire-pm', { method: 'POST' });
+        const res = await r.json();
+        if (res.status === 'ok') {
+            loadOfficeData();
+            showToast(`Novo PM contratado! Equipe: ${res.pm_count} PMs.`, 'success');
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function firePM() {
+    try {
+        const r   = await fetch('/api/office/fire-pm', { method: 'POST' });
+        const res = await r.json();
+        if (res.status === 'ok') {
+            loadOfficeData();
+            showToast(`PM demitido. Equipe: ${res.pm_count} PMs.`, 'info');
+        }
+    } catch(e) { console.error(e); }
+}
+
+function renderPMs(pmCount) {
+    const container = document.getElementById('pm-avatars-container');
+    if (!container) return;
+    const emojis = ['📋','🗂️','📌','📊','📝'];
+    let html = '';
+    for (let i = 0; i < pmCount; i++) {
+        html += `<div class="avatar" id="avatar-pm-${i}" style="position:absolute;top:5px;left:${i*42}px;width:34px;height:34px;border-radius:50%;background:#a855f7;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 8px rgba(168,85,247,0.4);border:2px solid white;cursor:pointer;z-index:10;" data-tooltip="PM-${i+1}">${emojis[i % emojis.length]}</div>`;
+    }
+    container.innerHTML = html;
+    // Atualiza o avatar principal do mapa (avatar-pm) para o primeiro
+    const mainPM = document.getElementById('avatar-pm');
+    if (mainPM) mainPM.innerHTML = emojis[0];
 }
 
 function showBubble(id, text, timeout = 3000) {
