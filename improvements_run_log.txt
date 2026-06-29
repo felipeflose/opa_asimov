@@ -468,3 +468,12 @@
 
 [2026-06-29 18:04:26] [AUTO-IMPROVEMENT] Aplicada: KAN-27 - O grafo D3.js é completamente inacessível via teclado — usuá
    _O grafo D3.js é completamente inacessível via teclado — usuários com deficiência visual não conseguem navegar pelos nós._
+
+[2026-06-29 18:09:07] [AUTO-IMPROVEMENT] Aplicada: KAN-46 - A performance do D3.js cai drasticamente com mais de 500 nós
+   _A performance do D3.js cai drasticamente com mais de 500 nós — precisamos de WebGL (via sigma.js ou three.js) para grafos maiores._
+
+[2026-06-29 18:09:09] [AUTO-IMPROVEMENT] Aplicada: KAN-47 - O contexto RAG é passado ao LLM sem estruturação de citações
+   _O contexto RAG é passado ao LLM sem estruturação de citações — o modelo alucina fontes sem que o usuário saiba qual nota originou a resposta._
+
+[2026-06-29 18:09:10] [AUTO-IMPROVEMENT] Aplicada: KAN-48 - O user_feedback.json armazena dados de usuários sem nenhuma 
+   _O user_feedback.json armazena dados de usuários sem nenhuma política de retenção — isso pode violar a LGPD dependendo do conteúdo._
