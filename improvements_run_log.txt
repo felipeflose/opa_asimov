@@ -363,3 +363,9 @@
    _O grafo D3.js não funciona bem no mobile — os gestos de pinça para zoom conflitam com o scroll da página e tudo desanda._
 [2026-06-29 17:43:40] [AUTO-IMPROVEMENT] Aplicada: IMP-10019 - IMP-10019: O Dockerfile usa 'python:latest' — isso vai quebrar na próxi
    _O Dockerfile usa 'python:latest' — isso vai quebrar na próxima atualização maior do Python. Precisamos fixar a versão._
+[2026-06-29 17:44:36] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
+   _Proteger dados do escritório virtual com token JWT de curta duração._
+[2026-06-29 17:44:36] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
+   _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
+[2026-06-29 17:44:40] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
+   _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
