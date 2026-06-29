@@ -459,3 +459,12 @@
    _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
 [2026-06-29 17:58:42] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
    _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+
+[2026-06-29 18:04:25] [AUTO-IMPROVEMENT] Aplicada: KAN-28 - Não há cache HTTP (ETag, Cache-Control) nas rotas estáticas 
+   _Não há cache HTTP (ETag, Cache-Control) nas rotas estáticas — o browser baixa os assets do zero a cada reload._
+
+[2026-06-29 18:04:25] [AUTO-IMPROVEMENT] Aplicada: KAN-29 - Os feedbacks dos usuários ficam em JSON sem nenhuma análise 
+   _Os feedbacks dos usuários ficam em JSON sem nenhuma análise de sentimento ou categorização automática — dado desperdiçado._
+
+[2026-06-29 18:04:26] [AUTO-IMPROVEMENT] Aplicada: KAN-27 - O grafo D3.js é completamente inacessível via teclado — usuá
+   _O grafo D3.js é completamente inacessível via teclado — usuários com deficiência visual não conseguem navegar pelos nós._
