@@ -189,3 +189,11 @@
    _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
 [2026-06-29 17:25:26] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
    _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
+[2026-06-29 17:25:37] [AUTO-IMPROVEMENT] Aplicada: IMP-00042 - IMP-00042: Otimizar Vector Cache
+   _Otimizar o módulo Vector Cache para otimizar cobertura de testes utilizando locks de leitura compartilhados._
+[2026-06-29 17:25:37] [AUTO-IMPROVEMENT] Aplicada: IMP-00043 - IMP-00043: Garantir resiliência em Logging Pipeline
+   _Garantir resiliência em o módulo Logging Pipeline para otimizar consumo de memória RAM utilizando debounce e throttling._
+[2026-06-29 17:25:44] [AUTO-IMPROVEMENT] Aplicada: IMP-00041 - IMP-00041: Refatorar Vector Cache
+   _Refatorar o módulo Vector Cache para otimizar concorrência de leitura/escrita utilizando circuit breaking com fallback._
+[2026-06-29 17:25:45] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
+   _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._

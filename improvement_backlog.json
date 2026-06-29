@@ -240,20 +240,5 @@
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588300",
     "completed_at": "2026-06-29T16:40:20.664979"
-  },
-  {
-    "id": "IMP-10001",
-    "title": "IMP-10001: Otimizar latência da rota do grafo",
-    "description": "Analisar e otimizar o caminho de execução da rota do grafo para reduzir o tempo de resposta, investigando possíveis gargalos de concorrência ou I/O.",
-    "details": "Revisar o código da rota do grafo (ex: `GraphRouter.java` ou equivalente). Implementar monitoramento de latência em pontos críticos da rota. Aplicar técnicas de otimização de concorrência (ex: ajuste de *locks*, uso de *non-blocking I/O*, ou refatoração de estruturas de dados) e otimização de operações de I/O.",
-    "motivation_justification": "O usuário reportou lentidão na resposta da rota, indicando uma degradação de performance que precisa ser resolvida para garantir uma experiência de usuário aceitável.",
-    "category": "Performance",
-    "status": "done",
-    "priority": "high",
-    "difficulty": "medium",
-    "impact": "high",
-    "qualified": true,
-    "created_at": "2026-06-29T17:23:14.275110",
-    "completed_at": "2026-06-29T17:25:21.757594"
   }
 ]
