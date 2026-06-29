@@ -525,3 +525,9 @@
 [2026-06-29 18:20:47] [AUTO-MERGE] Homologado: KAN-63
 
 [2026-06-29 18:20:50] [AUTO-MERGE] Homologado: KAN-62
+
+[2026-06-29 18:24:28] [AUTO-IMPROVEMENT] Aplicada: KAN-59 - A daily digest é gerada automaticamente mas ninguém valida s
+
+[2026-06-29 18:24:29] [AUTO-IMPROVEMENT] Aplicada: KAN-60 - Não existe documentação interativa da API — toda vez que int
+
+[2026-06-29 18:24:29] [AUTO-IMPROVEMENT] Aplicada: KAN-58 - A aplicação não é stateless — estado é salvo em arquivos JSO
