@@ -237,3 +237,9 @@
    _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
 [2026-06-29 17:28:43] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
    _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
+[2026-06-29 17:29:10] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
+   _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
+[2026-06-29 17:29:16] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
+   _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
+[2026-06-29 17:29:19] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
