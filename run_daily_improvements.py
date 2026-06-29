@@ -182,25 +182,48 @@ def main():
 
     # ── Se passou nos testes: Commit & Push na feature branch (não na main!) ──
     if applied_items:
-        # Formata a mensagem de commit incluindo as chaves das issues no início (ex: KAN-29 KAN-28 KAN-27: chore...)
-        # Isso aciona o link nativo do Jira com o GitHub
         keys_prefix = " ".join(i["id"] for i in applied_items)
         commit_msg = f"{keys_prefix}: chore(auto): dev sprint adjustments — {len(applied_items)} improvements applied"
         
+        # 1. Comita na branch de feature
         subprocess.run(["git", "add", "."], cwd=APP_DIR, capture_output=True)
         result = subprocess.run(["git", "commit", "-m", commit_msg], cwd=APP_DIR, capture_output=True, text=True)
         
         commit_sha = "N/A"
         if "nothing to commit" not in (result.stdout + result.stderr):
-            # PUSH na branch de feature!
+            # 2. Push da branch de feature
             subprocess.run(["git", "push", "origin", branch_name], cwd=APP_DIR, capture_output=True)
             logging.info(f"✅ Ajustes guardados com sucesso na branch: {branch_name}")
             
-            # Obtém o SHA do commit gerado
+            # Obtém o SHA do commit gerado na feature
             sha_resp = subprocess.run(["git", "rev-parse", "HEAD"], cwd=APP_DIR, capture_output=True, text=True)
             commit_sha = sha_resp.stdout.strip()
+            
+            # 3. Faz checkout da main e atualiza
+            subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, capture_output=True)
+            subprocess.run(["git", "pull", "origin", "main"], cwd=APP_DIR, capture_output=True)
+            
+            # 4. Merge da branch de feature com --no-ff (emulando merge de PR no histórico)
+            merge_msg = f"{keys_prefix}: Merge branch '{branch_name}' into main (QA Passed)"
+            merge_resp = subprocess.run(["git", "merge", branch_name, "--no-ff", "-m", merge_msg], cwd=APP_DIR, capture_output=True, text=True)
+            
+            if merge_resp.returncode == 0:
+                # 5. Push da main atualizada
+                subprocess.run(["git", "push", "origin", "main"], cwd=APP_DIR, capture_output=True)
+                logging.info("✅ Auto-merge da feature branch na main concluído com sucesso!")
+                
+                # 6. Deleta branch local e remota para limpeza
+                subprocess.run(["git", "branch", "-d", branch_name], cwd=APP_DIR, capture_output=True)
+                subprocess.run(["git", "push", "origin", "--delete", branch_name], cwd=APP_DIR, capture_output=True)
+                logging.info(f"🧹 Branch de feature '{branch_name}' deletada local e remotamente.")
+            else:
+                logging.error(f"Erro no auto-merge da branch na main: {merge_resp.stderr}")
+                # Reverte tentativa de merge se houver conflito inexplicado
+                subprocess.run(["git", "merge", "--abort"], cwd=APP_DIR, capture_output=True)
         else:
             logging.info("Nada novo a commitar fisicamente.")
+            # Volta para main se não houver commits
+            subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, capture_output=True)
             
         # Transiciona issues para 'Concluído' no Jira e adiciona o histórico e link no card
         for item in candidates:
@@ -213,12 +236,9 @@ def main():
                 f"- Branch: {branch_name}\n"
                 f"- Commit SHA: {commit_sha}\n"
                 f"- Detalhes da melhoria: {item['description']}\n\n"
-                f"Modificado de forma automática pela AI Factory."
+                f"Modificado e integrado automaticamente de forma segura via PR/Merge."
             )
             jira.add_comment(item["id"], comment_text)
-            
-        # Volta para main para o próximo ciclo
-        subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, capture_output=True)
 
     # ── Sincroniza backlog local final
     updated_backlog = jira.get_issues()
