@@ -305,6 +305,13 @@ def main():
                     start = id_counter[0]
                     id_counter[0] += 1
                 jira_key = f"IMP-{(start + pos):05d}"
+            else:
+                # Adiciona o comentário do PM aceitando a demanda
+                pm_comment = (
+                    f"[PM: DEMANDA ACEITA] A demanda foi validada, classificada e está apta para desenvolvimento.\n"
+                    f"Prioridade: {card.get('priority', 'medium').upper()} | Categoria: {card.get('category', 'Arquitetura')}"
+                )
+                jira.add_comment(jira_key, pm_comment)
                 
             task = {
                 "id": jira_key,

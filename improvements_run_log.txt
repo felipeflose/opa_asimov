@@ -603,3 +603,21 @@
 [2026-06-29 18:45:17] [AUTO-IMPROVEMENT] Aplicada: KAN-75 - O sistema não coleta métricas de uso de features — não sei q
 
 [2026-06-29 18:45:25] [AUTO-IMPROVEMENT] Aplicada: KAN-76 - Falta um dashboard de latência por endpoint — sei que o sist
+
+[2026-06-29 18:51:29] [AUTO-IMPROVEMENT] Aplicada: KAN-91 - O endpoint /api/graph gera o JSON do grafo inteiro a cada re
+
+[2026-06-29 18:51:32] [AUTO-IMPROVEMENT] Aplicada: KAN-89 - O modelo de embeddings não está versionado no código — se tr
+
+[2026-06-29 18:51:34] [AUTO-IMPROVEMENT] Aplicada: KAN-90 - O código de produção tem dezenas de 'TODO' e 'FIXME' sem iss
+
+[2026-06-29 18:51:35] [AUTO-IMPROVEMENT] Aplicada: KAN-92 - Falta análise de cluster nas notas do Obsidian — seria valio
+
+[2026-06-29 18:51:38] [AUTO-IMPROVEMENT] Aplicada: KAN-95 - Não há spans de tracing nas chamadas LLM — impossível saber 
+
+[2026-06-29 18:51:42] [AUTO-IMPROVEMENT] Aplicada: KAN-88 - Os agentes (agent_rag.py, agent_core.py) não têm mocks para 
+
+[2026-06-29 18:52:06] [AUTO-IMPROVEMENT] Aplicada: KAN-94 - Não há configuração de firewall documentada — a porta 8091 e
+
+[2026-06-29 18:52:08] [AUTO-IMPROVEMENT] Aplicada: KAN-87 - Os embeddings não são atualizados quando uma nota é editada 
+
+[2026-06-29 18:52:12] [AUTO-IMPROVEMENT] Aplicada: KAN-93 - O sistema não detecta notas orfãs automaticamente — tenho de
