@@ -393,3 +393,9 @@
    _Usar Flask-Assets ou similar para minificar static/css/style.css e app.js no build._
 [2026-06-29 17:48:45] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
    _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._
+[2026-06-29 17:49:37] [AUTO-IMPROVEMENT] Aplicada: IMP-10027 - IMP-10027: Falta um ADR (Architectural Decision Record) para as escolha
+   _Falta um ADR (Architectural Decision Record) para as escolhas de SQLite, Flask e D3.js — perdemos o contexto de por que essas decisões foram tomadas._
+[2026-06-29 17:49:41] [AUTO-IMPROVEMENT] Aplicada: IMP-10028 - IMP-10028: O contraste de cor dos labels dos nós não atinge o ratio mín
+   _O contraste de cor dos labels dos nós não atinge o ratio mínimo WCAG AA — pessoas com daltonismo verde-vermelho não enxergam nada._
+[2026-06-29 17:49:41] [AUTO-IMPROVEMENT] Aplicada: IMP-10026 - IMP-10026: O SQLite está sendo usado em modo shared entre múltiplos pro
+   _O SQLite está sendo usado em modo shared entre múltiplos processos Python sem qualquer serialização — isso vai corromper os dados._
