@@ -231,3 +231,9 @@
    _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
 [2026-06-29 17:28:17] [AUTO-IMPROVEMENT] Aplicada: TECH-010 - Implementar debounce no input de busca do grafo
    _Esperar 300ms após o último keystroke antes de filtrar nós para reduzir re-renders._
+[2026-06-29 17:28:40] [AUTO-IMPROVEMENT] Aplicada: TECH-014 - Refatorar annoying_user.py para usar pool de threads
+   _Substituir loop sequencial por ThreadPoolExecutor para paralelizar geração de feedbacks._
+[2026-06-29 17:28:42] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:28:43] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
+   _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._

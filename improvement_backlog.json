@@ -240,5 +240,35 @@
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588300",
     "completed_at": "2026-06-29T16:40:20.664979"
+  },
+  {
+    "id": "IMP-10001",
+    "title": "IMP-10001: Estabilidade do posicionamento de nós e contraste de cores",
+    "description": "Refatorar a lógica de posicionamento dos nós para garantir estabilidade visual e otimizar o contraste de cores no tema escuro.",
+    "details": "Revisar o código CSS/layout responsável pelo posicionamento dos elementos (ex: Flexbox, Grid, ou posicionamento absoluto) e ajustar os valores de cor e contraste para o tema escuro.",
+    "motivation_justification": "O usuário relata instabilidade visual e fadiga ao usar o tema escuro com cores neon, indicando uma necessidade de melhoria na usabilidade e conforto visual.",
+    "category": "UI/UX",
+    "status": "done",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "created_at": "2026-06-29T17:24:49.264803",
+    "completed_at": "2026-06-29T17:26:54.876063"
+  },
+  {
+    "id": "IMP-10002",
+    "title": "IMP-10002: Refatoração sob demanda de usuário",
+    "description": "Tratar reclamação: A física de zoom e o posicionamento dos nós estão completamente errados, e o contraste no tema escuro é insuportável. Isso é um desastre visual e totalmente inaceitável para uma ferramenta de design.",
+    "details": "Analisar arquivos associados para resolver a dor descrita na reclamação.",
+    "motivation_justification": "Feedback direto do usuário: A física de zoom e o posicionamento dos nós estão completamente errados, e o contraste no tema escuro é insuportável. Isso é um desastre visual e totalmente inaceitável para uma ferramenta de design.",
+    "category": "Arquitetura",
+    "status": "done",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "created_at": "2026-06-29T17:24:49.265003",
+    "completed_at": "2026-06-29T17:26:56.901147"
   }
 ]
