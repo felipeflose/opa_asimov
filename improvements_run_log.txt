@@ -111,3 +111,9 @@
    _Otimizar a indexação do banco de dados do backlog._
 [2026-06-29 17:18:22] [AUTO-IMPROVEMENT] Aplicada: IMP-10003 - IMP-10003: Refatorar Agent Core para Modularidade
    _Refatorar o módulo `agent_core.py` para melhorar a modularidade._
+[2026-06-29 17:18:36] [AUTO-IMPROVEMENT] Aplicada: TECH-011 - Adicionar log estruturado em JSON para requests do Flask
+   _Substituir o logger padrão por structured JSON logging para facilitar análise futura._
+[2026-06-29 17:18:41] [AUTO-IMPROVEMENT] Aplicada: TECH-002 - Adicionar cache de respostas Groq/LLM com TTL de 5 min
+   _Evitar chamadas duplicadas ao LLM para a mesma pergunta dentro de 5 minutos._
+[2026-06-29 17:18:45] [AUTO-IMPROVEMENT] Aplicada: TECH-020 - Adicionar graceful shutdown ao servidor Flask
+   _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._

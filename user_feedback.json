@@ -1,434 +1,440 @@
 [
   {
-    "timestamp": "2026-06-29T16:50:30.515197",
+    "timestamp": "2026-06-29T16:45:31.314698",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
     "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:51:00.654467",
+    "timestamp": "2026-06-29T16:46:01.374460",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
     "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:51:30.719665",
+    "timestamp": "2026-06-29T16:46:31.439285",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
     "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:52:00.794784",
+    "timestamp": "2026-06-29T16:47:01.634983",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
     "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:52:30.859546",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T16:53:00.952988",
+    "timestamp": "2026-06-29T16:47:31.702797",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
     "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:53:31.022966",
+    "timestamp": "2026-06-29T16:48:01.780551",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
     "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:54:01.081279",
+    "timestamp": "2026-06-29T16:48:31.844884",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
     "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:54:31.154747",
+    "timestamp": "2026-06-29T16:49:01.910967",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
     "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:55:01.228536",
-    "user": "Carlos Souza",
-    "avatar": "👨‍🔬",
-    "role": "Backend Engineer",
-    "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T16:55:31.295846",
+    "timestamp": "2026-06-29T16:49:31.993387",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
     "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:56:01.363805",
+    "timestamp": "2026-06-29T16:50:02.075459",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
     "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:56:31.428536",
+    "timestamp": "2026-06-29T16:50:32.207788",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
     "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:57:01.578756",
+    "timestamp": "2026-06-29T16:51:02.300332",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
     "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:57:31.665523",
+    "timestamp": "2026-06-29T16:51:32.358197",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
     "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:58:01.741239",
+    "timestamp": "2026-06-29T16:52:02.442242",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
     "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:58:31.817535",
+    "timestamp": "2026-06-29T16:52:32.519058",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
     "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:59:01.894689",
+    "timestamp": "2026-06-29T16:53:02.590661",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
     "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T16:59:31.990448",
+    "timestamp": "2026-06-29T16:53:32.652714",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
     "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T17:00:02.062267",
-    "user": "Lucas Pereira",
-    "avatar": "👨‍📱",
-    "role": "Mobile QA Tester",
-    "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:00:32.257379",
+    "timestamp": "2026-06-29T16:54:02.718558",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
     "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T17:01:02.325483",
+    "timestamp": "2026-06-29T16:54:32.793940",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
     "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T17:01:32.410346",
+    "timestamp": "2026-06-29T16:55:02.936370",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
     "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T17:02:03.491868",
+    "timestamp": "2026-06-29T16:55:33.018512",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
     "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
-    "status": "pending"
+    "status": "duplicate"
   },
   {
-    "timestamp": "2026-06-29T17:02:34.590675",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
-    "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:03:04.783275",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
-    "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:04:31.376259",
-    "user": "Ana Silva",
+    "timestamp": "2026-06-29T20:17:00.203647+00:00",
+    "user": "Aline Rodrigues",
     "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
+    "role": "UI Designer",
+    "area": "UI/UX",
+    "complaint": "O painel de grafo usa neon verde sobre fundo preto — depois de 10 minutos minha vista cansa demais. Precisamos de um tema claro opcional.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:05:01.445341",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:05:31.517453",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:06:01.598131",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:06:31.669605",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:07:01.735889",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:07:31.808206",
-    "user": "Carlos Souza",
-    "avatar": "👨‍🔬",
+    "timestamp": "2026-06-29T20:17:00.203874+00:00",
+    "user": "Carlos Mendes",
+    "avatar": "👨‍💻",
     "role": "Backend Engineer",
-    "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
+    "area": "Backend",
+    "complaint": "O app.py mistura lógica de negócio com rotas Flask. Isso torna impossível escrever testes unitários sem subir o servidor inteiro.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:08:01.876492",
-    "user": "Carlos Souza",
-    "avatar": "👨‍🔬",
-    "role": "Backend Engineer",
-    "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
+    "timestamp": "2026-06-29T20:17:00.203966+00:00",
+    "user": "Fernanda Alves",
+    "avatar": "🔐",
+    "role": "Security Engineer",
+    "area": "Security",
+    "complaint": "Os logs do servidor incluem os prompts completos enviados ao LLM, o que pode vazar dados sensíveis das notas do Obsidian.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:08:31.954785",
-    "user": "Carlos Souza",
-    "avatar": "👨‍🔬",
-    "role": "Backend Engineer",
-    "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
+    "timestamp": "2026-06-29T20:17:00.204049+00:00",
+    "user": "Gustavo Lima",
+    "avatar": "📱",
+    "role": "Mobile Developer",
+    "area": "Mobile",
+    "complaint": "Enviei uma nota longa pelo Telegram e o bot travou por 30 segundos sem nenhum feedback de 'processando...'.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:09:02.041491",
-    "user": "Carlos Souza",
-    "avatar": "👨‍🔬",
-    "role": "Backend Engineer",
-    "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:09:32.106483",
+    "timestamp": "2026-06-29T20:17:00.204124+00:00",
     "user": "Mariana Costa",
-    "avatar": "👩‍🎓",
-    "role": "Especialista em RAG",
-    "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
+    "avatar": "🧠",
+    "role": "RAG Specialist",
+    "area": "RAG/AI",
+    "complaint": "O contexto enviado ao LLM inclui notas inteiras sem truncamento — isso desperdiça tokens e pode exceder o limite do modelo.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:10:02.193410",
-    "user": "Mariana Costa",
-    "avatar": "👩‍🎓",
-    "role": "Especialista em RAG",
-    "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
+    "timestamp": "2026-06-29T20:17:00.204193+00:00",
+    "user": "Rafael Barbosa",
+    "avatar": "⚙️",
+    "role": "DevOps Engineer",
+    "area": "DevOps",
+    "complaint": "O Dockerfile usa 'python:latest' — isso vai quebrar na próxima atualização maior do Python. Precisamos fixar a versão.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:10:32.294929",
-    "user": "Mariana Costa",
-    "avatar": "👩‍🎓",
-    "role": "Especialista em RAG",
-    "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
+    "timestamp": "2026-06-29T20:17:00.204264+00:00",
+    "user": "Beatriz Ferreira",
+    "avatar": "🎨",
+    "role": "Frontend Developer",
+    "area": "Frontend",
+    "complaint": "A busca de notas faz um fetch a cada tecla digitada sem debounce — isso envia dezenas de requisições por segundo ao servidor.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:11:02.357098",
-    "user": "Mariana Costa",
-    "avatar": "👩‍🎓",
-    "role": "Especialista em RAG",
-    "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
+    "timestamp": "2026-06-29T20:17:00.204329+00:00",
+    "user": "Thiago Nascimento",
+    "avatar": "📊",
+    "role": "Data Engineer",
+    "area": "Data",
+    "complaint": "O user_feedback.json cresce indefinidamente sem TTL ou arquivamento — já imaginou esse arquivo com 6 meses de dados?",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:11:32.438839",
-    "user": "Mariana Costa",
-    "avatar": "👩‍🎓",
-    "role": "Especialista em RAG",
-    "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
+    "timestamp": "2026-06-29T20:17:00.204391+00:00",
+    "user": "Priscila Santos",
+    "avatar": "🧪",
+    "role": "QA Analyst",
+    "area": "QA",
+    "complaint": "Rodei a suite de testes e metade falha por dependência de arquivo local que não existe no ambiente de CI. Cobertura é ilusória.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:12:02.521211",
-    "user": "Mariana Costa",
-    "avatar": "👩‍🎓",
-    "role": "Especialista em RAG",
-    "complaint": "Encontrei vários nós sem conexões no grafo, parecem links perdidos que a indexação não arrumou.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:12:32.585757",
-    "user": "Lucas Pereira",
-    "avatar": "👨‍📱",
-    "role": "Mobile QA Tester",
-    "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:13:02.683109",
-    "user": "Lucas Pereira",
-    "avatar": "👨‍📱",
-    "role": "Mobile QA Tester",
-    "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:13:32.759698",
-    "user": "Lucas Pereira",
-    "avatar": "👨‍📱",
-    "role": "Mobile QA Tester",
-    "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:14:02.854990",
-    "user": "Lucas Pereira",
-    "avatar": "👨‍📱",
-    "role": "Mobile QA Tester",
-    "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:14:32.918997",
-    "user": "Lucas Pereira",
-    "avatar": "👨‍📱",
-    "role": "Mobile QA Tester",
-    "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:15:02.977819",
-    "user": "Lucas Pereira",
-    "avatar": "👨‍📱",
-    "role": "Mobile QA Tester",
-    "complaint": "O bot do Telegram demora muito pra responder quando mando notas longas pelo celular.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:15:33.058144",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
+    "timestamp": "2026-06-29T20:17:00.204471+00:00",
+    "user": "Felipe Fróes",
+    "avatar": "📋",
     "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
+    "area": "Product",
+    "complaint": "Falta uma roadmap visual do produto — cada desenvolvedor implementa o que acha mais interessante sem alinhamento estratégico.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:16:03.127501",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
-    "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
+    "timestamp": "2026-06-29T20:17:00.204535+00:00",
+    "user": "Anderson Oliveira",
+    "avatar": "🔧",
+    "role": "Site Reliability Engineer",
+    "area": "SRE",
+    "complaint": "O MTTR está alto porque os logs de erro são vagos demais — 'Erro ao processar' sem stack trace ou contexto não me ajuda nada.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:16:33.197383",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
-    "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
+    "timestamp": "2026-06-29T20:17:00.204595+00:00",
+    "user": "Juliana Moreira",
+    "avatar": "💻",
+    "role": "Full Stack Developer",
+    "area": "Full Stack",
+    "complaint": "Falta um sistema de sessão — qualquer pessoa que conhece a URL consegue acessar o painel do grafo sem autenticação.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:17:03.268984",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
-    "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
+    "timestamp": "2026-06-29T20:17:00.204657+00:00",
+    "user": "Lucas Rezende",
+    "avatar": "🤖",
+    "role": "ML Engineer",
+    "area": "RAG/AI",
+    "complaint": "O modelo de embeddings não está versionado no código — se trocarmos o modelo, os vetores antigos ficam incompatíveis sem nenhum aviso.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:17:33.352397",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
-    "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
+    "timestamp": "2026-06-29T20:17:00.204717+00:00",
+    "user": "Roberto Cardoso",
+    "avatar": "🗄️",
+    "role": "Database Administrator",
+    "area": "Data",
+    "complaint": "Não existe migration versionada para o schema do SQLite — cada desenvolvedor aplica ALTER TABLE manualmente e o ambiente fica divergente.",
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:18:03.415201",
-    "user": "Felipe Flóse",
-    "avatar": "👨‍💼",
-    "role": "Product Owner",
-    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
+    "timestamp": "2026-06-29T20:17:00.204777+00:00",
+    "user": "Marcelo Teixeira",
+    "avatar": "🏗️",
+    "role": "Tech Lead",
+    "area": "Backend",
+    "complaint": "Não há padrão de logging definido — cada arquivo usa um estilo diferente, o que torna a agregação de logs impossível.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.204837+00:00",
+    "user": "Camila Duarte",
+    "avatar": "♿",
+    "role": "Accessibility Specialist",
+    "area": "UI/UX",
+    "complaint": "O grafo D3.js é completamente inacessível via teclado — usuários com deficiência visual não conseguem navegar pelos nós.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.204905+00:00",
+    "user": "Diego Cavalcante",
+    "avatar": "⚡",
+    "role": "Performance Engineer",
+    "area": "Backend",
+    "complaint": "O vault_embeddings.json é carregado inteiro em memória a cada busca RAG — 50 MB de I/O de disco por query é inadmissível.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.204978+00:00",
+    "user": "Natalia Pimentel",
+    "avatar": "📈",
+    "role": "Data Scientist",
+    "area": "Data",
+    "complaint": "O agente agent_mba.py roda análises sem salvar os resultados de forma estruturada — cada análise é efêmera e irreproduzível.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205037+00:00",
+    "user": "Henrique Monteiro",
+    "avatar": "☁️",
+    "role": "Cloud Architect",
+    "area": "DevOps",
+    "complaint": "O banco SQLite não é compatível com ambientes cloud multi-instância — precisamos migrar para Postgres antes de qualquer scale.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205101+00:00",
+    "user": "Vanessa Correia",
+    "avatar": "🏃",
+    "role": "Scrum Master",
+    "area": "Product",
+    "complaint": "Não há cerimônia de planning informada por dados reais de uso — priorizamos intuição em vez de evidências do sistema.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205187+00:00",
+    "user": "Eduardo Prado",
+    "avatar": "🔗",
+    "role": "API Specialist",
+    "area": "Backend",
+    "complaint": "A API não implementa conditional requests (If-None-Match) — o frontend baixa o grafo completo mesmo quando nada mudou.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205257+00:00",
+    "user": "Simone Batista",
+    "avatar": "📚",
+    "role": "Knowledge Manager",
+    "area": "Product",
+    "complaint": "A indexação do vault não respeita o frontmatter YAML das notas — metadados importantes como autor e data são ignorados.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205321+00:00",
+    "user": "Paulo Freitas",
+    "avatar": "🤖",
+    "role": "Bot Developer",
+    "area": "Mobile",
+    "complaint": "O bot do Telegram não tem comando /help atualizado — os comandos listados são diferentes dos que realmente funcionam.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205396+00:00",
+    "user": "Rodrigo Esteves",
+    "avatar": "🌐",
+    "role": "Infrastructure Engineer",
+    "area": "DevOps",
+    "complaint": "Não há configuração de firewall documentada — a porta 8091 está aberta para qualquer IP sem restrição.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205461+00:00",
+    "user": "Amanda Ribeiro",
+    "avatar": "🔭",
+    "role": "Observability Engineer",
+    "area": "SRE",
+    "complaint": "Não há spans de tracing nas chamadas LLM — impossível saber qual etapa do pipeline RAG está causando lentidão.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205526+00:00",
+    "user": "Isabela Gomes",
+    "avatar": "🕸️",
+    "role": "Graph Visualization Specialist",
+    "area": "UI/UX",
+    "complaint": "Não há suporte a clusters visuais no grafo — todos os nós ficam numa sopa caótica sem agrupamento por área ou tag.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205591+00:00",
+    "user": "Tiago Borges",
+    "avatar": "✍️",
+    "role": "Prompt Engineer",
+    "area": "RAG/AI",
+    "complaint": "O prompt de sumarização não instrui o modelo a manter terminologia do vault — respostas usam sinônimos que confundem a busca futura.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205656+00:00",
+    "user": "Cristiane Peixoto",
+    "avatar": "⚖️",
+    "role": "Compliance Officer",
+    "area": "Security",
+    "complaint": "O user_feedback.json armazena dados de usuários sem nenhuma política de retenção — isso pode violar a LGPD dependendo do conteúdo.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205767+00:00",
+    "user": "Leandro Fontes",
+    "avatar": "🤖",
+    "role": "Test Automation Engineer",
+    "area": "QA",
+    "complaint": "A cobertura de código está em 23% segundo o último relatório — estamos deployando às cegas em mais de 75% do código.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T20:17:00.205859+00:00",
+    "user": "Viviane Araujo",
+    "avatar": "🌱",
+    "role": "Open Source Contributor",
+    "area": "Full Stack",
+    "complaint": "Falta um arquivo de CHANGELOG bem mantido — não consigo entender o que mudou entre versões sem ler commit por commit.",
     "status": "pending"
   }
 ]
