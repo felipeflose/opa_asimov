@@ -423,3 +423,9 @@
    _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
 [2026-06-29 17:53:45] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
    _Proteger dados do escritório virtual com token JWT de curta duração._
+[2026-06-29 17:54:36] [AUTO-IMPROVEMENT] Aplicada: TECH-004 - Adicionar paginação ao endpoint /api/improvements
+   _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
+[2026-06-29 17:54:37] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:54:43] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
+   _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
