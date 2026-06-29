@@ -905,11 +905,65 @@ def api_office():
         except Exception:
             pass
 
+    # ── Ranking e KPIs dinâmico (suporta N usuários) ──────────
+    from datetime import date as _date
+    today = _date.today().isoformat()
+
+    # Agrega estatísticas por usuário diretamente dos feedbacks
+    persona_map = {}   # name → {emoji, role, total, accepted, duplicate, today}
+    for fb in feedbacks:
+        user = fb.get("user", "")
+        if not user:
+            continue
+        if user not in persona_map:
+            persona_map[user] = {
+                "emoji": fb.get("avatar", "👤"),
+                "role":  fb.get("role",  "Usuário"),
+                "area":  fb.get("area",  ""),
+                "total": 0, "accepted": 0, "duplicate": 0, "today": 0,
+            }
+        p = persona_map[user]
+        p["total"] += 1
+        status = fb.get("status", "")
+        if status == "accepted":
+            p["accepted"] += 1
+        elif status == "duplicate":
+            p["duplicate"] += 1
+        if (fb.get("timestamp") or "").startswith(today):
+            p["today"] += 1
+
+    # Meta diária padrão = 1 feedback por minuto de expediente (540 minutos/dia útil)
+    DEFAULT_META = 1   # 1 feedback esperado por ciclo = meta mínima razoável
+
+    ranking = []
+    for name, p in persona_map.items():
+        meta = DEFAULT_META
+        today_count = p["today"]
+        pct = min(100, round((today_count / meta) * 100)) if meta > 0 else 0
+        acceptance_rate = round((p["accepted"] / p["total"] * 100) if p["total"] > 0 else 0)
+        ranking.append({
+            "name":             name,
+            "emoji":            p["emoji"],
+            "role":             p["role"],
+            "area":             p.get("area", ""),
+            "meta_day":         meta,
+            "today":            today_count,
+            "pct":              pct,
+            "total_all_time":   p["total"],
+            "accepted":         p["accepted"],
+            "duplicate":        p["duplicate"],
+            "acceptance_rate":  acceptance_rate,
+        })
+
+    # Ordena: mais % da meta hoje, desempate por total histórico
+    ranking.sort(key=lambda x: (-x["pct"], -x["today"], -x["total_all_time"]))
+
     return jsonify({
-        "feedbacks": feedbacks[-20:],
+        "feedbacks": feedbacks[-30:],
         "mystery_logs": mystery_logs[-15:],
         "dev_status": dev_status,
-        "dev_count": dev_count
+        "dev_count": dev_count,
+        "ranking": ranking,
     })
 
 

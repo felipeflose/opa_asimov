@@ -2021,20 +2021,18 @@ function renderDevs(count, devStatus) {
     if (!container) return;
     
     let html = '';
-    const baseBottom = 50;
-    const width = 42;
-    const spacing = 38;
-    
+    const width = 38;
+    const spacing = 44;
     const devEmojis = ['👨‍💻', '👩‍💻', '💻', '🖥️', '⌨️', '⚙️', '🛠️', '🔌', '💾', '💿'];
-    
+    // Devs ficam alinhados da esquerda para a direita dentro do container
     for (let i = 0; i < count; i++) {
-        const leftVal = `calc(50% - ${(count - 1) * (spacing / 2)}px + ${i * spacing}px)`;
+        const leftPx = i * spacing;
         const emoji = devEmojis[i % devEmojis.length];
         const name = `Dev-${i + 1}`;
         const isLead = i === 0;
-        
+        const glowColor = isLead ? '6,182,212' : '56,189,248';
         html += `
-            <div class="avatar dev-avatar" id="avatar-dev-${i}" style="position: absolute; bottom: ${baseBottom}px; left: ${leftVal}; width: ${width}px; height: ${width}px; border-radius: 50%; background: #06b6d4; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 10px rgba(6,182,212,0.35); border: 2px solid white; cursor: pointer;" data-tooltip="${name} ${isLead ? '(Lead)' : ''}">
+            <div class="avatar dev-avatar" id="avatar-dev-${i}" style="position: absolute; bottom: 5px; left: ${leftPx}px; width: ${width}px; height: ${width}px; border-radius: 50%; background: #06b6d4; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 10px rgba(${glowColor},0.4); border: 2px solid white; cursor: pointer;" data-tooltip="${name} ${isLead ? '(Lead)' : ''}">
                 ${emoji}
             </div>
         `;
@@ -2151,10 +2149,75 @@ async function loadOfficeData() {
             const last = data.feedbacks[data.feedbacks.length - 1];
             triggerOfficeAnimation(last);
         }
+
+        // 5. Renderiza Ranking de Usuários
+        if (data.ranking) renderRanking(data.ranking);
+
+        // 6. Renderiza KPIs de Atendimento TI
+        if (data.ranking) renderKPIs(data.ranking);
         
     } catch(e) {
         console.error("Erro ao carregar dados do escritório virtual:", e);
     }
+}
+
+function renderRanking(ranking) {
+    const container = document.getElementById('ranking-list');
+    if (!container) return;
+    // Scroll quando houver muitos usuários
+    container.style.maxHeight = '320px';
+    container.style.overflowY = 'auto';
+
+    const medals = ['🥇','🥈','🥉'];
+    container.innerHTML = ranking.map((p, i) => {
+        const barColor = p.pct >= 100 ? '#10b981' : p.pct >= 60 ? '#06b6d4' : p.pct >= 30 ? '#f59e0b' : '#ef4444';
+        const statusLabel = p.pct >= 100 ? '✅ Meta!' : p.pct >= 60 ? '📥 Caminho' : '⚠️ Abaixo';
+        const medal = medals[i] || `<span style="font-size:0.75rem;color:var(--text-muted);">#${i+1}</span>`;
+        const areaBadge = p.area ? `<span style="font-size:0.58rem;background:rgba(6,182,212,0.1);color:var(--cyan);border:1px solid rgba(6,182,212,0.2);border-radius:4px;padding:1px 5px;">${p.area}</span>` : '';
+        return `
+        <div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+                <span style="font-size:0.82rem;font-weight:700;display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+                    <span style="font-size:1rem;flex-shrink:0;">${medal}</span>
+                    <span style="font-size:0.95rem;flex-shrink:0;">${p.emoji}</span>
+                    <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</span>
+                    ${areaBadge}
+                    <span style="font-size:0.62rem;font-weight:400;color:var(--text-muted);flex-shrink:0;">${p.role}</span>
+                </span>
+                <span style="font-size:0.68rem;font-weight:700;color:${barColor};white-space:nowrap;">${p.today}✉ (${p.pct}%)</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:4px;overflow:hidden;">
+                <div style="width:${p.pct}%;height:100%;background:${barColor};border-radius:4px;transition:width 0.6s ease;"></div>
+            </div>
+            <div style="font-size:0.6rem;color:var(--text-muted);text-align:right;">${statusLabel} • histórico: ${p.total_all_time}</div>
+        </div>`;
+    }).join('');
+}
+
+function renderKPIs(ranking) {
+    const container = document.getElementById('kpi-list');
+    if (!container) return;
+    container.style.maxHeight = '320px';
+    container.style.overflowY = 'auto';
+
+    const palette = ['#f59e0b','#06b6d4','#a855f7','#ec4899','#10b981','#f97316','#8b5cf6','#0ea5e9','#14b8a6','#e11d48'];
+    container.innerHTML = ranking.map((p, i) => {
+        const color = palette[i % palette.length];
+        const rateColor = p.acceptance_rate >= 60 ? '#10b981' : p.acceptance_rate >= 30 ? '#f59e0b' : '#ef4444';
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.05);">
+            <span style="font-size:1.2rem;min-width:26px;text-align:center;">${p.emoji}</span>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:0.78rem;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+                <div style="font-size:0.62rem;color:var(--text-muted);margin-top:1px;">${p.role}${p.area ? ' • '+p.area : ''}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:110px;">
+                <div style="font-size:0.62rem;color:#10b981;">✅ Aceitos: <b>${p.accepted}</b></div>
+                <div style="font-size:0.62rem;color:#ef4444;">🔄 Duplic.: <b>${p.duplicate}</b></div>
+                <div style="font-size:0.62rem;color:${rateColor};font-weight:700;">Taxa: ${p.acceptance_rate}%</div>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 function showBubble(id, text, timeout = 3000) {
