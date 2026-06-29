@@ -197,3 +197,7 @@
    _Refatorar o módulo Vector Cache para otimizar concorrência de leitura/escrita utilizando circuit breaking com fallback._
 [2026-06-29 17:25:45] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
    _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._
+[2026-06-29 17:25:51] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:25:51] [AUTO-IMPROVEMENT] Aplicada: TECH-015 - Adicionar modo escuro automático baseado no horário do sistema
+   _Detectar horário local e aplicar tema escuro após 18h automaticamente._
