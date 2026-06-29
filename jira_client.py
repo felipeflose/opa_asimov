@@ -133,12 +133,12 @@ class JiraClient:
                     except Exception:
                         pass
                 
-                # Mapeia status do Jira para local
+                # Mapeia status do Jira para local de forma estrita
                 jira_status = fields.get("status", {}).get("name", "A fazer")
                 status_map = {
                     "A fazer": "todo",
                     "Em andamento": "in_progress",
-                    "Em análise": "in_progress", # Se houver status intermediários
+                    "Em análise": "in_analysis",
                     "Concluído": "done"
                 }
                 status = status_map.get(jira_status, "todo")
