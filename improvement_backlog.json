@@ -1,1 +1,244 @@
-[]
+[
+  {
+    "id": "IMP-00001",
+    "title": "IMP-00001: Refatorar RAGAgent",
+    "description": "Refatorar o módulo RAGAgent para otimizar tempo de build Docker utilizando compressão GZIP nativa.",
+    "category": "RAG",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588245",
+    "completed_at": "2026-06-29T13:07:10.212632"
+  },
+  {
+    "id": "IMP-00002",
+    "title": "IMP-00002: Refatorar Vector Cache",
+    "description": "Refatorar o módulo Vector Cache para otimizar tempo de build Docker utilizando comunicação SSE (Server-Sent Events).",
+    "category": "Performance",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "medium",
+    "created_at": "2026-06-27T11:42:10.588249",
+    "completed_at": "2026-06-29T13:07:21.485667"
+  },
+  {
+    "id": "IMP-00003",
+    "title": "IMP-00003: Otimizar RAGAgent",
+    "description": "Otimizar o módulo RAGAgent para otimizar consumo de memória RAM utilizando debounce e throttling.",
+    "category": "RAG",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588251",
+    "completed_at": "2026-06-29T13:07:32.633120"
+  },
+  {
+    "id": "IMP-00004",
+    "title": "IMP-00004: Otimizar Health Monitor",
+    "description": "Otimizar o módulo Health Monitor para otimizar segurança de segredos utilizando rotação automática de logs.",
+    "category": "DevOps",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588253",
+    "completed_at": "2026-06-29T16:40:20.664964"
+  },
+  {
+    "id": "IMP-00005",
+    "title": "IMP-00005: Melhorar a segurança de Flask App Dashboard",
+    "description": "Melhorar a segurança de o módulo Flask App Dashboard para otimizar durabilidade do cache utilizando indexação em árvore B.",
+    "category": "UI/UX",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588256",
+    "completed_at": "2026-06-27T11:42:10.588257"
+  },
+  {
+    "id": "IMP-00006",
+    "title": "IMP-00006: Melhorar a segurança de Ollama Local Integration",
+    "description": "Melhorar a segurança de o módulo Ollama Local Integration para otimizar acurácia semântica utilizando estruturação de JSON com Pydantic.",
+    "category": "RAG",
+    "status": "done",
+    "difficulty": "medium",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588259",
+    "completed_at": "2026-06-27T11:42:10.588260"
+  },
+  {
+    "id": "IMP-00007",
+    "title": "IMP-00007: Refatorar Docling PDF Converter",
+    "description": "Refatorar o módulo Docling PDF Converter para otimizar consumo de memória RAM utilizando circuit breaking com fallback.",
+    "category": "Arquitetura",
+    "status": "done",
+    "difficulty": "medium",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588262",
+    "completed_at": "2026-06-27T11:42:10.588262"
+  },
+  {
+    "id": "IMP-00008",
+    "title": "IMP-00008: Reduzir gargalos de Logging Pipeline",
+    "description": "Reduzir gargalos de o módulo Logging Pipeline para otimizar latência de resposta utilizando rotação automática de logs.",
+    "category": "Telegram",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588265",
+    "completed_at": "2026-06-27T11:42:10.588265"
+  },
+  {
+    "id": "IMP-00009",
+    "title": "IMP-00009: Melhorar a segurança de Telegram Bot",
+    "description": "Melhorar a segurança de o módulo Telegram Bot para otimizar velocidade de renderização utilizando compressão GZIP nativa.",
+    "category": "Arquitetura",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588267",
+    "completed_at": "2026-06-27T11:42:10.588268"
+  },
+  {
+    "id": "IMP-00010",
+    "title": "IMP-00010: Garantir resiliência em Sanitizer Pipeline",
+    "description": "Garantir resiliência em o módulo Sanitizer Pipeline para otimizar segurança de segredos utilizando rotação automática de logs.",
+    "category": "Performance",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588270",
+    "completed_at": "2026-06-27T11:42:10.588271"
+  },
+  {
+    "id": "IMP-00011",
+    "title": "IMP-00011: Implementar melhorias em Logging Pipeline",
+    "description": "Implementar melhorias em o módulo Logging Pipeline para otimizar acurácia semântica utilizando processamento paralelo com ThreadPool.",
+    "category": "Arquitetura",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588273",
+    "completed_at": "2026-06-27T11:42:10.588273"
+  },
+  {
+    "id": "IMP-00012",
+    "title": "IMP-00012: Melhorar a segurança de SQLite Persistent Queue",
+    "description": "Melhorar a segurança de o módulo SQLite Persistent Queue para otimizar durabilidade do cache utilizando locks de leitura compartilhados.",
+    "category": "Arquitetura",
+    "status": "done",
+    "difficulty": "medium",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588276",
+    "completed_at": "2026-06-27T11:42:10.588276"
+  },
+  {
+    "id": "IMP-00013",
+    "title": "IMP-00013: Garantir resiliência em Ollama Local Integration",
+    "description": "Garantir resiliência em o módulo Ollama Local Integration para otimizar segurança de segredos utilizando locks de leitura compartilhados.",
+    "category": "UI/UX",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588278",
+    "completed_at": "2026-06-27T11:42:10.588279"
+  },
+  {
+    "id": "IMP-00014",
+    "title": "IMP-00014: Refatorar Sanitizer Pipeline",
+    "description": "Refatorar o módulo Sanitizer Pipeline para otimizar cobertura de testes utilizando estruturação de JSON com Pydantic.",
+    "category": "Segurança",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588281",
+    "completed_at": "2026-06-27T11:42:10.588281"
+  },
+  {
+    "id": "IMP-00015",
+    "title": "IMP-00015: Auditar Lineage Auditor",
+    "description": "Auditar o módulo Lineage Auditor para otimizar concorrência de leitura/escrita utilizando compressão GZIP nativa.",
+    "category": "DevOps",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588284",
+    "completed_at": "2026-06-27T11:42:10.588284"
+  },
+  {
+    "id": "IMP-00016",
+    "title": "IMP-00016: Implementar melhorias em Vector Cache",
+    "description": "Implementar melhorias em o módulo Vector Cache para otimizar integridade do grafo utilizando docker multi-stage builds.",
+    "category": "Arquitetura",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588286",
+    "completed_at": "2026-06-29T16:39:35.228890"
+  },
+  {
+    "id": "IMP-00017",
+    "title": "IMP-00017: Otimizar Logging Pipeline",
+    "description": "Otimizar o módulo Logging Pipeline para otimizar integridade do grafo utilizando logs estruturados JSON.",
+    "category": "UI/UX",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588289",
+    "completed_at": "2026-06-29T16:39:35.973658"
+  },
+  {
+    "id": "IMP-00018",
+    "title": "IMP-00018: Modularizar Authentication Gate",
+    "description": "Modularizar o módulo Authentication Gate para otimizar integridade do grafo utilizando debounce e throttling.",
+    "category": "DevOps",
+    "status": "done",
+    "difficulty": "medium",
+    "impact": "medium",
+    "created_at": "2026-06-27T11:42:10.588291",
+    "completed_at": "2026-06-29T16:39:46.408999"
+  },
+  {
+    "id": "IMP-00019",
+    "title": "IMP-00019: Adicionar testes unitários para D3.js Graph",
+    "description": "Adicionar testes unitários para o módulo D3.js Graph para otimizar acurácia semântica utilizando estruturação de JSON com Pydantic.",
+    "category": "RAG",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588294",
+    "completed_at": "2026-06-29T16:40:08.129170"
+  },
+  {
+    "id": "IMP-00020",
+    "title": "IMP-00020: Aumentar a observabilidade de SQLite Persistent Queue",
+    "description": "Aumentar a observabilidade de o módulo SQLite Persistent Queue para otimizar tempo de build Docker utilizando indexação em árvore B.",
+    "category": "Telegram",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "medium",
+    "created_at": "2026-06-27T11:42:10.588296",
+    "completed_at": "2026-06-29T16:39:47.013558"
+  },
+  {
+    "id": "IMP-00021",
+    "title": "IMP-00021: Garantir resiliência em Flask App Dashboard",
+    "description": "Garantir resiliência em o módulo Flask App Dashboard para otimizar carga de CPU utilizando comunicação SSE (Server-Sent Events).",
+    "category": "Telegram",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "low",
+    "created_at": "2026-06-27T11:42:10.588298",
+    "completed_at": "2026-06-29T16:40:20.664977"
+  },
+  {
+    "id": "IMP-00022",
+    "title": "IMP-00022: Refatorar D3.js Graph",
+    "description": "Refatorar o módulo D3.js Graph para otimizar cobertura de testes utilizando estruturação de JSON com Pydantic.",
+    "category": "Arquitetura",
+    "status": "done",
+    "difficulty": "hard",
+    "impact": "medium",
+    "created_at": "2026-06-27T11:42:10.588300",
+    "completed_at": "2026-06-29T16:40:20.664979"
+  }
+]
