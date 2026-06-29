@@ -201,3 +201,9 @@
    _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
 [2026-06-29 17:25:51] [AUTO-IMPROVEMENT] Aplicada: TECH-015 - Adicionar modo escuro automático baseado no horário do sistema
    _Detectar horário local e aplicar tema escuro após 18h automaticamente._
+[2026-06-29 17:26:37] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
+   _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
+[2026-06-29 17:26:40] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
+   _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+[2026-06-29 17:26:41] [AUTO-IMPROVEMENT] Aplicada: TECH-009 - Adicionar endpoint /api/health/db para verificar SQLite
+   _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
