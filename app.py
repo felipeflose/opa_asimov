@@ -932,37 +932,49 @@ def api_office():
         if (fb.get("timestamp") or "").startswith(today):
             p["today"] += 1
 
-    # Meta diária padrão = 1 feedback por minuto de expediente (540 minutos/dia útil)
-    DEFAULT_META = 1   # 1 feedback esperado por ciclo = meta mínima razoável
+    # ── Corrida 10K: meta ALL-TIME = 10.000 chamados aceitos únicos ───────────
+    GOAL = 10_000
 
     ranking = []
     for name, p in persona_map.items():
-        meta = DEFAULT_META
-        today_count = p["today"]
-        pct = min(100, round((today_count / meta) * 100)) if meta > 0 else 0
-        acceptance_rate = round((p["accepted"] / p["total"] * 100) if p["total"] > 0 else 0)
+        accepted       = p["accepted"]
+        total          = p["total"]
+        acceptance_rate = round((accepted / total * 100) if total > 0 else 0)
+        pct_goal       = min(100, round((accepted / GOAL) * 100, 2))
+        won            = accepted >= GOAL and acceptance_rate == 100
         ranking.append({
             "name":             name,
             "emoji":            p["emoji"],
             "role":             p["role"],
             "area":             p.get("area", ""),
-            "meta_day":         meta,
-            "today":            today_count,
-            "pct":              pct,
-            "total_all_time":   p["total"],
-            "accepted":         p["accepted"],
+            "today":            p["today"],
+            "total_all_time":   total,
+            "accepted":         accepted,
             "duplicate":        p["duplicate"],
             "acceptance_rate":  acceptance_rate,
+            "pct_goal":         pct_goal,
+            "goal":             GOAL,
+            "won":              won,
         })
 
-    # Ordena: mais % da meta hoje, desempate por total histórico
-    ranking.sort(key=lambda x: (-x["pct"], -x["today"], -x["total_all_time"]))
+    # Ordena: mais aceitos all-time → desempate por acceptance_rate
+    ranking.sort(key=lambda x: (-x["accepted"], -x["acceptance_rate"]))
+
+    # Carrega pm_count
+    pm_count = 1
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r') as f:
+                pm_count = json.load(f).get("pm_count", 1)
+        except Exception:
+            pass
 
     return jsonify({
         "feedbacks": feedbacks[-30:],
         "mystery_logs": mystery_logs[-15:],
         "dev_status": dev_status,
         "dev_count": dev_count,
+        "pm_count": pm_count,
         "ranking": ranking,
     })
 
@@ -1017,6 +1029,55 @@ def api_office_fire():
         return jsonify({"status": "error", "msg": str(e)}), 500
         
     return jsonify({"status": "ok", "dev_count": dev_count})
+
+
+def _load_config():
+    config_file = os.path.join(os.path.dirname(__file__), 'factory_config.json')
+    config = {"dev_count": 1, "pm_count": 1, "qa_count": 1}
+    if os.path.exists(config_file):
+        try:
+            with open(config_file) as f:
+                config.update(json.load(f))
+        except Exception:
+            pass
+    return config, config_file
+
+
+def _save_config(config, config_file):
+    with open(config_file, 'w') as f:
+        json.dump(config, f, indent=2)
+
+
+@app.route('/api/office/hire-pm', methods=['POST'])
+def api_office_hire_pm():
+    config, path = _load_config()
+    config["pm_count"] = min(config.get("pm_count", 1) + 1, 10)
+    _save_config(config, path)
+    return jsonify({"status": "ok", "pm_count": config["pm_count"]})
+
+
+@app.route('/api/office/fire-pm', methods=['POST'])
+def api_office_fire_pm():
+    config, path = _load_config()
+    config["pm_count"] = max(config.get("pm_count", 1) - 1, 1)
+    _save_config(config, path)
+    return jsonify({"status": "ok", "pm_count": config["pm_count"]})
+
+
+@app.route('/api/office/hire-qa', methods=['POST'])
+def api_office_hire_qa():
+    config, path = _load_config()
+    config["qa_count"] = min(config.get("qa_count", 1) + 1, 10)
+    _save_config(config, path)
+    return jsonify({"status": "ok", "qa_count": config["qa_count"]})
+
+
+@app.route('/api/office/fire-qa', methods=['POST'])
+def api_office_fire_qa():
+    config, path = _load_config()
+    config["qa_count"] = max(config.get("qa_count", 1) - 1, 1)
+    _save_config(config, path)
+    return jsonify({"status": "ok", "qa_count": config["qa_count"]})
 
 
 # ── Posições do Grafo ──────────────────────────────────────
