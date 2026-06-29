@@ -41,7 +41,7 @@
     "difficulty": "hard",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588253",
-    "completed_at": "2026-06-29T13:07:34.491258"
+    "completed_at": "2026-06-29T16:39:47.013549"
   },
   {
     "id": "IMP-00005",
@@ -173,7 +173,7 @@
     "difficulty": "easy",
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.588286",
-    "completed_at": "2026-06-29T13:07:34.491271"
+    "completed_at": "2026-06-29T16:39:35.228890"
   },
   {
     "id": "IMP-00017",
@@ -184,40 +184,40 @@
     "difficulty": "easy",
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.588289",
-    "completed_at": "2026-06-29T13:07:34.491272"
+    "completed_at": "2026-06-29T16:39:35.973658"
   },
   {
     "id": "IMP-00018",
     "title": "IMP-00018: Modularizar Authentication Gate",
     "description": "Modularizar o módulo Authentication Gate para otimizar integridade do grafo utilizando debounce e throttling.",
     "category": "DevOps",
-    "status": "todo",
+    "status": "done",
     "difficulty": "medium",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588291",
-    "completed_at": null
+    "completed_at": "2026-06-29T16:39:46.408999"
   },
   {
     "id": "IMP-00019",
     "title": "IMP-00019: Adicionar testes unitários para D3.js Graph",
     "description": "Adicionar testes unitários para o módulo D3.js Graph para otimizar acurácia semântica utilizando estruturação de JSON com Pydantic.",
     "category": "RAG",
-    "status": "todo",
+    "status": "done",
     "difficulty": "hard",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588294",
-    "completed_at": null
+    "completed_at": "2026-06-29T16:39:47.013557"
   },
   {
     "id": "IMP-00020",
     "title": "IMP-00020: Aumentar a observabilidade de SQLite Persistent Queue",
     "description": "Aumentar a observabilidade de o módulo SQLite Persistent Queue para otimizar tempo de build Docker utilizando indexação em árvore B.",
     "category": "Telegram",
-    "status": "todo",
+    "status": "done",
     "difficulty": "hard",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588296",
-    "completed_at": null
+    "completed_at": "2026-06-29T16:39:47.013558"
   },
   {
     "id": "IMP-00021",
