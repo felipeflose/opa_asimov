@@ -868,7 +868,7 @@
     "role": "Observability Engineer",
     "area": "SRE",
     "complaint": "Falta um dashboard de latência por endpoint — sei que o sistema está lento mas não sei exatamente qual rota é o gargalo.",
-    "status": "pending"
+    "status": "accepted"
   },
   {
     "timestamp": "2026-06-29T21:37:28.891583+00:00",

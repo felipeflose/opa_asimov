@@ -618,5 +618,22 @@
     "source_user": "Natalia Pimentel",
     "created_at": "2026-06-29T18:38:45.735258",
     "completed_at": null
+  },
+  {
+    "id": "KAN-76",
+    "title": "Falta um dashboard de latência por endpoint — sei que o sist",
+    "description": "Falta um dashboard de latência por endpoint — sei que o sistema está lento mas não sei exatamente qual rota é o gargalo.",
+    "details": "Gerado via feedback de Amanda Ribeiro (Observability Engineer)",
+    "motivation_justification": "Falta um dashboard de latência por endpoint — sei que o sistema está lento mas não sei exatamente qual rota é o gargalo.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "a4c82e6b3bee",
+    "source_user": "Amanda Ribeiro",
+    "created_at": "2026-06-29T18:38:53.946980",
+    "completed_at": null
   }
 ]
