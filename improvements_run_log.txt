@@ -506,3 +506,5 @@
    _Ao clicar num nó, o grafo não centraliza nele automaticamente — o usuário tem que arrastar manualmente para encontrar o nó selecionado._
 
 [2026-06-29 18:18:07] [AUTO-MERGE] Homologado: KAN-66
+
+[2026-06-29 18:18:13] [AUTO-MERGE] Homologado: KAN-65
