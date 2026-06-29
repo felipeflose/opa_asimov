@@ -87,3 +87,9 @@
    _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
 [2026-06-29 17:16:19] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
    _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
+[2026-06-29 17:16:38] [AUTO-IMPROVEMENT] Aplicada: TECH-014 - Refatorar annoying_user.py para usar pool de threads
+   _Substituir loop sequencial por ThreadPoolExecutor para paralelizar geração de feedbacks._
+[2026-06-29 17:16:41] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
+   _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
+[2026-06-29 17:16:44] [AUTO-IMPROVEMENT] Aplicada: TECH-011 - Adicionar log estruturado em JSON para requests do Flask
+   _Substituir o logger padrão por structured JSON logging para facilitar análise futura._
