@@ -272,7 +272,7 @@
     "difficulty": "medium",
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.588308",
-    "completed_at": "2026-06-29T17:13:07.851365"
+    "completed_at": "2026-06-29T17:13:17.851973"
   },
   {
     "id": "IMP-00026",
@@ -419,7 +419,7 @@
   },
   {
     "id": "IMP-00039",
-    "title": "IMP-00039: Adicionar testes unitários para Flask App Dashboard",
+    "title""I"IMP-00039: Adicionar testes unitários para Flask App Dashboard",
     "description": "Adicionar testes unitários para o módulo Flask App Dashboard para otimizar velocidade de renderização utilizando estruturação de JSON com Pydantic.",
     "category": "DevOps",
     "status": "todo",
@@ -632,7 +632,8 @@
     "description": "Modularizar o módulo Sanitizer Pipeline para otimizar consumo de memória RAM utilizando processamento paralelo com ThreadPool.",
     "category": "Segurança",
     "status": "todo",
-    "difficulty": "easy",
+    "difficulty": "eas,
+,
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588381",
     "completed_at": null
@@ -849,7 +850,7 @@
   {
     "id": "IMP-00078",
     "title": "IMP-00078: Reduzir gargalos de D3.js Graph",
-    "description": "Reduzir gargalos de o módulo D3.js Graph para otimizar experiência do usuário (UX) utilizando compressão GZIP nativa.",
+    "description": "Reduzir gargalos de o m"Reduzir gargalos de o módulo D3.js Graph para otimizar experiência do usuário (UX) utilizando compressão GZIP nativa.",
     "category": "Performance",
     "status": "todo",
     "difficulty": "easy",
@@ -1057,8 +1058,7 @@
   },
   {
     "id": "IMP-00097",
-    "title": "IMP-00097: Aumentar a observabilidade de Health Monitor",
-    "description": "Aumentar a observabilidade de o módulo Health Monitor para otimizar experiência do usuário (UX) utilizando circuit breaking com fallback.",
+    "title": "IMP-00097: Aumentar a observabilidade de Health Monit"Aumentar a observabilidade de o módulo Health Monitor para otimizar experiência do usuário (UX) utilizando circuit breaking com fallback.",
     "category": "Arquitetura",
     "status": "todo",
     "difficulty": "medium",
@@ -1482,6 +1482,7 @@
     "difficulty": "medium",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588551",
+    "completed_at": nu,
     "completed_at": null
   },
   {
@@ -1690,8 +1691,7 @@
     "status": "todo",
     "difficulty": "easy",
     "impact": "medium",
-    "created_at": "2026-06-27T11:42:10.588591",
-    "completed_at": null
+    "created_at": "2026-06-2"completed_at": null
   },
   {
     "id": "IMP-00155",
@@ -1909,6 +1909,7 @@
     "category": "RAG",
     "status": "todo",
     "difficulty": "medium",
+"difficulty": "medium",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588634",
     "completed_at": null
@@ -2124,8 +2125,7 @@
   },
   {
     "id": "IMP-00194",
-    "title": "IMP-00194: Reduzir gargalos de Lineage Auditor",
-    "description": "Reduzir gargalos de o módulo Lineage Auditor para otimizar acurácia semântica utilizando locks de leitura compartilhados.",
+    "title": "IMP-00194: Reduzir gargalos de Lineage Audit"Reduzir gargalos de o módulo Lineage Auditor para otimizar acurácia semântica utilizando locks de leitura compartilhados.",
     "category": "Performance",
     "status": "todo",
     "difficulty": "medium",
@@ -2981,6 +2981,7 @@
     "completed_at": null
   },
   {
+    "id": "IMP-00272",{
     "id": "IMP-00272",
     "title": "IMP-00272: Auditar Lineage Auditor",
     "description": "Auditar o módulo Lineage Auditor para otimizar consumo de memória RAM utilizando indexação vetorial por similaridade de cosseno.",
@@ -3191,8 +3192,7 @@
   },
   {
     "id": "IMP-00291",
-    "title": "IMP-00291: Garantir resiliência em Logging Pipeline",
-    "description": "Garantir resiliência em o módulo Logging Pipeline para otimizar experiência do usuário (UX) utilizando estruturação de JSON com Pydantic.",
+    "title": "IMP-00291: Garantir resiliência em Logging Pipeli"Garantir resiliência em o módulo Logging Pipeline para otimizar experiência do usuário (UX) utilizando estruturação de JSON com Pydantic.",
     "category": "Segurança",
     "status": "todo",
     "difficulty": "medium",
@@ -3835,7 +3835,7 @@
     "status": "todo",
     "difficulty": "medium",
     "impact": "high",
-    "created_at": "2026-06-27T11:42:10.589044",
+    "created_at": "2026-06-27T11:42:10.589"2026-06-27T11:42:10.589044",
     "completed_at": null
   },
   {
@@ -4049,8 +4049,7 @@
   },
   {
     "id": "IMP-00369",
-    "title": "IMP-00369: Garantir resiliência em Logging Pipeline",
-    "description": "Garantir resiliência em o módulo Logging Pipeline para otimizar concorrência de leitura/escrita utilizando circuit breaking com fallback.",
+    "title": "IMP-00369: Garantir resiliência em Logging Pipeli"Garantir resiliência em o módulo Logging Pipeline para otimizar concorrência de leitura/escrita utilizando circuit breaking com fallback.",
     "category": "Performance",
     "status": "todo",
     "difficulty": "medium",
@@ -8989,7 +8988,7 @@
   {
     "id": "IMP-00818",
     "title": "IMP-00818: Refatorar Docling PDF Converter",
-    "description": "Refatorar o módulo Docling PDF Converter para otimizar acurácia semântica utilizando comunicação SSE (Server-Sent Events).",
+    "description": "Refatorar o módulo Doc"Refatorar o módulo Docling PDF Converter para otimizar acurácia semântica utilizando comunicação SSE (Server-Sent Events).",
     "category": "DevOps",
     "status": "todo",
     "difficulty": "medium",
@@ -9204,9 +9203,7 @@
     "difficulty": "easy",
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.590145",
-    "completed_at": null
-  },
-  {
+    "comp
     "id": "IMP-00838",
     "title": "IMP-00838: Modularizar Docker Orchestration",
     "description": "Modularizar o módulo Docker Orchestration para otimizar acurácia semântica utilizando debounce e throttling.",
@@ -10061,7 +10058,7 @@
     "status": "todo",
     "difficulty": "medium",
     "impact": "low",
-    "created_at": "2026-06-27T11:42:10.590324",
+    "created_at": "2026-06-27T11:42:10.590"2026-06-27T11:42:10.590324",
     "completed_at": null
   },
   {
@@ -10697,7 +10694,7 @@
     "description": "Reduzir gargalos de o módulo Logging Pipeline para otimizar concorrência de leitura/escrita utilizando processamento paralelo com ThreadPool.",
     "category": "Segurança",
     "status": "todo",
-    "difficulty": "medium",
+  ,
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.590452",
     "completed_at": null
@@ -13080,6 +13077,7 @@
   },
   {
     "id": "IMP-01190",
+    "title""IMP-01190",
     "title": "IMP-01190: Adicionar testes unitários para Authentication Gate",
     "description": "Adicionar testes unitários para o módulo Authentication Gate para otimizar velocidade de renderização utilizando debounce e throttling.",
     "category": "Telegram",
@@ -13295,8 +13293,8 @@
     "status": "todo",
     "difficulty": "medium",
     "impact": "low",
-    "created_at": "2026-06-27T11:42:10.590986",
-    "completed_at": null
+    "created_at": "2026-06-2"completed_at": null
+  }"completed_at": null
   },
   {
     "id": "IMP-01210",
@@ -14159,8 +14157,8 @@
   {
     "id": "IMP-01288",
     "title": "IMP-01288: Otimizar Docker Orchestration",
-    "description": "Otimizar o módulo Docker Orchestration para otimizar segurança de segredos utilizando comunicação SSE (Server-Sent Events).",
-    "category": "DevOps",
+    "description": "Otimizar o módulo Docker Orchestration para otimizar segurança de segredos utilizando comunicação SSE (Server-Sent Eve"DevOps",
+    "status": "DevOps",
     "status": "todo",
     "difficulty": "medium",
     "impact": "medium",
@@ -14587,8 +14585,7 @@
   },
   {
     "id": "IMP-01327",
-    "title": "IMP-01327: Reduzir gargalos de Health Monitor",
-    "description": "Reduzir gargalos de o módulo Health Monitor para otimizar cobertura de testes utilizando processamento paralelo com ThreadPool.",
+    "title": "IMP-01327: Reduzir gargalos de Health Monit"Reduzir gargalos de o módulo Health Monitor para otimizar cobertura de testes utilizando processamento paralelo com ThreadPool.",
     "category": "Segurança",
     "status": "todo",
     "difficulty": "easy",
@@ -15880,7 +15877,7 @@
     "status": "todo",
     "difficulty": "medium",
     "impact": "low",
-    "created_at": "2026-06-27T11:42:10.591532",
+    "created_at": "2026-06-2"created_at": "2026-06-27T11:42:10.591532",
     "completed_at": null
   },
   {
@@ -17589,8 +17586,7 @@
     "completed_at": null
   },
   {
-    "id": "IMP-01600",
-    "title": "IMP-01600: Refatorar Docker Orchestration",
+    "id": "I"IMP-01600: Refatorar Do"IMP-01600: Refatorar Docker Orchestration",
     "description": "Refatorar o módulo Docker Orchestration para otimizar experiência do usuário (UX) utilizando locks de leitura compartilhados.",
     "category": "UI/UX",
     "status": "todo",
@@ -17809,8 +17805,7 @@
     "completed_at": null
   },
   {
-    "id": "IMP-01620",
-    "title": "IMP-01620: Refatorar Logging Pipeline",
+    "id": "I"IMP-01620: Refatorar Logging Pipeline",
     "description": "Refatorar o módulo Logging Pipeline para otimizar carga de CPU utilizando caching LRU em memória.",
     "category": "Arquitetura",
     "status": "todo",
@@ -19318,7 +19313,7 @@
   {
     "id": "IMP-01757",
     "title": "IMP-01757: Auditar SQLite Persistent Queue",
-    "description": "Auditar o módulo SQLite Persistent Queue para otimizar experiência do usuário (UX) utilizando indexação vetorial por similaridade de cosseno.",
+    "description": "Auditar o módulo SQLit"Auditar o módulo SQLite Persistent Queue para otimizar experiência do usuário (UX) utilizando indexação vetorial por similaridade de cosseno.",
     "category": "DevOps",
     "status": "todo",
     "difficulty": "easy",
@@ -19536,8 +19531,7 @@
     "completed_at": null
   },
   {
-    "id": "IMP-01777",
-    "title": "IMP-01777: Garantir resiliência em Docker Orchestration",
+    "id": "I"IMP-01777: Garantir res"IMP-01777: Garantir resiliência em Docker Orchestration",
     "description": "Garantir resiliência em o módulo Docker Orchestration para otimizar segurança de segredos utilizando circuit breaking com fallback.",
     "category": "DevOps",
     "status": "todo",
@@ -21038,8 +21032,7 @@
     "category": "RAG",
     "status": "todo",
     "difficulty": "medium",
-    "impact": "high",
-    "created_at": "2026-06-27T11:42:10.592592",
+    "impact": "h"2026-06-27T11:42:10.592592",
     "completed_at": null
   },
   {
@@ -22756,6 +22749,7 @@
     "difficulty": "easy",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.592940",
+    "completed_at": nu,
     "completed_at": null
   },
   {
@@ -24487,8 +24481,7 @@
   },
   {
     "id": "IMP-02227",
-    "title": "IMP-02227: Melhorar a segurança de SQLite Persistent Queue",
-    "description": "Melhorar a segurança de o módulo SQLite Persistent Queue para otimizar consumo de memória RAM utilizando caching LRU em memória.",
+    "title": "IMP-02227: Melhorar a segurança de SQLite"description": "Melhorar a segurança de o módulo SQLite Persistent Queue para otimizar consumo de memória RAM utilizando caching LRU em memória.",
     "category": "UI/UX",
     "status": "todo",
     "difficulty": "hard",
@@ -26209,7 +26202,7 @@
     "status": "todo",
     "difficulty": "easy",
     "impact": "high",
-    "created_at": "2026-06-27T11:42:10.593647",
+    "created_at": "2026-06-27T11:42:10.593"2026-06-27T11:42:10.593647",
     "completed_at": null
   },
   {
@@ -31582,8 +31575,7 @@
   },
   {
     "id": "IMP-02872",
-    "title": "IMP-02872: Implementar melhorias em Flask App Dashboard",
-    "description": "Implementar melhorias em o módulo Flask App Dashboard para otimizar experiência do usuário (UX) utilizando rotação automática de logs.",
+    "title": "IMP-02872: Implementar melhorias em Flask App Dashboa"Implementar melhorias e"Implementar melhorias em o módulo Flask App Dashboard para otimizar experiência do usuário (UX) utilizando rotação automática de logs.",
     "category": "DevOps",
     "status": "todo",
     "difficulty": "medium",
@@ -31797,8 +31789,7 @@
     "status": "todo",
     "difficulty": "medium",
     "impact": "low",
-    "created_at": "2026-06-27T11:42:10.595118",
-    "completed_at": null
+    "created_at": "2026-06-2"completed_at": null
   },
   {
     "id": "IMP-02892",
@@ -32873,6 +32864,7 @@
     "description": "Modularizar o módulo Docker Orchestration para otimizar experiência do usuário (UX) utilizando logs estruturados JSON.",
     "category": "Telegram",
     "status": "todo",
+    "difficulty": "eas,
     "difficulty": "easy",
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.595360",
@@ -33525,8 +33517,7 @@
     "difficulty": "hard",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.595487",
-    "completed_at": null
-  },
+    ,
   {
     "id": "IMP-03049",
     "title": "IMP-03049: Aumentar a observabilidade de Vector Cache",
@@ -34607,7 +34598,7 @@
   },
   {
     "id": "IMP-03147",
-    "title": "IMP-03147: Auditar Sanitizer Pipeline",
+    "title": "IMP-03147: Auditar Sani"IMP-03147: Auditar Sanitizer Pipeline",
     "description": "Auditar o módulo Sanitizer Pipeline para otimizar carga de CPU utilizando locks de leitura compartilhados.",
     "category": "Segurança",
     "status": "todo",
@@ -35469,7 +35460,7 @@
     "description": "Implementar melhorias em o módulo Ollama Local Integration para otimizar integridade do grafo utilizando locks de leitura compartilhados.",
     "category": "Performance",
     "status": "todo",
-    "difficulty": "medium",
+  ,
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.595936",
     "completed_at": null
@@ -38920,7 +38911,7 @@
   {
     "id": "IMP-03539",
     "title": "IMP-03539: Adicionar testes unitários para Health Monitor",
-    "description": "Adicionar testes unitários para o módulo Health Monitor para otimizar integridade do grafo utilizando indexação vetorial por similaridade de cosseno.",
+    "description": "Adicionar testes unitá"Adicionar testes unitários para o módulo Health Monitor para otimizar integridade do grafo utilizando indexação vetorial por similaridade de cosseno.",
     "category": "Performance",
     "status": "todo",
     "difficulty": "hard",
@@ -49722,7 +49713,8 @@
   {
     "id": "IMP-04521",
     "title": "IMP-04521: Melhorar a segurança de Sanitizer Pipeline",
-    "description": "Melhorar a segurança de o módulo Sanitizer Pipeline para otimizar velocidade de renderização utilizando debounce e throttling.",
+    "description": "Melhorar a segurança de o módulo Sanitizer Pipeline para otimizar velocidade de renderização utilizando,
+    "category": "RAG",,
     "category": "RAG",
     "status": "todo",
     "difficulty": "easy",
@@ -49935,8 +49927,7 @@
     "category": "Telegram",
     "status": "todo",
     "difficulty": "hard",
-    "impact": "medium",
-    "created_at": "2026-06-27T11:42:10.599110",
+    "impact": "med"2026-06-27T11:42:10.599"2026-06-27T11:42:10.599110",
     "completed_at": null
   },
   {
@@ -55539,8 +55530,7 @@
     "completed_at": null
   },
   {
-    "id": "IMP-05050",
-    "title": "IMP-05050: Aumentar a observabilidade de Logging Pipeline",
+    "id": "I"IMP-05050: Aumentar a observabilidade de Logging Pipeline",
     "description": "Aumentar a observabilidade de o módulo Logging Pipeline para otimizar carga de CPU utilizando comunicação SSE (Server-Sent Events).",
     "category": "Telegram",
     "status": "todo",
@@ -56405,6 +56395,7 @@
     "difficulty": "easy",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.600361",
+    "completed_at": nu,
     "completed_at": null
   },
   {
@@ -65847,8 +65838,7 @@
   },
   {
     "id": "IMP-05987",
-    "title": "IMP-05987: Melhorar a segurança de Docker Orchestration",
-    "description": "Melhorar a segurança de o módulo Docker Orchestration para otimizar integridade do grafo utilizando locks de leitura compartilhados.",
+    "title": "IMP-05987: Melhorar a segurança de Docker Orchestrati"Melhorar a segurança d"Melhorar a segurança de o módulo Docker Orchestration para otimizar integridade do grafo utilizando locks de leitura compartilhados.",
     "category": "RAG",
     "status": "todo",
     "difficulty": "hard",
@@ -66062,8 +66052,7 @@
     "status": "todo",
     "difficulty": "hard",
     "impact": "low",
-    "created_at": "2026-06-27T11:42:10.602251",
-    "completed_at": null
+    "created_at": "2026-06-2"completed_at": null
   },
   {
     "id": "IMP-06007",
@@ -67795,7 +67784,7 @@
   {
     "id": "IMP-06164",
     "title": "IMP-06164: Otimizar Health Monitor",
-    "description": "Otimizar o módulo Health Monitor para otimizar carga de CPU utilizando estruturação de JSON com Pydantic.",
+    "description": "Otimizar o módulo Heal"Otimizar o módulo Health Monitor para otimizar carga de CPU utilizando estruturação de JSON com Pydantic.",
     "category": "Segurança",
     "status": "todo",
     "difficulty": "easy",
@@ -68652,8 +68641,7 @@
   },
   {
     "id": "IMP-06242",
-    "title": "IMP-06242: Aumentar a observabilidade de Lineage Auditor",
-    "description": "Aumentar a observabilidade de o módulo Lineage Auditor para otimizar durabilidade do cache utilizando circuit breaking com fallback.",
+    "title": "IMP-06242: Aumentar a observabilidade de Lineage Audit"Aumentar a observabilidade de o módulo Lineage Auditor para otimizar durabilidade do cache utilizando circuit breaking com fallback.",
     "category": "UI/UX",
     "status": "todo",
     "difficulty": "medium",
@@ -84536,7 +84524,7 @@
   },
   {
     "id": "IMP-07686",
-    "title": "IMP-07686: Modularizar Vector Cache",
+    "title": "IMP-07686: Modularizar "IMP-07686: Modularizar Vector Cache",
     "description": "Modularizar o módulo Vector Cache para otimizar latência de resposta utilizando caching LRU em memória.",
     "category": "Telegram",
     "status": "todo",
@@ -84745,8 +84733,7 @@
   },
   {
     "id": "IMP-07705",
-    "title": "IMP-07705: Auditar Authentication Gate",
-    "description": "Auditar o módulo Authentication Gate para otimizar experiência do usuário (UX) utilizando locks de leitura compartilhados.",
+    "title": "IMP-07705: Auditar Authentication Ga"Auditar o módulo Authe"Auditar o módulo Authentication Gate para otimizar experiência do usuário (UX) utilizando locks de leitura compartilhados.",
     "category": "RAG",
     "status": "todo",
     "difficulty": "hard",
@@ -87104,8 +87091,7 @@
     "category": "Performance",
     "status": "todo",
     "difficulty": "hard",
-    "impact": "low",
-    "created_at": "2026-06-27T11:42:10.606639",
+ "created_at": "2026-06-27T11:42:10.606639",
     "completed_at": null
   },
   {
@@ -87969,7 +87955,7 @@
   {
     "id": "IMP-07998",
     "title": "IMP-07998: Melhorar a segurança de Sanitizer Pipeline",
-    "description": "Melhorar a segurança de o módulo Sanitizer Pipeline para otimizar latência de resposta utilizando logs estruturados JSON.",
+    "description": "Melhorar a segurança d"Melhorar a segurança de o módulo Sanitizer Pipeline para otimizar latência de resposta utilizando logs estruturados JSON.",
     "category": "RAG",
     "status": "todo",
     "difficulty": "medium",
@@ -105196,8 +105182,8 @@
     "id": "IMP-09564",
     "title": "IMP-09564: Melhorar a segurança de Vector Cache",
     "description": "Melhorar a segurança de o módulo Vector Cache para otimizar experiência do usuário (UX) utilizando estruturação de JSON com Pydantic.",
-    "category": "UI/UX",
-    "status": "todo",
+    "category: "todo",
+    "difficult: "todo",
     "difficulty": "easy",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.610367",
@@ -105414,8 +105400,7 @@
   },
   {
     "id": "IMP-09584",
-    "title": "IMP-09584: Implementar melhorias em Lineage Auditor",
-    "description": "Implementar melhorias em o módulo Lineage Auditor para otimizar velocidade de renderização utilizando processamento paralelo com ThreadPool.",
+    "title": "IMP-09584: Implementar melhorias em Lineage Audit"Implementar melhorias em o módulo Lineage Auditor para otimizar velocidade de renderização utilizando processamento paralelo com ThreadPool.",
     "category": "Arquitetura",
     "status": "todo",
     "difficulty": "easy",
@@ -106485,6 +106470,7 @@
     "description": "Auditar o módulo D3.js Graph para otimizar acurácia semântica utilizando indexação vetorial por similaridade de cosseno.",
     "category": "Segurança",
     "status": "todo",
+    "difficulty""todo",
     "difficulty": "hard",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.610616",
@@ -106701,8 +106687,7 @@
   },
   {
     "id": "IMP-09701",
-    "title": "IMP-09701: Adicionar testes unitários para RAGAgent",
-    "description": "Adicionar testes unitários para o módulo RAGAgent para otimizar integridade do grafo utilizando logs estruturados JSON.",
+    "title": "IMP-09701: Adicionar testes unitários para RAGAge"Adicionar testes unitários para o módulo RAGAgent para otimizar integridade do grafo utilizando logs estruturados JSON.",
     "category": "Segurança",
     "status": "todo",
     "difficulty": "hard",
@@ -110698,7 +110683,7 @@
   },
   {
     "id": "IMP-10042",
-    "title": "IMP-10042: Falta uma opção robusta de salvar o estado visual do grafo e",
+    "title": "IMP-10042: Falta uma op"IMP-10042: Falta uma opção robusta de salvar o estado visual do grafo e",
     "description": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
     "details": "Gerado via feedback de Felipe Flóse (Product Owner)",
     "motivation_justification": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
