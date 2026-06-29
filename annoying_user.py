@@ -151,10 +151,7 @@ def main():
     from dotenv import load_dotenv
     load_dotenv(os.path.join(APP_DIR, '.env'))
 
-    # Escolhe entre 1 e 3 usuários aleatórios para agir nesta rodada
-    num_users = random.randint(1, 3)
-    selected_personas = random.sample(USER_PERSONAS, num_users)
-    
+    # Para simular uma escalabilidade real de alta demanda, todas as 5 personas vão gerar reclamações múltiplas (30 chamados no total!)
     new_feedbacks = []
 
     # Carrega feedbacks existentes
@@ -166,38 +163,34 @@ def main():
         except Exception:
             pass
 
-    for persona in selected_personas:
-        # Associa cada persona ao seu tipo ideal de teste de auditoria
-        if "Designer" in persona["role"]:
-            audit_type = "INTERFACE_GRAPH"
-            audit_result = "Física de posicionamento de nós do D3.js sem localStorage e contraste visual cansativo no tema escuro."
-        elif "Backend" in persona["role"]:
-            # Tenta ler log de erros, se não houver simula latência
-            audit_type = "LOGS_AND_PERFORMANCE"
-            audit_result = audit_logs() or audit_api_performance() or "Servidor com latência de resposta variável sob concorrência SSE."
-        elif "RAG" in persona["role"]:
-            audit_type = "INTEGRIDADE_CONHECIMENTO"
-            audit_result = audit_graph_integrity() or "Notas órfãs detectadas no vault sem arestas correspondentes."
-        else:
-            # PO ou Mobile QA usam heurística geral de usabilidade e features
-            audit_type = "FEATURES_PRODUTO"
-            audit_result = random.choice([
-                "Telegram bot com latência alta sem fila persistente SQLite.",
-                "Dashboard sem visualização estruturada dos logs de auditoria do Cliente Oculto.",
-                "Falta de controle de rate limit de API Key nos endpoints administrativos."
-            ])
+    # Cada uma das 5 personas gera de 4 a 6 reclamações paralelas para totalizar ~30 chamados no total!
+    for persona in USER_PERSONAS:
+        num_complaints = random.randint(4, 6)
+        for c_idx in range(num_complaints):
+            if "Designer" in persona["role"]:
+                audit_type = "INTERFACE_GRAPH"
+                audit_result = f"Física de posicionamento de nós do D3.js sem localStorage e contraste visual cansativo no tema escuro. Falha número {c_idx}."
+            elif "Backend" in persona["role"]:
+                audit_type = "LOGS_AND_PERFORMANCE"
+                audit_result = f"Servidor com latência de resposta variável sob concorrência SSE. Ocorrência de latência número {c_idx}."
+            elif "RAG" in persona["role"]:
+                audit_type = "INTEGRIDADE_CONHECIMENTO"
+                audit_result = f"Notas órfãs detectadas no vault sem arestas correspondentes. Inconsistência de RAG número {c_idx}."
+            else:
+                audit_type = "FEATURES_PRODUTO"
+                audit_result = f"Falta de controle de rate limit de API Key nos endpoints administrativos. Bug report número {c_idx}."
 
-        complaint = call_llm_for_complaint(persona, audit_type, audit_result)
-        logging.info(f"Usuário [{persona['name']}] reclamou: '{complaint}'")
+            complaint = call_llm_for_complaint(persona, audit_type, audit_result)
+            logging.info(f"Usuário [{persona['name']}] cadastrou chamado {c_idx}: '{complaint}'")
 
-        new_feedbacks.append({
-            "timestamp": datetime.now().isoformat(),
-            "user": persona["name"],
-            "avatar": persona["emoji"],
-            "role": persona["role"],
-            "complaint": complaint,
-            "status": "pending"
-        })
+            new_feedbacks.append({
+                "timestamp": datetime.now().isoformat(),
+                "user": persona["name"],
+                "avatar": persona["emoji"],
+                "role": persona["role"],
+                "complaint": complaint,
+                "status": "pending"
+            })
 
     # Consolida e salva
     feedbacks.extend(new_feedbacks)

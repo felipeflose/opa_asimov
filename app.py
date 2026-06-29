@@ -894,11 +894,75 @@ def api_office():
     if _update_proc and _update_proc.poll() is None:
         dev_status = "WORKING"
 
+    # Carrega contagem de devs da configuração
+    dev_count = 1
+    config_file = os.path.join(os.path.dirname(__file__), 'factory_config.json')
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+                dev_count = config.get("dev_count", 1)
+        except Exception:
+            pass
+
     return jsonify({
         "feedbacks": feedbacks[-20:],
         "mystery_logs": mystery_logs[-15:],
-        "dev_status": dev_status
+        "dev_status": dev_status,
+        "dev_count": dev_count
     })
+
+
+@app.route('/api/office/hire', methods=['POST'])
+def api_office_hire():
+    config_file = os.path.join(os.path.dirname(__file__), 'factory_config.json')
+    dev_count = 1
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+            dev_count = config.get("dev_count", 1)
+        except Exception:
+            config = {}
+    else:
+        config = {}
+    
+    dev_count = min(dev_count + 1, 10)
+    config["dev_count"] = dev_count
+    
+    try:
+        with open(config_file, 'w') as f:
+            json.dump(config, f, indent=2)
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)}), 500
+        
+    return jsonify({"status": "ok", "dev_count": dev_count})
+
+
+@app.route('/api/office/fire', methods=['POST'])
+def api_office_fire():
+    config_file = os.path.join(os.path.dirname(__file__), 'factory_config.json')
+    dev_count = 1
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+            dev_count = config.get("dev_count", 1)
+        except Exception:
+            config = {}
+    else:
+        config = {}
+    
+    dev_count = max(dev_count - 1, 1)
+    config["dev_count"] = dev_count
+    
+    try:
+        with open(config_file, 'w') as f:
+            json.dump(config, f, indent=2)
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)}), 500
+        
+    return jsonify({"status": "ok", "dev_count": dev_count})
 
 
 # ── Posições do Grafo ──────────────────────────────────────

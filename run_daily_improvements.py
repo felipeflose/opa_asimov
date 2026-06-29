@@ -46,17 +46,40 @@ def main():
         subprocess.run(["git", "pull", "origin", "main"], cwd=APP_DIR)
         subprocess.run(["git", "clean", "-fd", "-e", "improvement_backlog.json", "-e", "obsidian_graph.json", "-e", "health_state.json"], cwd=APP_DIR)
 
-        # 3. Executa cada melhoria sequencialmente
+        # Carrega configuração de devs para escalabilidade paralela
+        import json
+        dev_count = 1
+        config_path = os.path.join(APP_DIR, 'factory_config.json')
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+                    dev_count = config.get("dev_count", 1)
+            except:
+                pass
+
+        # Seleciona candidatos proporcionalmente aos Devs (3 tarefas por dev)
+        max_candidates = dev_count * 3
+        candidates = [c for c in candidates if c["status"] != "done"][:max_candidates]
+        
+        if not candidates:
+            logging.info("Nenhuma melhoria pendente no backlog.")
+            return
+
+        # 3. Executa as melhorias em paralelo (simulando múltiplos devs)
+        import threading
         applied_items = []
-        for item in candidates:
+        threads = []
+
+        def run_improvement_task(item):
             item_id = item["id"]
-            logging.info(f"Aplicando melhoria: {item_id}")
+            logging.info(f"Dev concorrente aplicando melhoria: {item_id}")
             move_url = f"http://localhost:{flask_port}/api/improvements/move"
             
             # Move para 'in_progress'
             requests.post(move_url, headers=headers, json={"id": item_id, "status": "in_progress"}, timeout=10)
             
-            # Simula tempo de execução da melhoria (10 segundos)
+            # Simula tempo de execução
             time.sleep(10)
             
             # Move para 'done'
@@ -70,6 +93,14 @@ def main():
                 lf.write(f"   _{item['description']}_\n")
             
             applied_items.append(item)
+
+        for item in candidates:
+            t = threading.Thread(target=run_improvement_task, args=(item,))
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
 
         # 4. Roda suite de testes
         logging.info("Executando a suite de testes automatizados...")

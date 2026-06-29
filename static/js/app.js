@@ -2016,6 +2016,58 @@ async function applyDailyImprovements(btn) {
 
 let isOfficeAnimating = false;
 
+function renderDevs(count, devStatus) {
+    const container = document.getElementById('dev-avatars-container');
+    if (!container) return;
+    
+    let html = '';
+    const baseBottom = 50;
+    const width = 42;
+    const spacing = 38;
+    
+    const devEmojis = ['👨‍💻', '👩‍💻', '💻', '🖥️', '⌨️', '⚙️', '🛠️', '🔌', '💾', '💿'];
+    
+    for (let i = 0; i < count; i++) {
+        const leftVal = `calc(50% - ${(count - 1) * (spacing / 2)}px + ${i * spacing}px)`;
+        const emoji = devEmojis[i % devEmojis.length];
+        const name = `Dev-${i + 1}`;
+        const isLead = i === 0;
+        
+        html += `
+            <div class="avatar dev-avatar" id="avatar-dev-${i}" style="position: absolute; bottom: ${baseBottom}px; left: ${leftVal}; width: ${width}px; height: ${width}px; border-radius: 50%; background: #06b6d4; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 10px rgba(6,182,212,0.35); border: 2px solid white; cursor: pointer;" data-tooltip="${name} ${isLead ? '(Lead)' : ''}">
+                ${emoji}
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+}
+
+async function hireDev() {
+    try {
+        const r = await fetch('/api/office/hire', { method: 'POST' });
+        const res = await r.json();
+        if (res.status === 'ok') {
+            loadOfficeData();
+            showToast(`Novo Dev Contratado! Equipe expandida para ${res.dev_count}.`, 'success');
+        }
+    } catch(e) {
+        console.error("Erro ao contratar dev:", e);
+    }
+}
+
+async function fireDev() {
+    try {
+        const r = await fetch('/api/office/fire', { method: 'POST' });
+        const res = await r.json();
+        if (res.status === 'ok') {
+            loadOfficeData();
+            showToast(`Dev demitido. Equipe reduzida para ${res.dev_count}.`, 'info');
+        }
+    } catch(e) {
+        console.error("Erro ao demitir dev:", e);
+    }
+}
+
 async function loadOfficeData() {
     try {
         const r = await fetch('/api/office');
@@ -2024,10 +2076,15 @@ async function loadOfficeData() {
         // 1. Atualiza status do Dev
         const devStatusTag = document.getElementById('dev-work-status');
         const devConsoleText = document.getElementById('dev-console-text');
+        
+        // Atualiza contagem de devs contratados no painel
+        const devCountVal = data.dev_count || 1;
+        document.getElementById('dev-hired-count').innerText = devCountVal;
+        
         if (data.dev_status === 'WORKING') {
             devStatusTag.className = 'bot-status-tag status-online';
-            devStatusTag.innerHTML = '<div class="status-dot"></div> CODANDO MELHORIAS';
-            devConsoleText.innerHTML = '> Analisando 3 melhorias...\n> Rodando pytest unit tests...\n> Executando git commit & push...';
+            devStatusTag.innerHTML = `<div class="status-dot"></div> CODANDO (${devCountVal} DEVS)`;
+            devConsoleText.innerHTML = `> Analisando ${devCountVal * 3} melhorias em paralelo...\n> Rodando pytest unit tests...\n> Executando git commit & push...`;
             devStatusTag.style.background = 'rgba(6,182,212,0.1)';
             devStatusTag.style.color = 'var(--cyan)';
         } else {
@@ -2035,8 +2092,11 @@ async function loadOfficeData() {
             devStatusTag.innerHTML = '<div class="status-dot" style="background:#64748b;"></div> OCIOSO';
             devStatusTag.style.background = 'rgba(100,116,139,0.1)';
             devStatusTag.style.color = '#64748b';
-            devConsoleText.innerHTML = '> Monitorando backlog...\n> Próximo ciclo diário agendado para amanhã às 10:00.';
+            devConsoleText.innerHTML = `> Monitorando backlog...\n> ${devCountVal} Devs contratados aguardando novas reclamações.`;
         }
+        
+        // Renderiza visualmente os desenvolvedores na estação
+        renderDevs(devCountVal, data.dev_status);
         
         // 2. Renderiza logs do Cliente Oculto
         const mysteryContainer = document.getElementById('mystery-logs-container');
@@ -2111,22 +2171,16 @@ function triggerOfficeAnimation(latestFeedback, devStatus) {
     
     const user = document.getElementById('avatar-user');
     const pm = document.getElementById('avatar-pm');
-    const dev = document.getElementById('avatar-dev');
+    const dev0 = document.getElementById('avatar-dev-0'); // O Dev Líder representa a entrega
     
-    if (!user || !pm || !dev) return;
-
-    // Atualiza dinamicamente a identidade visual do avatar com base no usuário que reclamou
-    user.innerHTML = latestFeedback.avatar || '🤬';
-    user.setAttribute('data-tooltip', `${latestFeedback.user || 'Usuário Chato'} (${latestFeedback.role || 'Testador'})`);
-    user.style.background = latestFeedback.avatar === '👩‍🎨' ? '#ec4899' :
-                            latestFeedback.avatar === '👨‍🔬' ? '#3b82f6' :
-                            latestFeedback.avatar === '👩‍🎓' ? '#10b981' :
-                            latestFeedback.avatar === '👨‍📱' ? '#f59e0b' : '#ef4444';
+    if (!user || !pm) {
+        isOfficeAnimating = false;
+        return;
+    }
 
     // Reset de posições padrão
     user.style.top = "60px"; user.style.left = "105px";
     pm.style.top = "60px"; pm.style.right = "105px";
-    dev.style.bottom = "60px"; dev.style.left = "50%";
     
     // Início da sequência
     setTimeout(() => {
@@ -2148,26 +2202,33 @@ function triggerOfficeAnimation(latestFeedback, devStatus) {
                 setTimeout(() => {
                     if (latestFeedback.status === 'accepted') {
                         // 4. PM manda para o Dev codificar
-                        showBubble('bubble-pm', "📋 \"Dev, ajusta isso aqui por favor!\"", 2500);
+                        showBubble('bubble-pm', "📋 \"Devs, ajustem isso aqui em paralelo!\"", 2500);
                         
                         setTimeout(() => {
-                            // 5. Dev codifica na mesa dele
-                            showBubble('bubble-dev', "👨‍💻 \"Entendido! Codando melhoria...\"", 3000);
+                            // 5. Devs codificam na mesa
+                            showBubble('bubble-dev', "👨‍💻 \"Equipe no caso! Codando melhorias...\"", 3000);
                             
                             setTimeout(() => {
-                                // 6. Dev vai até a sala do TI entregar e mostrar o commit
-                                dev.style.bottom = "180px"; dev.style.left = "130px";
-                                showBubble('bubble-dev', "👨‍💻 \"Prontinho, comitado direto na main!\"", 3500);
+                                // 6. Dev Líder vai até a sala do TI entregar e mostrar o commit
+                                if (dev0) {
+                                    dev0.style.bottom = "180px"; dev0.style.left = "130px";
+                                }
+                                showBubble('bubble-dev', "👨‍💻 \"Prontinho, integrado direto na main!\"", 3500);
                                 
                                 setTimeout(() => {
                                     // 7. Usuário aprova
-                                    showBubble('bubble-user', "🤬 \"Agora sim ficou bom! Obrigado!\"", 3000);
+                                    showBubble('bubble-user', "🤬 \"Excelente trabalho de equipe! Aprovado!\"", 3000);
                                     
                                     setTimeout(() => {
                                         // Retorna geral para idle
                                         user.style.left = "105px";
                                         pm.style.right = "105px";
-                                        dev.style.bottom = "60px"; dev.style.left = "50%";
+                                        if (dev0) {
+                                            const count = document.querySelectorAll('.dev-avatar').length;
+                                            const spacing = 38;
+                                            const leftVal = `calc(50% - ${(count - 1) * (spacing / 2)}px)`;
+                                            dev0.style.bottom = "50px"; dev0.style.left = leftVal;
+                                        }
                                         isOfficeAnimating = false;
                                     }, 2000);
                                 }, 3500);

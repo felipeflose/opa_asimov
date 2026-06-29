@@ -511,6 +511,37 @@
                 <div class="bot-status-tag status-online"><div class="status-dot"></div> MULTI-AGENT COLLABORATION ACTIVE</div>
             </header>
 
+            <!-- MAPA DO ESCRITÓRIO SIMULADO -->
+            <div class="office-map" style="position: relative; width: 100%; height: 350px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 25px;">
+                <!-- Divisórias de Salas -->
+                <div class="office-room" id="room-it" style="position: absolute; top: 20px; left: 20px; width: 220px; height: 130px; border: 2px dashed rgba(239, 68, 68, 0.3); border-radius: 12px; background: rgba(239, 68, 68, 0.02); padding: 10px; box-sizing: border-box;">
+                    <span style="font-weight: 700; color: rgb(239, 68, 68); font-size: 0.7rem; display: block; border-bottom: 1px solid rgba(239,68,68,0.1); padding-bottom: 5px; letter-spacing: 0.5px;">🏢 SUPORTE TI (USER)</span>
+                </div>
+                
+                <div class="office-room" id="room-pm" style="position: absolute; top: 20px; right: 20px; width: 220px; height: 130px; border: 2px dashed rgba(168, 85, 247, 0.3); border-radius: 12px; background: rgba(168, 85, 247, 0.02); padding: 10px; box-sizing: border-box;">
+                    <span style="font-weight: 700; color: rgb(168, 85, 247); font-size: 0.7rem; display: block; border-bottom: 1px solid rgba(168,85,247,0.1); padding-bottom: 5px; letter-spacing: 0.5px;">📋 TRIAGEM & BACKLOG (PM)</span>
+                </div>
+                
+                <div class="office-room" id="room-dev" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 340px; height: 130px; border: 2px dashed rgba(6, 182, 212, 0.3); border-radius: 12px; background: rgba(6, 182, 212, 0.02); padding: 10px; box-sizing: border-box;">
+                    <span style="font-weight: 700; color: var(--cyan); font-size: 0.7rem; display: block; border-bottom: 1px solid rgba(6,182,212,0.1); padding-bottom: 5px; letter-spacing: 0.5px;">👨‍💻 DEV STATION (SCALABLE TEAM)</span>
+                </div>
+
+                <!-- Avatares de Personagens -->
+                <div class="avatar" id="avatar-user" style="position: absolute; top: 60px; left: 105px; width: 45px; height: 45px; border-radius: 50%; background: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(239,68,68,0.4); border: 2px solid white; cursor: pointer;">🤬</div>
+                
+                <div class="avatar" id="avatar-pm" style="position: absolute; top: 60px; right: 105px; width: 45px; height: 45px; border-radius: 50%; background: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(168,85,247,0.4); border: 2px solid white; cursor: pointer;">📋</div>
+                
+                <!-- Container para Devs Dinâmicos -->
+                <div id="dev-avatars-container"></div>
+
+                <!-- Speech Bubbles (Balões de Diálogo) -->
+                <div class="speech-bubble" id="bubble-user" style="position: absolute; background: white; color: #0f172a; padding: 6px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 700; max-width: 170px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; top: 20px; left: 80px; z-index: 20;"></div>
+                
+                <div class="speech-bubble" id="bubble-pm" style="position: absolute; background: white; color: #0f172a; padding: 6px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 700; max-width: 170px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; top: 20px; right: 80px; z-index: 20;"></div>
+                
+                <div class="speech-bubble" id="bubble-dev" style="position: absolute; background: white; color: #0f172a; padding: 6px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 700; max-width: 180px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; bottom: 85px; left: 50%; transform: translateX(-50%); z-index: 20;"></div>
+            </div>
+
             <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 25px;">
                 
                 <!-- PERSONA: O DESENVOLVEDOR (DEV) -->
@@ -528,9 +559,16 @@
                             > Próximo ciclo diário agendado para amanhã às 10:00.
                         </div>
                     </div>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 15px;">
-                        Função: Consumir 3 melhorias por dia, codificar, validar via pytest e realizar push.
-                    </p>
+                    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Devs Contratados:</span>
+                            <span id="dev-hired-count" style="font-size: 0.95rem; font-weight: 700; color: white; margin-left: 5px;">1</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" onclick="hireDev()" style="padding: 5px 10px; font-size: 0.7rem; background: rgba(6,182,212,0.15); color: var(--cyan); border-color: rgba(6,182,212,0.25);">➕ Contratar</button>
+                            <button class="btn" onclick="fireDev()" style="padding: 5px 10px; font-size: 0.7rem; background: rgba(239,68,68,0.1); color: var(--red); border-color: rgba(239,68,68,0.15);">➖ Demitir</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- PERSONA: O PRODUCT MANAGER (PM) -->
