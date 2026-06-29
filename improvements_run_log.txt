@@ -411,3 +411,9 @@
    _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
 [2026-06-29 17:51:44] [AUTO-IMPROVEMENT] Aplicada: TECH-013 - Adicionar tooltip nos nós do grafo mostrando data de criação
    _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
+[2026-06-29 17:52:37] [AUTO-IMPROVEMENT] Aplicada: TECH-002 - Adicionar cache de respostas Groq/LLM com TTL de 5 min
+   _Evitar chamadas duplicadas ao LLM para a mesma pergunta dentro de 5 minutos._
+[2026-06-29 17:52:41] [AUTO-IMPROVEMENT] Aplicada: TECH-005 - Melhorar contraste de texto no tema escuro do dashboard
+   _Aumentar ratio de contraste para WCAG AA em todos os textos de status e labels._
+[2026-06-29 17:52:42] [AUTO-IMPROVEMENT] Aplicada: TECH-004 - Adicionar paginação ao endpoint /api/improvements
+   _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
