@@ -65,9 +65,9 @@ def main():
         # Cria a branch limpa a partir da origin/main remota para evitar commits locais com segredos
         logging.info(f"Atualizando repositório e criando branch Git: {branch_name}")
         subprocess.run(["git", "reset", "--hard", "HEAD"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["git", "clean", "-fd"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "clean", "-fd", "-e", "improvement_backlog.json", "-e", "obsidian_graph.json", "-e", "health_state.json"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["git", "checkout", "-b", branch_name, "origin/main"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "checkout", "-f", "-b", branch_name, "origin/main"], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
         # Traz todo o código atualizado da main local como alterações (sem carregar o histórico de segredos antigos)
         subprocess.run(["git", "checkout", "main", "--", "."], cwd=APP_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

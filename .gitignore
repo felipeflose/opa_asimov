@@ -14,4 +14,7 @@ scratch/
 .antigravitycli/
 backups/
 metrics_history.json
+improvement_backlog.json
+pending_approval.json
+health_state.json
 
