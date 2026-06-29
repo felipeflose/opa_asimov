@@ -141,3 +141,9 @@
    _Garantir resiliência em o módulo RAGAgent para otimizar experiência do usuário (UX) utilizando comunicação SSE (Server-Sent Events)._
 [2026-06-29 17:21:44] [AUTO-IMPROVEMENT] Aplicada: IMP-00037 - IMP-00037: Otimizar Telegram Bot
    _Otimizar o módulo Telegram Bot para otimizar tempo de build Docker utilizando locks de leitura compartilhados._
+[2026-06-29 17:22:37] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:22:42] [AUTO-IMPROVEMENT] Aplicada: TECH-020 - Adicionar graceful shutdown ao servidor Flask
+   _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
+[2026-06-29 17:22:44] [AUTO-IMPROVEMENT] Aplicada: TECH-011 - Adicionar log estruturado em JSON para requests do Flask
+   _Substituir o logger padrão por structured JSON logging para facilitar análise futura._
