@@ -75,6 +75,9 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
     # Simula tempo de codificação
     time.sleep(random.randint(5, 12))
 
+    # Transiciona para 'Em análise' no Jira (Raia do QA)
+    jira.transition_issue(item_id, "Em análise")
+
     # Registra no log de execução localmente (altera o arquivo físico da branch)
     log_path = os.path.join(APP_DIR, 'improvements_run_log.txt')
     with open(log_path, 'a', encoding='utf-8') as lf:
