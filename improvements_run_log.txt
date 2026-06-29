@@ -219,3 +219,9 @@
    _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
 [2026-06-29 17:27:40] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
    _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
+[2026-06-29 17:27:50] [AUTO-IMPROVEMENT] Aplicada: TECH-002 - Adicionar cache de respostas Groq/LLM com TTL de 5 min
+   _Evitar chamadas duplicadas ao LLM para a mesma pergunta dentro de 5 minutos._
+[2026-06-29 17:27:52] [AUTO-IMPROVEMENT] Aplicada: TECH-004 - Adicionar paginação ao endpoint /api/improvements
+   _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
+[2026-06-29 17:27:57] [AUTO-IMPROVEMENT] Aplicada: IMP-10001 - IMP-10001: Refatorar e limpar notas órfãs no Vault RAG
+   _Implementar um processo de limpeza e validação para remover notas órfãs (sem arestas/referências) do repositório de conhecimento do sistema Vault, garantindo a integridade estrutural dos dados para o RAG._
