@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-06-29T16:48:30.449137",
+    "timestamp": "2026-06-29T16:51:30.564745",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -8,7 +8,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:49:00.527451",
+    "timestamp": "2026-06-29T16:52:00.627774",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -16,7 +16,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:49:30.589508",
+    "timestamp": "2026-06-29T16:52:30.694857",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -24,7 +24,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:50:00.665265",
+    "timestamp": "2026-06-29T16:53:00.776876",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -32,23 +32,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:50:30.732253",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T16:51:00.807221",
-    "user": "Ana Silva",
-    "avatar": "👩‍🎨",
-    "role": "UI/UX Designer",
-    "complaint": "O zoom no grafo tá meio travado e as cores neon da tela tão me dando dor de cabeça!",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T16:51:30.879423",
+    "timestamp": "2026-06-29T16:53:30.846884",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -56,7 +40,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:52:00.951979",
+    "timestamp": "2026-06-29T16:54:00.925809",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -64,7 +48,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:52:31.028942",
+    "timestamp": "2026-06-29T16:54:31.111325",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -72,7 +56,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:53:01.103106",
+    "timestamp": "2026-06-29T16:55:01.322790",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -80,7 +64,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:53:31.186030",
+    "timestamp": "2026-06-29T16:55:31.401603",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -88,7 +72,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:54:01.253430",
+    "timestamp": "2026-06-29T16:56:01.468785",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -96,7 +80,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:54:31.326207",
+    "timestamp": "2026-06-29T16:56:31.533897",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -104,7 +88,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:55:01.390410",
+    "timestamp": "2026-06-29T16:57:01.616110",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -112,7 +96,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:55:31.464081",
+    "timestamp": "2026-06-29T16:57:31.681378",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -120,7 +104,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:56:01.546757",
+    "timestamp": "2026-06-29T16:58:01.755338",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -128,7 +112,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:56:32.619611",
+    "timestamp": "2026-06-29T16:58:31.830591",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -136,7 +120,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:57:02.693078",
+    "timestamp": "2026-06-29T16:59:02.067010",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -144,7 +128,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:57:32.793075",
+    "timestamp": "2026-06-29T16:59:32.149549",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -152,7 +136,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:58:02.871047",
+    "timestamp": "2026-06-29T17:00:02.347351",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
@@ -160,7 +144,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:58:32.942905",
+    "timestamp": "2026-06-29T17:00:32.441527",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
@@ -168,7 +152,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:59:03.006765",
+    "timestamp": "2026-06-29T17:01:02.503102",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
@@ -176,7 +160,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T16:59:33.084839",
+    "timestamp": "2026-06-29T17:01:32.590437",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
@@ -184,7 +168,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:01:31.222545",
+    "timestamp": "2026-06-29T17:02:31.286766",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -192,7 +176,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:02:01.321897",
+    "timestamp": "2026-06-29T17:03:01.408388",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -200,7 +184,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:02:31.404679",
+    "timestamp": "2026-06-29T17:03:31.491533",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -208,7 +192,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:03:01.489231",
+    "timestamp": "2026-06-29T17:04:01.565326",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -216,7 +200,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:03:31.581705",
+    "timestamp": "2026-06-29T17:04:31.645382",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -224,7 +208,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:04:02.673516",
+    "timestamp": "2026-06-29T17:05:01.730696",
     "user": "Ana Silva",
     "avatar": "👩‍🎨",
     "role": "UI/UX Designer",
@@ -232,7 +216,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:04:32.743792",
+    "timestamp": "2026-06-29T17:05:31.814534",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -240,7 +224,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:05:03.824267",
+    "timestamp": "2026-06-29T17:06:01.882505",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -248,7 +232,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:05:33.905315",
+    "timestamp": "2026-06-29T17:06:31.967889",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -256,7 +240,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:06:03.975824",
+    "timestamp": "2026-06-29T17:07:02.033651",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -264,7 +248,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:06:34.054714",
+    "timestamp": "2026-06-29T17:07:32.100704",
     "user": "Carlos Souza",
     "avatar": "👨‍🔬",
     "role": "Backend Engineer",
@@ -272,15 +256,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:07:04.135163",
-    "user": "Carlos Souza",
-    "avatar": "👨‍🔬",
-    "role": "Backend Engineer",
-    "complaint": "A rota do grafo demorou muito pra responder, deve estar tendo gargalo de concorrência ou I/O.",
-    "status": "pending"
-  },
-  {
-    "timestamp": "2026-06-29T17:07:34.196409",
+    "timestamp": "2026-06-29T17:08:02.180460",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -288,7 +264,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:08:06.268172",
+    "timestamp": "2026-06-29T17:08:32.254984",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -296,7 +272,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:08:36.344063",
+    "timestamp": "2026-06-29T17:09:02.349717",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -304,7 +280,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:09:06.421139",
+    "timestamp": "2026-06-29T17:09:32.422262",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -312,7 +288,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:09:36.489069",
+    "timestamp": "2026-06-29T17:10:02.498917",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -320,7 +296,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:10:06.569676",
+    "timestamp": "2026-06-29T17:10:32.604665",
     "user": "Mariana Costa",
     "avatar": "👩‍🎓",
     "role": "Especialista em RAG",
@@ -328,7 +304,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:10:36.677618",
+    "timestamp": "2026-06-29T17:11:02.667730",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -336,7 +312,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:11:06.741088",
+    "timestamp": "2026-06-29T17:11:32.744489",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -344,7 +320,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:11:36.812393",
+    "timestamp": "2026-06-29T17:12:02.808509",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -352,7 +328,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:12:06.869433",
+    "timestamp": "2026-06-29T17:12:32.878392",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -360,7 +336,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:12:36.949991",
+    "timestamp": "2026-06-29T17:13:02.948167",
     "user": "Lucas Pereira",
     "avatar": "👨‍📱",
     "role": "Mobile QA Tester",
@@ -368,7 +344,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:13:07.093928",
+    "timestamp": "2026-06-29T17:13:33.018395",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
@@ -376,7 +352,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:13:37.166722",
+    "timestamp": "2026-06-29T17:14:03.092917",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
@@ -384,7 +360,7 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:14:07.243284",
+    "timestamp": "2026-06-29T17:14:33.163561",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",
@@ -392,7 +368,15 @@
     "status": "pending"
   },
   {
-    "timestamp": "2026-06-29T17:14:37.323296",
+    "timestamp": "2026-06-29T17:15:04.232522",
+    "user": "Felipe Flóse",
+    "avatar": "👨‍💼",
+    "role": "Product Owner",
+    "complaint": "Falta uma opção robusta de salvar o estado visual do grafo e monitorar melhor o status da fábrica.",
+    "status": "pending"
+  },
+  {
+    "timestamp": "2026-06-29T17:15:34.321973",
     "user": "Felipe Flóse",
     "avatar": "👨‍💼",
     "role": "Product Owner",

@@ -1,13 +1,13 @@
 {
   "ollama": "online",
   "components": {},
-  "last_check": "2026-06-29T17:14:46.081720",
+  "last_check": "2026-06-29T17:15:47.776966",
   "flask_process": {
     "cpu_percent": 0.0,
     "memory_rss_gb": 0.066,
     "memory_percent": 0.41,
-    "pid": 37970,
-    "timestamp": "2026-06-29T17:14:46.066552"
+    "pid": 38171,
+    "timestamp": "2026-06-29T17:15:47.761983"
   },
   "last_change": "2026-06-27T10:12:06.982869"
 }

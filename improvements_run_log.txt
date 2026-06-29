@@ -69,3 +69,9 @@
    _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
 [2026-06-29 17:14:45] [AUTO-IMPROVEMENT] Aplicada: TECH-011 - Adicionar log estruturado em JSON para requests do Flask
    _Substituir o logger padrão por structured JSON logging para facilitar análise futura._
+[2026-06-29 17:15:42] [AUTO-IMPROVEMENT] Aplicada: IMP-00028 - IMP-00028: Aumentar a observabilidade de Sanitizer Pipeline
+   _Aumentar a observabilidade de o módulo Sanitizer Pipeline para otimizar segurança de segredos utilizando estruturação de JSON com Pydantic._
+[2026-06-29 17:15:45] [AUTO-IMPROVEMENT] Aplicada: IMP-00027 - IMP-00027: Reduzir gargalos de Health Monitor
+   _Reduzir gargalos de o módulo Health Monitor para otimizar carga de CPU utilizando comunicação SSE (Server-Sent Events)._
+[2026-06-29 17:15:46] [AUTO-IMPROVEMENT] Aplicada: IMP-00026 - IMP-00026: Reduzir gargalos de Docling PDF Converter
+   _Reduzir gargalos de o módulo Docling PDF Converter para otimizar carga de CPU utilizando indexação vetorial por similaridade de cosseno._
