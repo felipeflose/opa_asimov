@@ -375,3 +375,9 @@
    _O D3.js está sendo carregado via CDN sem lock de versão — se a CDN mudar algo, o grafo para de funcionar em produção._
 [2026-06-29 17:45:38] [AUTO-IMPROVEMENT] Aplicada: IMP-10021 - IMP-10021: Não existe pipeline de dados estruturado; os scripts leem e 
    _Não existe pipeline de dados estruturado; os scripts leem e escrevem JSON direto sem validação de integridade._
+[2026-06-29 17:46:37] [AUTO-IMPROVEMENT] Aplicada: TECH-015 - Adicionar modo escuro automático baseado no horário do sistema
+   _Detectar horário local e aplicar tema escuro após 18h automaticamente._
+[2026-06-29 17:46:38] [AUTO-IMPROVEMENT] Aplicada: TECH-020 - Adicionar graceful shutdown ao servidor Flask
+   _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
+[2026-06-29 17:46:44] [AUTO-IMPROVEMENT] Aplicada: TECH-009 - Adicionar endpoint /api/health/db para verificar SQLite
+   _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
