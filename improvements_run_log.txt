@@ -621,3 +621,9 @@
 [2026-06-29 18:52:08] [AUTO-IMPROVEMENT] Aplicada: KAN-87 - Os embeddings não são atualizados quando uma nota é editada 
 
 [2026-06-29 18:52:12] [AUTO-IMPROVEMENT] Aplicada: KAN-93 - O sistema não detecta notas orfãs automaticamente — tenho de
+
+[2026-06-29 19:46:18] [AUTO-IMPROVEMENT] Aplicada: KAN-67 - A rota SSE /api/stream não tem timeout configurado; conexões
+
+[2026-06-29 19:46:52] [AUTO-IMPROVEMENT] Aplicada: KAN-68 - O servidor Flask roda sem HTTPS no modo desenvolvimento e ni
+
+[2026-06-29 19:46:56] [AUTO-IMPROVEMENT] Aplicada: KAN-21 - O sistema não tem SLOs definidos — não sabemos qual é o temp
