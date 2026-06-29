@@ -387,3 +387,9 @@
    _Não existe runbook para os incidentes mais comuns — cada vez que o SQLite trava, o time vai no trial-and-error._
 [2026-06-29 17:47:36] [AUTO-IMPROVEMENT] Aplicada: IMP-10024 - IMP-10024: O app.py tem mais de 1300 linhas — é impossível encontrar a 
    _O app.py tem mais de 1300 linhas — é impossível encontrar a rota certa sem fazer Ctrl+F. Isso precisa ser separado em blueprints._
+[2026-06-29 17:48:36] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
+   _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+[2026-06-29 17:48:37] [AUTO-IMPROVEMENT] Aplicada: TECH-016 - Minificar CSS e JS em produção
+   _Usar Flask-Assets ou similar para minificar static/css/style.css e app.js no build._
+[2026-06-29 17:48:45] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
+   _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._
