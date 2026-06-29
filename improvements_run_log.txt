@@ -213,3 +213,9 @@
    _Tratar reclamação: A física de zoom e o posicionamento dos nós estão completamente errados, e o contraste no tema escuro é insuportável. Isso é um desastre visual e totalmente inaceitável para uma ferramenta de design._
 [2026-06-29 17:27:00] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
    _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
+[2026-06-29 17:27:36] [AUTO-IMPROVEMENT] Aplicada: TECH-016 - Minificar CSS e JS em produção
+   _Usar Flask-Assets ou similar para minificar static/css/style.css e app.js no build._
+[2026-06-29 17:27:39] [AUTO-IMPROVEMENT] Aplicada: TECH-020 - Adicionar graceful shutdown ao servidor Flask
+   _Capturar SIGTERM e SIGINT para fechar conexões abertas antes de encerrar._
+[2026-06-29 17:27:40] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
+   _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
