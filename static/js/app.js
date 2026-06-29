@@ -2146,9 +2146,10 @@ async function loadOfficeData() {
             feedbackBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma reclamação ou feedback catalogado ainda.</td></tr>';
         }
 
-        // 4. Executa a Animação das Mesas/Avatares
+        // 4. Dispara animação completa do pipeline na mapa do escritório
         if (!isOfficeAnimating && data.feedbacks && data.feedbacks.length > 0) {
-            triggerOfficeAnimation(data.feedbacks[data.feedbacks.length - 1], data.dev_status);
+            const last = data.feedbacks[data.feedbacks.length - 1];
+            triggerOfficeAnimation(last);
         }
         
     } catch(e) {
@@ -2166,84 +2167,142 @@ function showBubble(id, text, timeout = 3000) {
     }, timeout);
 }
 
-function triggerOfficeAnimation(latestFeedback, devStatus) {
+function moveAvatar(id, props, delay = 0) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) Object.assign(el.style, props);
+            setTimeout(resolve, 1300); // Wait for CSS transition to finish
+        }, delay);
+    });
+}
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Full pipeline state machine:
+// User → PM → Dev → QA → (fail: QA→Dev loop) → (pass: QA→User approval) → done or back to backlog
+async function triggerOfficeAnimation(latestFeedback) {
+    if (isOfficeAnimating) return;
     isOfficeAnimating = true;
-    
+
+    const qa = document.getElementById('avatar-qa');
     const user = document.getElementById('avatar-user');
     const pm = document.getElementById('avatar-pm');
-    const dev0 = document.getElementById('avatar-dev-0'); // O Dev Líder representa a entrega
+
+    if (!user || !pm) { isOfficeAnimating = false; return; }
+
+    // ── RESET positions ────────────────────────────────────
+    const devCount = document.querySelectorAll('.dev-avatar').length || 1;
+    const devSpacing = 38;
+    const devLeadLeft = `calc(15% + ${(devCount - 1) * devSpacing / 2}px - ${(devCount - 1) * devSpacing / 2}px)`;
     
-    if (!user || !pm) {
+    user.style.cssText += '; top:60px; left:105px;';
+    pm.style.cssText += '; top:60px; right:105px;';
+    if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
+
+    const userEmoji = latestFeedback.avatar || '🤬';
+
+    // ── FASE 1: Usuário vai ao TI e registra a melhoria ────
+    await wait(400);
+    await moveAvatar('avatar-user', { left: '200px' });
+    showBubble('bubble-user', `${userEmoji} "${latestFeedback.complaint.substring(0, 40)}..."`, 3000);
+    await wait(3200);
+
+    if (latestFeedback.status !== 'accepted') {
+        // PM aparece e rejeita
+        await moveAvatar('avatar-pm', { right: 'calc(100% - 260px)', top: '60px' });
+        showBubble('bubble-pm', "📋 \"Duplicado ou fora do escopo, vou rejeitar!\"", 2800);
+        await wait(2800);
+        await moveAvatar('avatar-pm', { right: '105px' });
+        await moveAvatar('avatar-user', { left: '105px' });
+        showBubble('bubble-user', `${userEmoji} \"Entendido... 😤\"`, 2000);
+        await wait(2200);
         isOfficeAnimating = false;
         return;
     }
 
-    // Reset de posições padrão
-    user.style.top = "60px"; user.style.left = "105px";
-    pm.style.top = "60px"; pm.style.right = "105px";
-    
-    // Início da sequência
-    setTimeout(() => {
-        // 1. Usuário vai na sala do TI reclamar
-        user.style.left = "180px"; 
-        const userEmoji = latestFeedback.avatar || '🤬';
-        showBubble('bubble-user', `${userEmoji} "${latestFeedback.complaint.substring(0, 45)}..."`, 3000);
-        
-        setTimeout(() => {
-            // 2. PM vai até a sala do TI receber o chamado
-            pm.style.right = "calc(100% - 250px)";
-            showBubble('bubble-pm', "📋 \"Deixa eu ver... Vou cadastrar isso agora!\"", 2500);
-            
-            setTimeout(() => {
-                // 3. PM volta para sua mesa e processa
-                pm.style.right = "105px";
-                showBubble('bubble-pm', `📋 "Processando... Status: ${latestFeedback.status.toUpperCase()}"`, 2500);
-                
-                setTimeout(() => {
-                    if (latestFeedback.status === 'accepted') {
-                        // 4. PM manda para o Dev codificar
-                        showBubble('bubble-pm', "📋 \"Devs, ajustem isso aqui em paralelo!\"", 2500);
-                        
-                        setTimeout(() => {
-                            // 5. Devs codificam na mesa
-                            showBubble('bubble-dev', "👨‍💻 \"Equipe no caso! Codando melhorias...\"", 3000);
-                            
-                            setTimeout(() => {
-                                // 6. Dev Líder vai até a sala do TI entregar e mostrar o commit
-                                if (dev0) {
-                                    dev0.style.bottom = "180px"; dev0.style.left = "130px";
-                                }
-                                showBubble('bubble-dev', "👨‍💻 \"Prontinho, integrado direto na main!\"", 3500);
-                                
-                                setTimeout(() => {
-                                    // 7. Usuário aprova
-                                    showBubble('bubble-user', "🤬 \"Excelente trabalho de equipe! Aprovado!\"", 3000);
-                                    
-                                    setTimeout(() => {
-                                        // Retorna geral para idle
-                                        user.style.left = "105px";
-                                        pm.style.right = "105px";
-                                        if (dev0) {
-                                            const count = document.querySelectorAll('.dev-avatar').length;
-                                            const spacing = 38;
-                                            const leftVal = `calc(50% - ${(count - 1) * (spacing / 2)}px)`;
-                                            dev0.style.bottom = "50px"; dev0.style.left = leftVal;
-                                        }
-                                        isOfficeAnimating = false;
-                                    }, 2000);
-                                }, 3500);
-                            }, 3000);
-                        }, 2500);
-                    } else {
-                        // Rejeitado ou Duplicado
-                        showBubble('bubble-pm', "📋 \"Rejeitado! Já temos isso na lista!\"", 3000);
-                        setTimeout(() => {
-                            user.style.left = "105px";
-                            isOfficeAnimating = false;
-                        }, 3000);
-                    }
-                }, 2500);
-            }, 2500);
-        }, 3000);
-    }, 500);
+    // ── FASE 2: PM vai ao TI, recebe e cria card no backlog ─
+    await moveAvatar('avatar-pm', { right: 'calc(100% - 250px)', top: '60px' });
+    showBubble('bubble-pm', "📋 \"Recebi! Vou criar um card no backlog agora.\"", 2500);
+    await wait(2700);
+    await moveAvatar('avatar-pm', { right: '105px' });
+    showBubble('bubble-pm', "📋 \"Card criado! Mandando pro Dev...\"", 2000);
+    await wait(2200);
+
+    // ── FASE 3: PM notifica Dev, Dev começa a codar ────────
+    const dev0 = document.getElementById('avatar-dev-0');
+    if (dev0) {
+        showBubble('bubble-dev', `👨‍💻 "Recebi do PM! Iniciando sprint..."`, 2800);
+        await wait(3000);
+    }
+
+    // ── FASE 4: Loop QA ↔ Dev (simula até 2 rejeições) ────
+    const qaAttempts = Math.random() < 0.45 ? 2 : (Math.random() < 0.5 ? 1 : 0);
+    const qaConsole = document.getElementById('qa-console-text');
+
+    for (let attempt = 0; attempt < qaAttempts; attempt++) {
+        // Dev envia para QA
+        if (dev0) { dev0.style.bottom = '60px'; dev0.style.right = '130px'; dev0.style.left = 'auto'; }
+        showBubble('bubble-dev', `👨‍💻 "Implementei! Mandando pra QA... (v${attempt + 1})"`, 2500);
+        if (qaConsole) qaConsole.innerHTML = `> Recebendo build v${attempt + 1} do Dev...\n> Rodando pytest...`;
+        await wait(2700);
+
+        // QA encontra falha e devolve
+        if (qa) qa.style.cssText += '; bottom:120px; right:300px;';
+        showBubble('bubble-qa', `🧪 "v${attempt + 1}: ${attempt === 0 ? 'Falhou no pytest!' : 'Ainda há edge cases!'} Voltando ao Dev."`, 3000);
+        if (qaConsole) qaConsole.innerHTML = `> ❌ Falha detectada na v${attempt + 1}!\n> Enviando relatório de bugs ao Dev...`;
+        await wait(3200);
+
+        // QA volta para estação
+        if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
+
+        // Dev recebe feedback e corrige
+        if (dev0) { dev0.style.right = 'auto'; dev0.style.bottom = '50px'; dev0.style.left = 'calc(15%)'; }
+        showBubble('bubble-dev', `👨‍💻 "Falhou! Corrigindo os bugs...  🔧"`, 2800);
+        await wait(3000);
+    }
+
+    // ── FASE 5: QA aprova e pede validação do cliente ──────
+    if (dev0) { dev0.style.bottom = '60px'; dev0.style.right = '130px'; dev0.style.left = 'auto'; }
+    showBubble('bubble-dev', "👨‍💻 \"Build final pronto, mandando pra QA!\"", 2500);
+    if (qaConsole) qaConsole.innerHTML = '> Recebendo build final...\n> Rodando suite completa de testes...';
+    await wait(2700);
+
+    if (qa) qa.style.cssText += '; bottom:120px; right:300px;';
+    showBubble('bubble-qa', "🧪 \"✅ 100%! Todos os testes passaram!\"", 2800);
+    if (qaConsole) qaConsole.innerHTML = '> ✅ Suite completa aprovada!\n> Solicitando validação do cliente...';
+    await wait(3000);
+
+    // QA vai até o TI pedir validação do cliente
+    if (qa) qa.style.cssText += '; bottom:200px; right:calc(100% - 250px);';
+    showBubble('bubble-qa', "🧪 \"Tudo ok! Pode validar a melhoria?\"", 2800);
+    await wait(3000);
+
+    // ── FASE 6: Usuário valida e aprova ────────────────────
+    const userApproves = Math.random() < 0.8; // 80% de chance de aprovar
+    if (userApproves) {
+        showBubble('bubble-user', `${userEmoji} \"Perfeito! Exatamente o que eu queria! ✅\"`, 3000);
+        if (qaConsole) qaConsole.innerHTML = '> 🎉 Cliente aprovou!\n> Commit direto na main. Entrega concluída!';
+        await wait(3200);
+        if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
+        if (dev0) { dev0.style.right = 'auto'; dev0.style.bottom = '50px'; dev0.style.left = 'calc(15%)'; }
+        showBubble('bubble-dev', "👨‍💻 \"🎉 Deploy feito! Próxima tarefa!\"", 2500);
+    } else {
+        showBubble('bubble-user', `${userEmoji} \"Hmm, não era bem isso... 🤔 Volta pro backlog!\"`, 3000);
+        if (qaConsole) qaConsole.innerHTML = '> ❌ Cliente rejeitou!\n> Abrindo novo card no backlog para revisão...';
+        await wait(3200);
+        if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
+        showBubble('bubble-pm', "📋 \"Entendido! Vou recriar o card com mais detalhes.\"", 2800);
+        if (qaConsole) qaConsole.innerHTML = '> 🔄 Card devolvido ao backlog.\n> Aguardando próximo sprint...';
+    }
+
+    // Reset all positions
+    await wait(2500);
+    user.style.left = '105px';
+    pm.style.right = '105px';
+    if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
+    if (dev0) { dev0.style.right = 'auto'; dev0.style.bottom = '50px'; dev0.style.left = 'calc(15%)'; }
+    isOfficeAnimating = false;
 }
