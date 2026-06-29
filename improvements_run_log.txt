@@ -369,3 +369,9 @@
    _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
 [2026-06-29 17:44:40] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
    _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
+[2026-06-29 17:45:33] [AUTO-IMPROVEMENT] Aplicada: IMP-10022 - IMP-10022: Falta uma roadmap visual do produto — cada desenvolvedor imp
+   _Falta uma roadmap visual do produto — cada desenvolvedor implementa o que acha mais interessante sem alinhamento estratégico._
+[2026-06-29 17:45:34] [AUTO-IMPROVEMENT] Aplicada: IMP-10020 - IMP-10020: O D3.js está sendo carregado via CDN sem lock de versão — se
+   _O D3.js está sendo carregado via CDN sem lock de versão — se a CDN mudar algo, o grafo para de funcionar em produção._
+[2026-06-29 17:45:38] [AUTO-IMPROVEMENT] Aplicada: IMP-10021 - IMP-10021: Não existe pipeline de dados estruturado; os scripts leem e 
+   _Não existe pipeline de dados estruturado; os scripts leem e escrevem JSON direto sem validação de integridade._
