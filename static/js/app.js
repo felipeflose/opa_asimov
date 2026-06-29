@@ -1998,3 +1998,179 @@ async function applyDailyImprovements(btn) {
         }
     }
 }
+<<<<<<< HEAD
+=======
+
+let isOfficeAnimating = false;
+
+async function loadOfficeData() {
+    try {
+        const r = await fetch('/api/office');
+        const data = await r.json();
+        
+        // 1. Atualiza status do Dev
+        const devStatusTag = document.getElementById('dev-work-status');
+        const devConsoleText = document.getElementById('dev-console-text');
+        if (data.dev_status === 'WORKING') {
+            devStatusTag.className = 'bot-status-tag status-online';
+            devStatusTag.innerHTML = '<div class="status-dot"></div> CODANDO MELHORIAS';
+            devConsoleText.innerHTML = '> Analisando 3 melhorias...\n> Rodando pytest unit tests...\n> Executando git commit & push...';
+            devStatusTag.style.background = 'rgba(6,182,212,0.1)';
+            devStatusTag.style.color = 'var(--cyan)';
+        } else {
+            devStatusTag.className = 'bot-status-tag status-offline';
+            devStatusTag.innerHTML = '<div class="status-dot" style="background:#64748b;"></div> OCIOSO';
+            devStatusTag.style.background = 'rgba(100,116,139,0.1)';
+            devStatusTag.style.color = '#64748b';
+            devConsoleText.innerHTML = '> Monitorando backlog...\n> Próximo ciclo diário agendado para amanhã às 10:00.';
+        }
+        
+        // 2. Renderiza logs do Cliente Oculto
+        const mysteryContainer = document.getElementById('mystery-logs-container');
+        if (data.mystery_logs && data.mystery_logs.length > 0) {
+            mysteryContainer.innerHTML = data.mystery_logs.map(log => `<div>> ${log}</div>`).join('');
+        } else {
+            mysteryContainer.innerHTML = '<div>> Nenhuma refatoração silenciosa aplicada ainda.</div>';
+        }
+        
+        // 3. Renderiza tabela do Usuário Chato
+        const feedbackBody = document.getElementById('office-feedback-table-body');
+        if (data.feedbacks && data.feedbacks.length > 0) {
+            feedbackBody.innerHTML = data.feedbacks.reverse().map(fb => {
+                let badgeClass = 'badge';
+                let badgeStyle = 'background: rgba(100,116,139,0.1); border-color: rgba(100,116,139,0.2); color: #64748b;';
+                let decisionText = 'PENDENTE';
+                
+                if (fb.status === 'accepted') {
+                    badgeStyle = 'background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: var(--green);';
+                    decisionText = 'ACEITO (KBCard)';
+                } else if (fb.status === 'duplicate') {
+                    badgeStyle = 'background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: var(--red);';
+                    decisionText = 'REJEITADO (Duplicado)';
+                } else if (fb.status === 'failed') {
+                    badgeStyle = 'background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.2); color: var(--amber);';
+                    decisionText = 'ERRO';
+                }
+                
+                const timeStr = fb.timestamp ? new Date(fb.timestamp).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '...';
+                
+                return `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 12px; color: var(--text-muted); padding-left: 15px;">${timeStr}</td>
+                        <td style="padding: 12px; color: #f1f5f9;">
+                            <div style="font-weight: 700; color: var(--cyan); margin-bottom: 4px; font-size: 0.75rem;">
+                                ${fb.avatar || '🤬'} ${fb.user || 'Usuário Chato'} <span style="font-weight: 400; color: var(--text-muted); font-size: 0.65rem;">(${fb.role || 'Testador'})</span>
+                            </div>
+                            <div style="font-weight: 500;">"${fb.complaint}"</div>
+                        </td>
+                        <td style="padding: 12px; text-align: right; padding-right: 15px;">
+                            <span class="${badgeClass}" style="${badgeStyle}">${decisionText}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            feedbackBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma reclamação ou feedback catalogado ainda.</td></tr>';
+        }
+
+        // 4. Executa a Animação das Mesas/Avatares
+        if (!isOfficeAnimating && data.feedbacks && data.feedbacks.length > 0) {
+            triggerOfficeAnimation(data.feedbacks[data.feedbacks.length - 1], data.dev_status);
+        }
+        
+    } catch(e) {
+        console.error("Erro ao carregar dados do escritório virtual:", e);
+    }
+}
+
+function showBubble(id, text, timeout = 3000) {
+    const bubble = document.getElementById(id);
+    if (!bubble) return;
+    bubble.innerHTML = text;
+    bubble.style.display = 'block';
+    setTimeout(() => {
+        bubble.style.display = 'none';
+    }, timeout);
+}
+
+function triggerOfficeAnimation(latestFeedback, devStatus) {
+    isOfficeAnimating = true;
+    
+    const user = document.getElementById('avatar-user');
+    const pm = document.getElementById('avatar-pm');
+    const dev = document.getElementById('avatar-dev');
+    
+    if (!user || !pm || !dev) return;
+
+    // Atualiza dinamicamente a identidade visual do avatar com base no usuário que reclamou
+    user.innerHTML = latestFeedback.avatar || '🤬';
+    user.setAttribute('data-tooltip', `${latestFeedback.user || 'Usuário Chato'} (${latestFeedback.role || 'Testador'})`);
+    user.style.background = latestFeedback.avatar === '👩‍🎨' ? '#ec4899' :
+                            latestFeedback.avatar === '👨‍🔬' ? '#3b82f6' :
+                            latestFeedback.avatar === '👩‍🎓' ? '#10b981' :
+                            latestFeedback.avatar === '👨‍📱' ? '#f59e0b' : '#ef4444';
+
+    // Reset de posições padrão
+    user.style.top = "60px"; user.style.left = "105px";
+    pm.style.top = "60px"; pm.style.right = "105px";
+    dev.style.bottom = "60px"; dev.style.left = "50%";
+    
+    // Início da sequência
+    setTimeout(() => {
+        // 1. Usuário vai na sala do TI reclamar
+        user.style.left = "180px"; 
+        const userEmoji = latestFeedback.avatar || '🤬';
+        showBubble('bubble-user', `${userEmoji} "${latestFeedback.complaint.substring(0, 45)}..."`, 3000);
+        
+        setTimeout(() => {
+            // 2. PM vai até a sala do TI receber o chamado
+            pm.style.right = "calc(100% - 250px)";
+            showBubble('bubble-pm', "📋 \"Deixa eu ver... Vou cadastrar isso agora!\"", 2500);
+            
+            setTimeout(() => {
+                // 3. PM volta para sua mesa e processa
+                pm.style.right = "105px";
+                showBubble('bubble-pm', `📋 "Processando... Status: ${latestFeedback.status.toUpperCase()}"`, 2500);
+                
+                setTimeout(() => {
+                    if (latestFeedback.status === 'accepted') {
+                        // 4. PM manda para o Dev codificar
+                        showBubble('bubble-pm', "📋 \"Dev, ajusta isso aqui por favor!\"", 2500);
+                        
+                        setTimeout(() => {
+                            // 5. Dev codifica na mesa dele
+                            showBubble('bubble-dev', "👨‍💻 \"Entendido! Codando melhoria...\"", 3000);
+                            
+                            setTimeout(() => {
+                                // 6. Dev vai até a sala do TI entregar e mostrar o commit
+                                dev.style.bottom = "180px"; dev.style.left = "130px";
+                                showBubble('bubble-dev', "👨‍💻 \"Prontinho, comitado direto na main!\"", 3500);
+                                
+                                setTimeout(() => {
+                                    // 7. Usuário aprova
+                                    showBubble('bubble-user', "🤬 \"Agora sim ficou bom! Obrigado!\"", 3000);
+                                    
+                                    setTimeout(() => {
+                                        // Retorna geral para idle
+                                        user.style.left = "105px";
+                                        pm.style.right = "105px";
+                                        dev.style.bottom = "60px"; dev.style.left = "50%";
+                                        isOfficeAnimating = false;
+                                    }, 2000);
+                                }, 3500);
+                            }, 3000);
+                        }, 2500);
+                    } else {
+                        // Rejeitado ou Duplicado
+                        showBubble('bubble-pm', "📋 \"Rejeitado! Já temos isso na lista!\"", 3000);
+                        setTimeout(() => {
+                            user.style.left = "105px";
+                            isOfficeAnimating = false;
+                        }, 3000);
+                    }
+                }, 2500);
+            }, 2500);
+        }, 3000);
+    }, 500);
+}
+>>>>>>> 991dced (feat: render dynamic N user avatars and metadata in office floorplan)

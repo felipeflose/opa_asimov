@@ -41,7 +41,7 @@
     "difficulty": "hard",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588253",
-    "completed_at": "2026-06-29T16:39:47.013549"
+    "completed_at": "2026-06-29T16:40:20.664964"
   },
   {
     "id": "IMP-00005",
@@ -206,7 +206,7 @@
     "difficulty": "hard",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588294",
-    "completed_at": "2026-06-29T16:39:47.013557"
+    "completed_at": "2026-06-29T16:40:08.129170"
   },
   {
     "id": "IMP-00020",
@@ -224,22 +224,22 @@
     "title": "IMP-00021: Garantir resiliência em Flask App Dashboard",
     "description": "Garantir resiliência em o módulo Flask App Dashboard para otimizar carga de CPU utilizando comunicação SSE (Server-Sent Events).",
     "category": "Telegram",
-    "status": "todo",
+    "status": "done",
     "difficulty": "easy",
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.588298",
-    "completed_at": null
+    "completed_at": "2026-06-29T16:40:20.664977"
   },
   {
     "id": "IMP-00022",
     "title": "IMP-00022: Refatorar D3.js Graph",
     "description": "Refatorar o módulo D3.js Graph para otimizar cobertura de testes utilizando estruturação de JSON com Pydantic.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "difficulty": "hard",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588300",
-    "completed_at": null
+    "completed_at": "2026-06-29T16:40:20.664979"
   },
   {
     "id": "IMP-00023",
