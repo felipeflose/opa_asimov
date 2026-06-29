@@ -207,3 +207,9 @@
    _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
 [2026-06-29 17:26:41] [AUTO-IMPROVEMENT] Aplicada: TECH-009 - Adicionar endpoint /api/health/db para verificar SQLite
    _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
+[2026-06-29 17:26:54] [AUTO-IMPROVEMENT] Aplicada: IMP-10001 - IMP-10001: Estabilidade do posicionamento de nós e contraste de cores
+   _Refatorar a lógica de posicionamento dos nós para garantir estabilidade visual e otimizar o contraste de cores no tema escuro._
+[2026-06-29 17:26:56] [AUTO-IMPROVEMENT] Aplicada: IMP-10002 - IMP-10002: Refatoração sob demanda de usuário
+   _Tratar reclamação: A física de zoom e o posicionamento dos nós estão completamente errados, e o contraste no tema escuro é insuportável. Isso é um desastre visual e totalmente inaceitável para uma ferramenta de design._
+[2026-06-29 17:27:00] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
+   _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
