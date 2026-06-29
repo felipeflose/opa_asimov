@@ -61,7 +61,7 @@ def llm_post(groq_key: str, model: str, messages: list, json_mode=False, max_tok
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
             json=payload,
-            timeout=30,
+            timeout=3,
         )
         if r.status_code == 200:
             return r.json()["choices"][0]["message"]["content"].strip()
@@ -76,7 +76,7 @@ def llm_ollama(prompt: str, json_mode=False) -> str:
             "http://localhost:11434/api/generate",
             json={"model": "gemma4-fast:latest", "prompt": prompt, "stream": False,
                   "format": "json" if json_mode else None, "options": {"temperature": 0.1}},
-            timeout=60,
+            timeout=3,
         )
         if r.status_code == 200:
             return r.json()["response"].strip()
