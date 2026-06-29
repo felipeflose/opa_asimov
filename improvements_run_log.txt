@@ -321,3 +321,9 @@
    _Monitorar e registrar a latência das consultas de Recuperação Aumentada de Geração (RAG)._
 [2026-06-29 17:36:43] [AUTO-IMPROVEMENT] Aplicada: IMP-10009 - IMP-10009: Refatorar a comunicação com o Telegram Bot
    _Refatorar a lógica de comunicação com o Telegram Bot para maior robustez._
+[2026-06-29 17:37:38] [AUTO-IMPROVEMENT] Aplicada: IMP-10010 - IMP-10010: Adicionar monitoramento de erros de LLM
+   _Implementar monitoramento de erros nas chamadas ao LLM._
+[2026-06-29 17:37:39] [AUTO-IMPROVEMENT] Aplicada: IMP-10011 - IMP-10011: Implementar validação de entrada no agent_bot.py
+   _Adicionar validação de entrada no módulo `agent_bot.py`._
+[2026-06-29 17:37:46] [AUTO-IMPROVEMENT] Aplicada: IMP-10012 - IMP-10012: Implementar cache de sessões de usuário
+   _Adicionar cache para sessões de usuário._
