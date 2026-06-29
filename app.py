@@ -865,6 +865,42 @@ def api_bot_telemetry():
         return jsonify({"error": "Internal Server Error", "msg": str(e)}), 500
 
 
+@app.route('/api/office')
+def api_office():
+    """Expõe informações para o simulador do Escritório Virtual (Office)."""
+    feedbacks = []
+    feedback_file = os.path.join(os.path.dirname(__file__), 'user_feedback.json')
+    if os.path.exists(feedback_file):
+        try:
+            with open(feedback_file, 'r', encoding='utf-8') as f:
+                feedbacks = json.load(f)
+        except Exception:
+            pass
+
+    mystery_logs = []
+    run_log_file = os.path.join(os.path.dirname(__file__), 'improvements_run_log.txt')
+    if os.path.exists(run_log_file):
+        try:
+            with open(run_log_file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            for line in lines:
+                if '[MYSTERY-CLIENT]' in line:
+                    mystery_logs.append(line.strip())
+        except Exception:
+            pass
+
+    dev_status = "IDLE"
+    global _update_proc
+    if _update_proc and _update_proc.poll() is None:
+        dev_status = "WORKING"
+
+    return jsonify({
+        "feedbacks": feedbacks[-20:],
+        "mystery_logs": mystery_logs[-15:],
+        "dev_status": dev_status
+    })
+
+
 # ── Posições do Grafo ──────────────────────────────────────
 
 @app.route('/api/save-positions', methods=['POST'])

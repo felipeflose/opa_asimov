@@ -12,7 +12,7 @@ const sparkHistory = { cpu: [], ram: [] };
 const SPARK_MAX = 18;
 
 // Mapeamento das posições dos ícones da sidebar (para a pílula)
-const NAV_ORDER = ['home', 'graph', 'bot', 'system', 'study', 'rinha', 'kanban'];
+const NAV_ORDER = ['home', 'graph', 'bot', 'system', 'study', 'rinha', 'kanban', 'office'];
 
 // ============================================================
 // UTILITÁRIOS
@@ -146,6 +146,8 @@ function updateNavPill(activePageId) {
     pill.style.top = top + 'px';
 }
 
+let officeInterval = null;
+
 function showPage(pageId, element = null) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -162,6 +164,19 @@ function showPage(pageId, element = null) {
     if (pageId === 'study') loadSummariesData();
     if (pageId === 'rinha') setTimeout(initRinha, 100);
     if (pageId === 'kanban') loadKanban();
+    
+    // Configura polling do Escritório Virtual apenas quando ativo
+    if (pageId === 'office') {
+        loadOfficeData();
+        if (!officeInterval) {
+            officeInterval = setInterval(loadOfficeData, 10000);
+        }
+    } else {
+        if (officeInterval) {
+            clearInterval(officeInterval);
+            officeInterval = null;
+        }
+    }
 }
 
 // ============================================================
@@ -1998,8 +2013,6 @@ async function applyDailyImprovements(btn) {
         }
     }
 }
-<<<<<<< HEAD
-=======
 
 let isOfficeAnimating = false;
 
@@ -2173,4 +2186,3 @@ function triggerOfficeAnimation(latestFeedback, devStatus) {
         }, 3000);
     }, 500);
 }
->>>>>>> 991dced (feat: render dynamic N user avatars and metadata in office floorplan)

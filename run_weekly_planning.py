@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def send_telegram_message(bot_token, chat_id, text):
+def send_telegram_message(bot_token, chat_id, text, parse_mode="HTML"):
     if not bot_token or not chat_id:
         return
     try:
@@ -15,7 +15,7 @@ def send_telegram_message(bot_token, chat_id, text):
         requests.post(tg_url, json={
             "chat_id": chat_id,
             "text": text,
-            "parse_mode": "Markdown"
+            "parse_mode": parse_mode
         }, timeout=10)
     except Exception as e:
         logging.error(f"Erro ao enviar mensagem Telegram: {e}")
@@ -49,7 +49,7 @@ def main():
         weekly_tasks = [t for t in todos if t["status"] == "todo"][:21]
         
         if not weekly_tasks:
-            send_telegram_message(bot_token, chat_id, "📅 **[AI Factory - Planning Semanal]** Nenhuma tarefa pendente no backlog!")
+            send_telegram_message(bot_token, chat_id, "📅 <b>[AI Factory - Planning Semanal]</b> Nenhuma tarefa pendente no backlog!", parse_mode="HTML")
             return
             
         # Move tarefas para 'in_progress'
@@ -58,13 +58,13 @@ def main():
             requests.post(move_url, headers=headers, json={"id": t["id"], "status": "in_progress"}, timeout=10)
             
         # Envia notificação
-        msg = "📅 **[AI Factory - Planning Semanal]**\n"
-        msg += f"Iniciando a semana de {datetime.now().strftime('%d/%m/%Y')} com **{len(weekly_tasks)} melhorias** selecionadas:\n\n"
+        msg = "📅 <b>[AI Factory - Planning Semanal]</b>\n"
+        msg += f"Iniciando a semana de {datetime.now().strftime('%d/%m/%Y')} com <b>{len(weekly_tasks)} melhorias</b> selecionadas:\n\n"
         for t in weekly_tasks:
             clean_title = t['title'].split(': ', 1)[-1] if ': ' in t['title'] else t['title']
-            msg += f"🔹 **{t['id']}** (Prioridade: {t.get('priority', 'medium').upper()}): {clean_title}\n"
+            msg += f"🔹 <b>{t['id']}</b> (Prioridade: {t.get('priority', 'medium').upper()}): {clean_title}\n"
             
-        send_telegram_message(bot_token, chat_id, msg)
+        send_telegram_message(bot_token, chat_id, msg, parse_mode="HTML")
         logging.info("Planning semanal executado e notificado com sucesso.")
         
     except Exception as e:

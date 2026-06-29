@@ -74,10 +74,37 @@ def temp_graph_path(monkeypatch):
         original_json_path = agent_core.JSON_PATH
         monkeypatch.setattr(agent_core, "JSON_PATH", temp_file)
         
-        # Patch também no app.py para evitar problemas de namespace nos testes
+        # Patch também no app.py para evitar problemas de namespace nos testes e isolar o backlog
         try:
             import app
             monkeypatch.setattr(app, "JSON_PATH", temp_file)
+            
+            temp_backlog = os.path.join(tmpdir, "improvement_backlog_temp.json")
+            import json
+            mock_backlog = []
+            for i in range(1, 10001):
+                status = "todo"
+                if i <= 3:
+                    status = "in_progress"
+                elif i <= 15:
+                    status = "done"
+                mock_backlog.append({
+                    "id": f"IMP-{i:05d}",
+                    "title": f"IMP-{i:05d}: Mock Title",
+                    "description": "Mock Description",
+                    "details": "Mock Details",
+                    "motivation_justification": "Mock Motivation",
+                    "category": "Performance",
+                    "status": status,
+                    "priority": "medium",
+                    "difficulty": "medium",
+                    "impact": "medium",
+                    "created_at": "2026-06-29T12:00:00",
+                    "completed_at": "2026-06-29T12:00:00" if status == "done" else None
+                })
+            with open(temp_backlog, "w", encoding="utf-8") as f:
+                json.dump(mock_backlog, f, ensure_ascii=False, indent=2)
+            monkeypatch.setattr(app, "IMPROVEMENTS_FILE", temp_backlog)
         except Exception:
             pass
             
