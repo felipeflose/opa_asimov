@@ -249,3 +249,9 @@
    _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
 [2026-06-29 17:29:41] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
    _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
+[2026-06-29 17:30:07] [AUTO-IMPROVEMENT] Aplicada: IMP-10002 - IMP-10002: Otimizar o agente_core.py
+   _Refatorar a lógica central do agente para melhor modularidade._
+[2026-06-29 17:30:09] [AUTO-IMPROVEMENT] Aplicada: IMP-10001 - IMP-10001: Implementar cache de resultados de RAG
+   _Adicionar um cache para os resultados das consultas ao LLM/Groq._
+[2026-06-29 17:30:09] [AUTO-IMPROVEMENT] Aplicada: IMP-10003 - IMP-10003: Implementar validação de esquema para dados de entrada
+   _Adicionar validação de esquema para os dados recebidos pelos agentes._
