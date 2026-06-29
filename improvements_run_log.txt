@@ -75,3 +75,15 @@
    _Reduzir gargalos de o módulo Health Monitor para otimizar carga de CPU utilizando comunicação SSE (Server-Sent Events)._
 [2026-06-29 17:15:46] [AUTO-IMPROVEMENT] Aplicada: IMP-00026 - IMP-00026: Reduzir gargalos de Docling PDF Converter
    _Reduzir gargalos de o módulo Docling PDF Converter para otimizar carga de CPU utilizando indexação vetorial por similaridade de cosseno._
+[2026-06-29 17:16:12] [AUTO-IMPROVEMENT] Aplicada: TECH-015 - Adicionar modo escuro automático baseado no horário do sistema
+   _Detectar horário local e aplicar tema escuro após 18h automaticamente._
+[2026-06-29 17:16:12] [AUTO-IMPROVEMENT] Aplicada: TECH-012 - Exportar métricas de latência para arquivo CSV diário
+   _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
+[2026-06-29 17:16:16] [AUTO-IMPROVEMENT] Aplicada: TECH-014 - Refatorar annoying_user.py para usar pool de threads
+   _Substituir loop sequencial por ThreadPoolExecutor para paralelizar geração de feedbacks._
+[2026-06-29 17:16:16] [AUTO-IMPROVEMENT] Aplicada: TECH-016 - Minificar CSS e JS em produção
+   _Usar Flask-Assets ou similar para minificar static/css/style.css e app.js no build._
+[2026-06-29 17:16:18] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
+   _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
+[2026-06-29 17:16:19] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
+   _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
