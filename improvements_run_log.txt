@@ -477,3 +477,12 @@
 
 [2026-06-29 18:11:40] [AUTO-IMPROVEMENT] Aplicada: KAN-43 - O bot do Telegram não tem comando /help atualizado — os coma
    _O bot do Telegram não tem comando /help atualizado — os comandos listados são diferentes dos que realmente funcionam._
+
+[2026-06-29 18:14:00] [AUTO-IMPROVEMENT] Aplicada: KAN-42 - A indexação do vault não respeita o frontmatter YAML das not
+   _A indexação do vault não respeita o frontmatter YAML das notas — metadados importantes como autor e data são ignorados._
+
+[2026-06-29 18:14:02] [AUTO-IMPROVEMENT] Aplicada: KAN-41 - Não há rate limiting por cliente nas rotas da API — um scrip
+   _Não há rate limiting por cliente nas rotas da API — um script mal feito pode derrubar o servidor para todos os usuários._
+
+[2026-06-29 18:14:02] [AUTO-IMPROVEMENT] Aplicada: KAN-40 - O agente de indexação do vault bloqueia o event loop do Flas
+   _O agente de indexação do vault bloqueia o event loop do Flask durante a execução — o servidor fica completamente irresponsivo._

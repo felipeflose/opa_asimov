@@ -57,7 +57,7 @@
     "details": "Gerado via feedback de Amanda Ribeiro (Observability Engineer)",
     "motivation_justification": "Não existe alerta de anomalia de token usage — uma query mal formada pode consumir todos os tokens do mês sem nenhum aviso.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -65,7 +65,7 @@
     "fingerprint": "c6368bdb6a6b",
     "source_user": "Amanda Ribeiro",
     "created_at": "2026-06-29T18:08:41.927-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T18:11:50.696-0300"
   },
   {
     "id": "KAN-44",
@@ -74,7 +74,7 @@
     "details": "Gerado via feedback de Rodrigo Esteves (Infrastructure Engineer)",
     "motivation_justification": "O servidor não tem configuração de limites de tamanho de request — é possível enviar um payload de vários GB e travar a memória.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -82,7 +82,7 @@
     "fingerprint": "6f4da1025e85",
     "source_user": "Rodrigo Esteves",
     "created_at": "2026-06-29T18:08:41.103-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T18:11:52.495-0300"
   },
   {
     "id": "KAN-43",
@@ -91,7 +91,7 @@
     "details": "Gerado via feedback de Paulo Freitas (Bot Developer)",
     "motivation_justification": "O bot do Telegram não tem comando /help atualizado — os comandos listados são diferentes dos que realmente funcionam.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -99,7 +99,7 @@
     "fingerprint": "be7b72bc7f30",
     "source_user": "Paulo Freitas",
     "created_at": "2026-06-29T18:08:39.810-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T18:11:54.170-0300"
   },
   {
     "id": "KAN-42",
