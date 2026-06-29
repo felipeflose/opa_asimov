@@ -549,3 +549,21 @@
 [2026-06-29 18:28:09] [AUTO-IMPROVEMENT] Aplicada: KAN-53 - O D3.js está sendo carregado via CDN sem lock de versão — se
 
 [2026-06-29 18:28:44] [AUTO-IMPROVEMENT] Aplicada: KAN-52 - O docker-compose.yml não define limits de CPU e memória; em 
+
+[2026-06-29 18:37:53] [AUTO-IMPROVEMENT] Aplicada: KAN-23 - Falta um sistema de sessão — qualquer pessoa que conhece a U
+
+[2026-06-29 18:37:54] [AUTO-IMPROVEMENT] Aplicada: KAN-25 - As queries no código usam f-strings para montar SQL — isso é
+
+[2026-06-29 18:37:57] [AUTO-IMPROVEMENT] Aplicada: KAN-35 - O carregamento do grafo não tem indicador de progresso — a t
+
+[2026-06-29 18:37:59] [AUTO-IMPROVEMENT] Aplicada: KAN-26 - Não há padrão de logging definido — cada arquivo usa um esti
+
+[2026-06-29 18:38:04] [AUTO-IMPROVEMENT] Aplicada: KAN-34 - O app.py mistura lógica de negócio com rotas Flask. Isso tor
+
+[2026-06-29 18:38:05] [AUTO-IMPROVEMENT] Aplicada: KAN-22 - O backup do obsidian_graph.json é feito manualmente — já per
+
+[2026-06-29 18:38:07] [AUTO-IMPROVEMENT] Aplicada: KAN-24 - A temperatura dos LLMs está hardcoded em 0.7 em todos os age
+
+[2026-06-29 18:38:10] [AUTO-IMPROVEMENT] Aplicada: KAN-36 - O fluxo de indexação do vault não tem testes de integração —
+
+[2026-06-29 18:38:35] [AUTO-IMPROVEMENT] Aplicada: KAN-33 - O botão 'Resetar Grafo' fica numa posição muito parecida com

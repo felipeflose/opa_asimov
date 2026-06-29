@@ -12,6 +12,8 @@ import re
 import hashlib
 import logging
 import requests
+import random
+import time
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -276,7 +278,6 @@ def main():
         accepted_complaints = [complaints_text[i] for i in truly_new]
         cards = batch_convert(accepted_complaints, groq_key)
 
-        local_tasks = []
         for pos, (orig_idx, card) in enumerate(zip(truly_new, cards)):
             fb = pending[orig_idx]
             fp = complaints_fps[orig_idx]
@@ -322,12 +323,35 @@ def main():
                 "created_at": datetime.now().isoformat(),
                 "completed_at": None,
             }
-            local_tasks.append(task)
+            
             fb["status"] = "accepted"
             logging.info(f"  [PM-{pm_num}] ACEITO Jira {jira_key}: {title[:50]}")
+            
+            # Sincroniza imediatamente o backlog local com lock para atualização em tempo real no Dashboard!
+            with write_lock:
+                all_new_tasks.append(task)
+                
+                try:
+                    # 1. Atualiza user_feedback.json
+                    with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(feedbacks, f, ensure_ascii=False, indent=2)
+                        
+                    # 2. Atualiza o improvement_backlog.json injetando a nova issue
+                    current_backlog = []
+                    if os.path.exists(IMPROVEMENTS_FILE):
+                        with open(IMPROVEMENTS_FILE, 'r', encoding='utf-8') as f:
+                            current_backlog = json.load(f)
+                    
+                    if not any(t["id"] == jira_key for t in current_backlog):
+                        current_backlog.append(task)
+                        
+                    with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(current_backlog, f, ensure_ascii=False, indent=2)
+                except Exception as e:
+                    logging.error(f"Erro na sincronização rápida do backlog pelo PM: {e}")
 
-        with write_lock:
-            all_new_tasks.extend(local_tasks)
+            # Sleep cadenciado (5 a 10 segundos) para que o cadastro apareça progressivamente no painel!
+            time.sleep(random.randint(5, 10))
 
     # ── Lança threads de PMs em paralelo ──────────────────────
     threads = []
@@ -357,4 +381,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
