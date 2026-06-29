@@ -345,3 +345,9 @@
    _Adicionar um sistema de versionamento para os agentes._
 [2026-06-29 17:40:42] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
    _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._
+[2026-06-29 17:41:23] [AUTO-IMPROVEMENT] Aplicada: IMP-10016 - IMP-10016: O bot do Telegram não verifica o chat_id do remetente — qual
+   _O bot do Telegram não verifica o chat_id do remetente — qualquer pessoa com o link pode enviar comandos ao sistema._
+[2026-06-29 17:41:25] [AUTO-IMPROVEMENT] Aplicada: IMP-10015 - IMP-10015: O servidor Flask não está usando connection pooling no SQLit
+   _O servidor Flask não está usando connection pooling no SQLite — vejo 'database is locked' nos logs toda vez que dois agents rodam juntos._
+[2026-06-29 17:41:28] [AUTO-IMPROVEMENT] Aplicada: IMP-10014 - IMP-10014: Os tooltips dos nós somem antes de eu conseguir ler o conteú
+   _Os tooltips dos nós somem antes de eu conseguir ler o conteúdo. O delay de hover está absurdamente curto no D3.js._
