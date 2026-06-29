@@ -108,7 +108,7 @@
     "details": "Gerado via feedback de Eduardo Prado (API Specialist)",
     "motivation_justification": "Não existe documentação interativa da API — toda vez que integro algo novo tenho que ler o app.py de 1300 linhas para entender.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -116,7 +116,7 @@
     "fingerprint": "f277a1c2e03c",
     "source_user": "Eduardo Prado",
     "created_at": "2026-06-29T18:17:36.571-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T18:24:47.462-0300"
   },
   {
     "id": "KAN-59",
@@ -125,7 +125,7 @@
     "details": "Gerado via feedback de Vanessa Correia (Scrum Master)",
     "motivation_justification": "A daily digest é gerada automaticamente mas ninguém valida se as ações priorizadas fazem sentido — automação sem governança.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -133,7 +133,7 @@
     "fingerprint": "734e1746a715",
     "source_user": "Vanessa Correia",
     "created_at": "2026-06-29T18:17:35.665-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T18:24:40.753-0300"
   },
   {
     "id": "KAN-58",
@@ -142,7 +142,7 @@
     "details": "Gerado via feedback de Henrique Monteiro (Cloud Architect)",
     "motivation_justification": "A aplicação não é stateless — estado é salvo em arquivos JSON locais, o que impossibilita escalar horizontalmente.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -150,7 +150,7 @@
     "fingerprint": "9ee9cc1b6b87",
     "source_user": "Henrique Monteiro",
     "created_at": "2026-06-29T18:17:34.415-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T18:24:49.773-0300"
   },
   {
     "id": "KAN-57",

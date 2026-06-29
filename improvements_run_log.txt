@@ -531,3 +531,21 @@
 [2026-06-29 18:24:29] [AUTO-IMPROVEMENT] Aplicada: KAN-60 - Não existe documentação interativa da API — toda vez que int
 
 [2026-06-29 18:24:29] [AUTO-IMPROVEMENT] Aplicada: KAN-58 - A aplicação não é stateless — estado é salvo em arquivos JSO
+
+[2026-06-29 18:27:52] [AUTO-IMPROVEMENT] Aplicada: KAN-55 - O CORS está configurado com allow_origins='*' — isso é um pr
+
+[2026-06-29 18:27:56] [AUTO-IMPROVEMENT] Aplicada: KAN-54 - Não existe runbook para os incidentes mais comuns — cada vez
+
+[2026-06-29 18:27:56] [AUTO-IMPROVEMENT] Aplicada: KAN-49 - O painel de grafo usa neon verde sobre fundo preto — depois 
+
+[2026-06-29 18:27:56] [AUTO-IMPROVEMENT] Aplicada: KAN-51 - O bot do Telegram tem um menu de comandos gigante que não ca
+
+[2026-06-29 18:28:02] [AUTO-IMPROVEMENT] Aplicada: KAN-50 - Ausência total de rate limiting nas rotas da API Flask — tri
+
+[2026-06-29 18:28:04] [AUTO-IMPROVEMENT] Aplicada: KAN-57 - Não há visualização de evolução do grafo ao longo do tempo —
+
+[2026-06-29 18:28:05] [AUTO-IMPROVEMENT] Aplicada: KAN-56 - O sistema não faz re-ranking dos resultados do retrieval — o
+
+[2026-06-29 18:28:09] [AUTO-IMPROVEMENT] Aplicada: KAN-53 - O D3.js está sendo carregado via CDN sem lock de versão — se
+
+[2026-06-29 18:28:44] [AUTO-IMPROVEMENT] Aplicada: KAN-52 - O docker-compose.yml não define limits de CPU e memória; em 
