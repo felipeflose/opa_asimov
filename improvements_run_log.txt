@@ -453,3 +453,9 @@
    _Salvar percentis p50/p95/p99 das rotas Flask em logs/metrics_{data}.csv._
 [2026-06-29 17:58:20] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
    _Proteger dados do escritório virtual com token JWT de curta duração._
+[2026-06-29 17:58:36] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:58:37] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
+   _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
+[2026-06-29 17:58:42] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
+   _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._

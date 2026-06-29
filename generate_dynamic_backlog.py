@@ -187,8 +187,12 @@ A lista deve ter exatamente {len(complaints)} cards."""
 def main():
     from dotenv import load_dotenv
     import threading
+    from jira_client import JiraClient
     load_dotenv(os.path.join(APP_DIR, '.env'))
     groq_key = os.environ.get("GROQ_API_KEY", "")
+
+    # ── Inicializa JiraClient ─────────────────────────────────
+    jira = JiraClient()
 
     # ── Carrega configuração de PMs ───────────────────────────
     pm_count = 1
@@ -200,14 +204,9 @@ def main():
         except Exception:
             pass
 
-    # ── Carrega backlog e feedbacks ───────────────────────────
-    backlog = []
-    if os.path.exists(IMPROVEMENTS_FILE):
-        try:
-            with open(IMPROVEMENTS_FILE, 'r', encoding='utf-8') as f:
-                backlog = json.load(f)
-        except Exception:
-            pass
+    # ── Carrega backlog do Jira e feedbacks locais ─────────────
+    logging.info("Carregando backlog do Jira...")
+    backlog = jira.get_issues()
 
     feedbacks = []
     if os.path.exists(FEEDBACK_FILE):
@@ -222,6 +221,9 @@ def main():
 
     if not pending:
         logging.info("Nenhum feedback pendente. PM em modo standby.")
+        # Sincroniza mesmo assim para garantir consistência
+        with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(backlog, f, ensure_ascii=False, indent=2)
         return
 
     # ── Pre-filtragem por fingerprint (sem LLM) ───────────────
@@ -241,7 +243,10 @@ def main():
 
     logging.info(f"Pré-filtragem: {len(to_triage_idxs)} novos para triagem LLM.")
     if not to_triage_idxs:
-        _save(feedbacks, backlog, [])
+        with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
+            json.dump(feedbacks, f, ensure_ascii=False, indent=2)
+        with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(backlog, f, ensure_ascii=False, indent=2)
         return
 
     # ── Divide em chunks por PM ───────────────────────────────
@@ -271,20 +276,40 @@ def main():
         accepted_complaints = [complaints_text[i] for i in truly_new]
         cards = batch_convert(accepted_complaints, groq_key)
 
-        with counter_lock:
-            start = id_counter[0]
-            id_counter[0] += len(cards)
-
         local_tasks = []
         for pos, (orig_idx, card) in enumerate(zip(truly_new, cards)):
             fb = pending[orig_idx]
             fp = complaints_fps[orig_idx]
-            task_id = f"IMP-{(start + pos):05d}"
+            
+            title = card.get('title', fb['complaint'][:60])
+            desc = card.get('description', fb['complaint'])
+            details = f"Gerado via feedback de {fb.get('user','?')} ({fb.get('role','?')})"
+            
+            # Cria a issue no Jira
+            jira_key = jira.create_issue(
+                summary=title,
+                description=desc,
+                details=details,
+                motivation_justification=fb["complaint"],
+                category=card.get("category", "Arquitetura"),
+                priority=card.get("priority", "high"),
+                difficulty=card.get("difficulty", "medium"),
+                impact=card.get("impact", "medium"),
+                source_user=fb.get("user", ""),
+                fingerprint=fp
+            )
+            
+            if not jira_key:
+                with counter_lock:
+                    start = id_counter[0]
+                    id_counter[0] += 1
+                jira_key = f"IMP-{(start + pos):05d}"
+                
             task = {
-                "id": task_id,
-                "title": f"{task_id}: {card.get('title', fb['complaint'][:60])}",
-                "description": card.get("description", fb["complaint"]),
-                "details": f"Gerado via feedback de {fb.get('user','?')} ({fb.get('role','?')})",
+                "id": jira_key,
+                "title": title,
+                "description": desc,
+                "details": details,
                 "motivation_justification": fb["complaint"],
                 "category": card.get("category", "Arquitetura"),
                 "status": "todo",
@@ -299,7 +324,7 @@ def main():
             }
             local_tasks.append(task)
             fb["status"] = "accepted"
-            logging.info(f"  [PM-{pm_num}] ACEITO {task_id}: {card.get('title','')[:50]}")
+            logging.info(f"  [PM-{pm_num}] ACEITO Jira {jira_key}: {title[:50]}")
 
         with write_lock:
             all_new_tasks.extend(local_tasks)
@@ -314,22 +339,20 @@ def main():
     for t in threads:
         t.join(timeout=90)
 
-    # ── Salva resultados ──────────────────────────────────────
-    _save(feedbacks, backlog, all_new_tasks)
-    todo_count = sum(1 for t in backlog if t["status"] == "todo") + len(all_new_tasks)
-    logging.info(f"✅ PM({pm_count}x) concluiu: +{len(all_new_tasks)} cards. TODO: {todo_count}")
+    # ── Sincroniza backlog local com o Jira ───────────────────
+    logging.info("Sincronizando backlog local com o Jira...")
+    jira_backlog = jira.get_issues()
 
-
-def _save(feedbacks: list, backlog: list, new_tasks: list):
-    final_backlog = (
-        [t for t in backlog if t["status"] != "todo"] +
-        [t for t in backlog if t["status"] == "todo"] +
-        new_tasks
-    )
-    with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(final_backlog, f, ensure_ascii=False, indent=2)
+    # Salva feedbacks locais atualizados
     with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
         json.dump(feedbacks, f, ensure_ascii=False, indent=2)
+
+    # Salva backlog atualizado do Jira localmente
+    with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(jira_backlog, f, ensure_ascii=False, indent=2)
+
+    todo_count = sum(1 for t in jira_backlog if t["status"] == "todo")
+    logging.info(f"✅ PM({pm_count}x) concluiu. Backlog TODO atualizado do Jira: {todo_count}")
 
 
 if __name__ == '__main__':
