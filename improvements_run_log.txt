@@ -417,3 +417,9 @@
    _Aumentar ratio de contraste para WCAG AA em todos os textos de status e labels._
 [2026-06-29 17:52:42] [AUTO-IMPROVEMENT] Aplicada: TECH-004 - Adicionar paginação ao endpoint /api/improvements
    _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
+[2026-06-29 17:53:38] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
+   _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
+[2026-06-29 17:53:40] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
+   _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
+[2026-06-29 17:53:45] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
+   _Proteger dados do escritório virtual com token JWT de curta duração._
