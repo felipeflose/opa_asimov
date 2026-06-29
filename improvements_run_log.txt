@@ -225,3 +225,9 @@
    _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
 [2026-06-29 17:27:57] [AUTO-IMPROVEMENT] Aplicada: IMP-10001 - IMP-10001: Refatorar e limpar notas órfãs no Vault RAG
    _Implementar um processo de limpeza e validação para remover notas órfãs (sem arestas/referências) do repositório de conhecimento do sistema Vault, garantindo a integridade estrutural dos dados para o RAG._
+[2026-06-29 17:28:11] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
+   _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
+[2026-06-29 17:28:11] [AUTO-IMPROVEMENT] Aplicada: TECH-006 - Adicionar retry automático nas chamadas ao Telegram Bot
+   _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
+[2026-06-29 17:28:17] [AUTO-IMPROVEMENT] Aplicada: TECH-010 - Implementar debounce no input de busca do grafo
+   _Esperar 300ms após o último keystroke antes de filtrar nós para reduzir re-renders._

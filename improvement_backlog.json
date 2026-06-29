@@ -240,20 +240,5 @@
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588300",
     "completed_at": "2026-06-29T16:40:20.664979"
-  },
-  {
-    "id": "IMP-10001",
-    "title": "IMP-10001: Refatorar e limpar notas órfãs no Vault RAG",
-    "description": "Implementar um processo de limpeza e validação para remover notas órfãs (sem arestas/referências) do repositório de conhecimento do sistema Vault, garantindo a integridade estrutural dos dados para o RAG.",
-    "details": "Analisar a estrutura de dados do Vault (ex: arquivos JSON, grafo de conhecimento) e desenvolver um script de validação para identificar e deletar ou corrigir nós/notas sem referências válidas. Revisar a lógica de indexação do RAG para garantir que apenas dados estruturados sejam utilizados.",
-    "motivation_justification": "A presença de notas órfãs compromete a integridade do conhecimento, tornando o sistema RAG ineficaz e potencialmente gerando resultados incorretos ou irrelevantes.",
-    "category": "RAG",
-    "status": "done",
-    "priority": "high",
-    "difficulty": "medium",
-    "impact": "high",
-    "qualified": true,
-    "created_at": "2026-06-29T17:25:42.581515",
-    "completed_at": "2026-06-29T17:27:57.047543"
   }
 ]
