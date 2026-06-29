@@ -399,3 +399,9 @@
    _O contraste de cor dos labels dos nós não atinge o ratio mínimo WCAG AA — pessoas com daltonismo verde-vermelho não enxergam nada._
 [2026-06-29 17:49:41] [AUTO-IMPROVEMENT] Aplicada: IMP-10026 - IMP-10026: O SQLite está sendo usado em modo shared entre múltiplos pro
    _O SQLite está sendo usado em modo shared entre múltiplos processos Python sem qualquer serialização — isso vai corromper os dados._
+[2026-06-29 17:50:41] [AUTO-IMPROVEMENT] Aplicada: TECH-003 - Comprimir obsidian_graph.json com gzip antes de servir
+   _Reduzir tráfego de rede ao servir o grafo para o frontend via Accept-Encoding._
+[2026-06-29 17:50:41] [AUTO-IMPROVEMENT] Aplicada: TECH-018 - Criar testes unitários para daily_digest.py
+   _Adicionar pytest com mocks para cobrir os paths de coleta de dados do digest._
+[2026-06-29 17:50:42] [AUTO-IMPROVEMENT] Aplicada: TECH-004 - Adicionar paginação ao endpoint /api/improvements
+   _Retornar máximo de 50 itens por página para evitar timeout com backlog grande._
