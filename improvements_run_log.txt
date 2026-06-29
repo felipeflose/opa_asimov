@@ -521,3 +521,5 @@
    _Não existe monitoramento de certificado SSL — se usarmos HTTPS algum dia, o cert pode expirar sem ninguém perceber._
 
 [2026-06-29 18:20:44] [AUTO-MERGE] Homologado: KAN-61
+
+[2026-06-29 18:20:47] [AUTO-MERGE] Homologado: KAN-63
