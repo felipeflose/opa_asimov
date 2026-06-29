@@ -275,70 +275,70 @@
     "completed_at": "2026-06-29T17:13:36.431984"
   },
   {
-    "id": "IMP-00028",
-    "title": "IMP-00028: Aumentar a observabilidade de Sanitizer Pipeline",
-    "description": "Aumentar a observabilidade de o módulo Sanitizer Pipeline para otimizar segurança de segredos utilizando estruturação de JSON com Pydantic.",
-    "category": "UI/UX",
-    "status": "in_progress",
-    "difficulty": "easy",
-    "impact": "high",
-    "created_at": "2026-06-27T11:42:10.588314",
-    "completed_at": null
-  },
-  {
     "id": "IMP-00026",
     "title": "IMP-00026: Reduzir gargalos de Docling PDF Converter",
     "description": "Reduzir gargalos de o módulo Docling PDF Converter para otimizar carga de CPU utilizando indexação vetorial por similaridade de cosseno.",
     "category": "Performance",
-    "status": "todo",
+    "status": "done",
     "difficulty": "hard",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588310",
-    "completed_at": null
+    "completed_at": "2026-06-29T17:15:46.707338"
   },
   {
     "id": "IMP-00027",
     "title": "IMP-00027: Reduzir gargalos de Health Monitor",
     "description": "Reduzir gargalos de o módulo Health Monitor para otimizar carga de CPU utilizando comunicação SSE (Server-Sent Events).",
     "category": "Performance",
-    "status": "in_progress",
+    "status": "done",
     "difficulty": "hard",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.588312",
-    "completed_at": null
+    "completed_at": "2026-06-29T17:15:45.710125"
+  },
+  {
+    "id": "IMP-00028",
+    "title": "IMP-00028: Aumentar a observabilidade de Sanitizer Pipeline",
+    "description": "Aumentar a observabilidade de o módulo Sanitizer Pipeline para otimizar segurança de segredos utilizando estruturação de JSON com Pydantic.",
+    "category": "UI/UX",
+    "status": "done",
+    "difficulty": "easy",
+    "impact": "high",
+    "created_at": "2026-06-27T11:42:10.588314",
+    "completed_at": "2026-06-29T17:15:42.721830"
   },
   {
     "id": "IMP-00029",
     "title": "IMP-00029: Aumentar a observabilidade de RAGAgent",
     "description": "Aumentar a observabilidade de o módulo RAGAgent para otimizar experiência do usuário (UX) utilizando circuit breaking com fallback.",
     "category": "Telegram",
-    "status": "todo",
+    "status": "done",
     "difficulty": "easy",
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.588316",
-    "completed_at": null
+    "completed_at": "2026-06-29T17:17:44.642163"
   },
   {
     "id": "IMP-00030",
     "title": "IMP-00030: Garantir resiliência em Docker Orchestration",
     "description": "Garantir resiliência em o módulo Docker Orchestration para otimizar acurácia semântica utilizando debounce e throttling.",
     "category": "Performance",
-    "status": "todo",
+    "status": "done",
     "difficulty": "easy",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588319",
-    "completed_at": null
+    "completed_at": "2026-06-29T17:17:37.585634"
   },
   {
     "id": "IMP-00031",
     "title": "IMP-00031: Refatorar Telegram Bot",
     "description": "Refatorar o módulo Telegram Bot para otimizar tempo de build Docker utilizando indexação vetorial por similaridade de cosseno.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "difficulty": "easy",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588321",
-    "completed_at": null
+    "completed_at": "2026-06-29T17:17:45.637342"
   },
   {
     "id": "IMP-00032",
@@ -418,7 +418,7 @@
     "completed_at": null
   },
   {
- : "IMP-00039",
+    "id": "IMP-00039",
     "title": "IMP-00039: Adicionar testes unitários para Flask App Dashboard",
     "description": "Adicionar testes unitários para o módulo Flask App Dashboard para otimizar velocidade de renderização utilizando estruturação de JSON com Pydantic.",
     "category": "DevOps",
@@ -631,7 +631,7 @@
     "title": "IMP-00058: Modularizar Sanitizer Pipeline",
     "description": "Modularizar o módulo Sanitizer Pipeline para otimizar consumo de memória RAM utilizando processamento paralelo com ThreadPool.",
     "category": "Segurança",
-    "status"status": "todo",
+    "status": "todo",
     "difficulty": "easy",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588381",
@@ -1058,7 +1058,7 @@
   {
     "id": "IMP-00097",
     "title": "IMP-00097: Aumentar a observabilidade de Health Monitor",
-    "descrip"Aumentar a observabilidade de o módulo Health Monitor para otimizar experiência do usuário (UX) utilizando circuit breaking com fallback.",
+    "description": "Aumentar a observabilidade de o módulo Health Monitor para otimizar experiência do usuário (UX) utilizando circuit breaking com fallback.",
     "category": "Arquitetura",
     "status": "todo",
     "difficulty": "medium",
@@ -1267,7 +1267,7 @@
   {
     "id": "IMP-00116",
     "title": "IMP-00116: Auditar Lineage Auditor",
-    "description": "Audita"Auditar o módulo Lineage Auditor para otimizar cobertura de testes utilizando processamento paralelo com ThreadPool.",
+    "description": "Auditar o módulo Lineage Auditor para otimizar cobertura de testes utilizando processamento paralelo com ThreadPool.",
     "category": "Segurança",
     "status": "todo",
     "difficulty": "easy",
@@ -1690,7 +1690,8 @@
     "status": "todo",
     "difficulty": "easy",
     "impact": "medium",
-    "created_at": "2026-06-27T11:42:10.588591"completed_at": null
+    "created_at": "2026-06-27T11:42:10.588591",
+    "completed_at": null
   },
   {
     "id": "IMP-00155",
@@ -1907,7 +1908,7 @@
     "description": "Reduzir gargalos de o módulo Docling PDF Converter para otimizar durabilidade do cache utilizando indexação vetorial por similaridade de cosseno.",
     "category": "RAG",
     "status": "todo",
-    "diffic"difficulty": "medium",
+    "difficulty": "medium",
     "impact": "high",
     "created_at": "2026-06-27T11:42:10.588634",
     "completed_at": null
@@ -5764,7 +5765,7 @@
   },
   {
     "id": "IMP-00525",
-    "t"IMP-00525: Refatorar Sanitizer Pipeline",
+    "title": "IMP-00525: Refatorar Sanitizer Pipeline",
     "description": "Refatorar o módulo Sanitizer Pipeline para otimizar consumo de memória RAM utilizando docker multi-stage builds.",
     "category": "Arquitetura",
     "status": "todo",
@@ -7272,7 +7273,7 @@
   {
     "id": "IMP-00662",
     "title": "IMP-00662: Melhorar a segurança de D3.js Graph",
-    "descri"description": "Melhorar a segurança de o módulo D3.js Graph para otimizar tempo de build Docker utilizando processamento paralelo com ThreadPool.",
+    "description": "Melhorar a segurança de o módulo D3.js Graph para otimizar tempo de build Docker utilizando processamento paralelo com ThreadPool.",
     "category": "Segurança",
     "status": "todo",
     "difficulty": "easy",
@@ -9204,7 +9205,8 @@
     "impact": "low",
     "created_at": "2026-06-27T11:42:10.590145",
     "completed_at": null
- 
+  },
+  {
     "id": "IMP-00838",
     "title": "IMP-00838: Modularizar Docker Orchestration",
     "description": "Modularizar o módulo Docker Orchestration para otimizar acurácia semântica utilizando debounce e throttling.",
@@ -11130,7 +11132,7 @@
     "completed_at": null
   },
   {
-    "id": "IMP-: "IMP-01013",
+    "id": "IMP-01013",
     "title": "IMP-01013: Aumentar a observabilidade de Authentication Gate",
     "description": "Aumentar a observabilidade de o módulo Authentication Gate para otimizar acurácia semântica utilizando circuit breaking com fallback.",
     "category": "Telegram",
@@ -19535,7 +19537,7 @@
   },
   {
     "id": "IMP-01777",
-    "t"IMP-01777: Garantir resiliência em Docker Orchestration",
+    "title": "IMP-01777: Garantir resiliência em Docker Orchestration",
     "description": "Garantir resiliência em o módulo Docker Orchestration para otimizar segurança de segredos utilizando circuit breaking com fallback.",
     "category": "DevOps",
     "status": "todo",
@@ -20823,7 +20825,7 @@
   {
     "id": "IMP-01894",
     "title": "IMP-01894: Otimizar Docling PDF Converter",
-    "description": "Otimiz"Otimizar o módulo Docling PDF Converter para otimizar concorrência de leitura/escrita utilizando comunicação SSE (Server-Sent Events).",
+    "description": "Otimizar o módulo Docling PDF Converter para otimizar concorrência de leitura/escrita utilizando comunicação SSE (Server-Sent Events).",
     "category": "UI/UX",
     "status": "todo",
     "difficulty": "hard",
@@ -21037,7 +21039,7 @@
     "status": "todo",
     "difficulty": "medium",
     "impact": "high",
-    "create"2026-06-27T11:42:10.592592",
+    "created_at": "2026-06-27T11:42:10.592592",
     "completed_at": null
   },
   {
@@ -21471,7 +21473,7 @@
   },
   {
     "id": "IMP-01953",
-    "title": "IMP-01"IMP-01953: Garantir resiliência em Lineage Auditor",
+    "title": "IMP-01953: Garantir resiliência em Lineage Auditor",
     "description": "Garantir resiliência em o módulo Lineage Auditor para otimizar concorrência de leitura/escrita utilizando indexação vetorial por similaridade de cosseno.",
     "category": "DevOps",
     "status": "todo",
@@ -25555,7 +25557,7 @@
     "title": "IMP-02324: Reduzir gargalos de Authentication Gate",
     "description": "Reduzir gargalos de o módulo Authentication Gate para otimizar consumo de memória RAM utilizando docker multi-stage builds.",
     "category": "Telegram",
-    "st"todo",
+    "status": "todo",
     "difficulty": "hard",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.593512",
@@ -32441,7 +32443,7 @@
     "title": "IMP-02950: Aumentar a observabilidade de Telegram Bot",
     "description": "Aumentar a observabilidade de o módulo Telegram Bot para otimizar experiência do usuário (UX) utilizando estruturação de JSON com Pydantic.",
     "category": "RAG",
-    "status": "todo","todo",
+    "status": "todo",
     "difficulty": "hard",
     "impact": "medium",
     "created_at": "2026-06-27T11:42:10.595275",
@@ -36327,7 +36329,7 @@
     "status": "todo",
     "difficulty": "easy",
     "impact": "high",
-    "create"2026-0"2026-06-27T11:42:10.596108",
+    "created_at": "2026-06-27T11:42:10.596108",
     "completed_at": null
   },
   {

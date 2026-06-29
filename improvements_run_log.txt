@@ -99,3 +99,9 @@
    _Reduzir gargalos de o módulo Docling PDF Converter para otimizar carga de CPU utilizando indexação vetorial por similaridade de cosseno._
 [2026-06-29 17:17:15] [AUTO-IMPROVEMENT] Aplicada: IMP-00028 - IMP-00028: Aumentar a observabilidade de Sanitizer Pipeline
    _Aumentar a observabilidade de o módulo Sanitizer Pipeline para otimizar segurança de segredos utilizando estruturação de JSON com Pydantic._
+[2026-06-29 17:17:37] [AUTO-IMPROVEMENT] Aplicada: IMP-00030 - IMP-00030: Garantir resiliência em Docker Orchestration
+   _Garantir resiliência em o módulo Docker Orchestration para otimizar acurácia semântica utilizando debounce e throttling._
+[2026-06-29 17:17:44] [AUTO-IMPROVEMENT] Aplicada: IMP-00029 - IMP-00029: Aumentar a observabilidade de RAGAgent
+   _Aumentar a observabilidade de o módulo RAGAgent para otimizar experiência do usuário (UX) utilizando circuit breaking com fallback._
+[2026-06-29 17:17:45] [AUTO-IMPROVEMENT] Aplicada: IMP-00031 - IMP-00031: Refatorar Telegram Bot
+   _Refatorar o módulo Telegram Bot para otimizar tempo de build Docker utilizando indexação vetorial por similaridade de cosseno._
