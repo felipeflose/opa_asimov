@@ -255,3 +255,9 @@
    _Adicionar um cache para os resultados das consultas ao LLM/Groq._
 [2026-06-29 17:30:09] [AUTO-IMPROVEMENT] Aplicada: IMP-10003 - IMP-10003: Implementar validação de esquema para dados de entrada
    _Adicionar validação de esquema para os dados recebidos pelos agentes._
+[2026-06-29 17:30:37] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
+   _Proteger dados do escritório virtual com token JWT de curta duração._
+[2026-06-29 17:30:38] [AUTO-IMPROVEMENT] Aplicada: TECH-013 - Adicionar tooltip nos nós do grafo mostrando data de criação
+   _Exibir metadata da nota Obsidian (data de criação/modificação) no hover do nó._
+[2026-06-29 17:30:38] [AUTO-IMPROVEMENT] Aplicada: TECH-016 - Minificar CSS e JS em produção
+   _Usar Flask-Assets ou similar para minificar static/css/style.css e app.js no build._
