@@ -28,3 +28,8 @@
 - IMP-00016: IMP-00016: Implementar melhorias em Vector Cache
 - IMP-00018: IMP-00018: Modularizar Authentication Gate
 - IMP-00019: IMP-00019: Adicionar testes unitários para D3.js Graph
+
+[2026-06-29 16:44:42] Lote diário de melhorias comitado diretamente na main:
+- IMP-10001: IMP-10001: Tratamento de exceções HTTP não tratadas em rotas
+- IMP-10003: IMP-10003: Implementar Cache de Memória para RAG Agents
+- IMP-10002: IMP-10002: Refatorar e limpar notas órfãs no Vault do RAG
