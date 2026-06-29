@@ -2160,9 +2160,79 @@ async function loadOfficeData() {
         // 6. Renderiza KPIs de Atendimento TI
         if (data.ranking) renderKPIs(data.ranking);
         
+        // 7. Renderiza Métricas e Kanban do Jira
+        if (data.jira_metrics) {
+            const todoEl = document.getElementById('jira-metrics-todo');
+            const progEl = document.getElementById('jira-metrics-progress');
+            const analEl = document.getElementById('jira-metrics-analysis');
+            const doneEl = document.getElementById('jira-metrics-done');
+            if (todoEl) todoEl.innerText = data.jira_metrics.todo;
+            if (progEl) progEl.innerText = data.jira_metrics.in_progress;
+            if (analEl) analEl.innerText = data.jira_metrics.in_analysis;
+            if (doneEl) doneEl.innerText = data.jira_metrics.done;
+        }
+
+        if (data.jira_issues) {
+            renderJiraMiniKanban(data.jira_issues);
+        }
+        
     } catch(e) {
         console.error("Erro ao carregar dados do escritório virtual:", e);
     }
+}
+
+function renderJiraMiniKanban(issues) {
+    const cols = {
+        todo: document.getElementById('jira-kanban-todo'),
+        progress: document.getElementById('jira-kanban-progress'),
+        analysis: document.getElementById('jira-kanban-analysis'),
+        done: document.getElementById('jira-kanban-done')
+    };
+
+    // Garante que os elementos existem na página antes de tentar manipular
+    if (!cols.todo || !cols.progress || !cols.analysis || !cols.done) return;
+
+    // Limpa colunas
+    Object.values(cols).forEach(c => { c.innerHTML = ''; });
+
+    issues.forEach(issue => {
+        let st = (issue.status || '').toLowerCase();
+        let targetCol = null;
+
+        if (st === 'todo' || st === 'a fazer') targetCol = cols.todo;
+        else if (st === 'in_progress' || st === 'em andamento') targetCol = cols.progress;
+        else if (st === 'em analise' || st === 'em análise' || st === 'qa') targetCol = cols.analysis;
+        else if (st === 'done' || st === 'concluído' || st === 'concluido') targetCol = cols.done;
+
+        if (!targetCol) return;
+
+        // Estilos de borda e tags de categoria
+        let catColor = '#64748b';
+        if (issue.category === 'Performance') catColor = '#06b6d4';
+        else if (issue.category === 'Security') catColor = '#ef4444';
+        else if (issue.category === 'UI/UX') catColor = '#f59e0b';
+        else if (issue.category === 'RAG' || issue.category === 'RAG/AI') catColor = '#a855f7';
+
+        // Indicador de retrabalho
+        let reworkBadge = issue.rework_done 
+            ? `<div style="font-size:0.52rem;background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25);border-radius:4px;padding:2px;margin-top:5px;font-weight:700;text-align:center;">🔄 QA REWORKED</div>`
+            : '';
+
+        let cardHtml = `
+            <div class="card" style="padding: 10px; background: rgba(15, 23, 42, 0.45); border-color: rgba(255,255,255,0.06); font-size: 0.75rem; cursor: pointer; transition: transform 0.2s, border-color 0.2s;" 
+                 hover-effect="true"
+                 onclick="window.open('https://felipeflose.atlassian.net/browse/${issue.id}', '_blank')">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
+                    <b style="color:var(--cyan); font-size:0.7rem;">${issue.id}</b>
+                    <span style="font-size:0.5rem;background:rgba(255,255,255,0.04);padding:1px 4px;border-radius:3px;color:${catColor};border:1px solid ${catColor}60;">${issue.category}</span>
+                </div>
+                <div style="color:#e2e8f0; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:0.7rem;" title="${issue.title}">${issue.title}</div>
+                <div style="font-size:0.58rem; color:var(--text-muted); margin-top:4px;">👤 ${issue.source_user || 'AI SRE'}</div>
+                ${reworkBadge}
+            </div>
+        `;
+        targetCol.innerHTML += cardHtml;
+    });
 }
 
 function renderRanking(ranking) {

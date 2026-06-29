@@ -960,12 +960,40 @@ def api_office():
     # Ordena: mais aceitos all-time → desempate por acceptance_rate
     ranking.sort(key=lambda x: (-x["accepted"], -x["acceptance_rate"]))
 
-    # Carrega pm_count
+    # Carrega contagem de PMs da configuração
     pm_count = 1
     if os.path.exists(config_file):
         try:
             with open(config_file, 'r') as f:
                 pm_count = json.load(f).get("pm_count", 1)
+        except Exception:
+            pass
+
+    # ── Carrega métricas e issues do Jira a partir do improvement_backlog.json ──
+    jira_issues = []
+    backlog_file = os.path.join(os.path.dirname(__file__), 'improvement_backlog.json')
+    jira_metrics = {
+        "todo": 0,
+        "in_progress": 0,
+        "in_analysis": 0,
+        "done": 0,
+        "total": 0
+    }
+    if os.path.exists(backlog_file):
+        try:
+            with open(backlog_file, 'r', encoding='utf-8') as f:
+                jira_issues = json.load(f)
+            jira_metrics["total"] = len(jira_issues)
+            for issue in jira_issues:
+                st = issue.get("status", "").lower()
+                if st in ["todo", "a fazer"]:
+                    jira_metrics["todo"] += 1
+                elif st in ["in_progress", "em andamento"]:
+                    jira_metrics["in_progress"] += 1
+                elif st in ["em analise", "em análise", "qa"]:
+                    jira_metrics["in_analysis"] += 1
+                elif st in ["done", "concluído", "concluido"]:
+                    jira_metrics["done"] += 1
         except Exception:
             pass
 
@@ -976,6 +1004,8 @@ def api_office():
         "dev_count": dev_count,
         "pm_count": pm_count,
         "ranking": ranking,
+        "jira_metrics": jira_metrics,
+        "jira_issues": jira_issues,
     })
 
 
