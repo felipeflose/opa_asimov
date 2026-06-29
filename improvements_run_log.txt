@@ -435,3 +435,9 @@
    _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
 [2026-06-29 17:55:40] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
    _Proteger dados do escritório virtual com token JWT de curta duração._
+[2026-06-29 17:56:37] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
+   _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
+[2026-06-29 17:56:40] [AUTO-IMPROVEMENT] Aplicada: TECH-009 - Adicionar endpoint /api/health/db para verificar SQLite
+   _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
+[2026-06-29 17:56:42] [AUTO-IMPROVEMENT] Aplicada: TECH-008 - Adicionar índice SQLite na coluna 'status' do backlog
+   _Indexar a coluna status para acelerar queries de filtro por status em backlogs grandes._
