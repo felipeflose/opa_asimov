@@ -229,13 +229,15 @@ def main():
         for item in candidates:
             jira.transition_issue(item["id"], "Concluído")
             
-            # Constrói o histórico/comentário rico do card
+            # Constrói o histórico/comentário rico do card, incluindo solicitante e feedback original
             comment_text = (
                 f"[QA Gate: APROVADO] Ajustes validados por testes unitários e homologados com sucesso!\n\n"
+                f"👤 Solicitante: {item.get('source_user', 'AI Factory SRE')}\n"
+                f"💬 Feedback original: \"{item.get('motivation_justification', 'Dívida técnica automatizada')}\"\n\n"
                 f"GitHub Integration Info:\n"
                 f"- Branch: {branch_name}\n"
                 f"- Commit SHA: {commit_sha}\n"
-                f"- Detalhes da melhoria: {item['description']}\n\n"
+                f"- Detalhes do ajuste: {item['description']}\n\n"
                 f"Modificado e integrado automaticamente de forma segura via PR/Merge."
             )
             jira.add_comment(item["id"], comment_text)
