@@ -429,3 +429,9 @@
    _Implementar exponential backoff (3 tentativas) antes de desistir do envio de mensagem._
 [2026-06-29 17:54:43] [AUTO-IMPROVEMENT] Aplicada: TECH-001 - Otimizar carregamento inicial do grafo D3.js
    _Reduzir tempo de first-render do grafo com lazy-loading e virtualização de nós fora da viewport._
+[2026-06-29 17:55:38] [AUTO-IMPROVEMENT] Aplicada: TECH-002 - Adicionar cache de respostas Groq/LLM com TTL de 5 min
+   _Evitar chamadas duplicadas ao LLM para a mesma pergunta dentro de 5 minutos._
+[2026-06-29 17:55:39] [AUTO-IMPROVEMENT] Aplicada: TECH-007 - Limpar feedbacks com mais de 7 dias do user_feedback.json
+   _Manter apenas os últimos 7 dias para evitar crescimento ilimitado do arquivo de feedback._
+[2026-06-29 17:55:40] [AUTO-IMPROVEMENT] Aplicada: TECH-017 - Adicionar autenticação JWT ao endpoint /api/office
+   _Proteger dados do escritório virtual com token JWT de curta duração._
