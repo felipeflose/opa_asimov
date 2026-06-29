@@ -468,3 +468,12 @@
 
 [2026-06-29 18:04:26] [AUTO-IMPROVEMENT] Aplicada: KAN-27 - O grafo D3.js é completamente inacessível via teclado — usuá
    _O grafo D3.js é completamente inacessível via teclado — usuários com deficiência visual não conseguem navegar pelos nós._
+
+[2026-06-29 18:11:38] [AUTO-IMPROVEMENT] Aplicada: KAN-44 - O servidor não tem configuração de limites de tamanho de req
+   _O servidor não tem configuração de limites de tamanho de request — é possível enviar um payload de vários GB e travar a memória._
+
+[2026-06-29 18:11:39] [AUTO-IMPROVEMENT] Aplicada: KAN-45 - Não existe alerta de anomalia de token usage — uma query mal
+   _Não existe alerta de anomalia de token usage — uma query mal formada pode consumir todos os tokens do mês sem nenhum aviso._
+
+[2026-06-29 18:11:40] [AUTO-IMPROVEMENT] Aplicada: KAN-43 - O bot do Telegram não tem comando /help atualizado — os coma
+   _O bot do Telegram não tem comando /help atualizado — os comandos listados são diferentes dos que realmente funcionam._
