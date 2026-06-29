@@ -339,3 +339,9 @@
    _Criar rota de healthcheck que verifica integridade do banco de dados SQLite._
 [2026-06-29 17:39:46] [AUTO-IMPROVEMENT] Aplicada: IMP-10013 - IMP-10013: Implementar testes de integração para o fluxo completo do agente
    _Criar testes de integração para o fluxo completo do agente._
+[2026-06-29 17:40:37] [AUTO-IMPROVEMENT] Aplicada: IMP-10014 - IMP-10014: Implementar testes de integração para agentes
+   _Adicionar testes de integração para garantir o comportamento esperado dos agentes._
+[2026-06-29 17:40:39] [AUTO-IMPROVEMENT] Aplicada: IMP-10013 - IMP-10013: Implementar versionamento de agentes
+   _Adicionar um sistema de versionamento para os agentes._
+[2026-06-29 17:40:42] [AUTO-IMPROVEMENT] Aplicada: TECH-019 - Centralizar configurações em config.py com dataclass
+   _Mover todas as constantes espalhadas nos arquivos para um único módulo config.py._
