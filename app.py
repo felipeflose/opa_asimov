@@ -404,8 +404,15 @@ def api_improvements():
     counts = {"todo": 0, "in_progress": 0, "done": 0, "total": len(data)}
     
     for item in data:
-        status = item["status"]
-        counts[status] += 1
+        status = item.get("status", "todo")
+        # Para o Kanban geral de 3 colunas, agrupamos 'in_analysis' sob 'in_progress'
+        metric_status = status
+        if metric_status == "in_analysis":
+            metric_status = "in_progress"
+            
+        if metric_status not in counts:
+            counts[metric_status] = 0
+        counts[metric_status] += 1
         
         # Filtros
         if q and q not in item["title"].lower() and q not in item["description"].lower() and q not in item["id"].lower():
@@ -415,7 +422,7 @@ def api_improvements():
             
         if status == "todo":
             todo_list.append(item)
-        elif status == "in_progress":
+        elif status in ["in_progress", "in_analysis"]:
             in_progress_list.append(item)
         elif status == "done":
             done_list.append(item)
@@ -990,7 +997,7 @@ def api_office():
                     jira_metrics["todo"] += 1
                 elif st in ["in_progress", "em andamento"]:
                     jira_metrics["in_progress"] += 1
-                elif st in ["em analise", "em análise", "qa"]:
+                elif st in ["em analise", "em análise", "qa", "in_analysis"]:
                     jira_metrics["in_analysis"] += 1
                 elif st in ["done", "concluído", "concluido"]:
                     jira_metrics["done"] += 1

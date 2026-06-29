@@ -567,3 +567,21 @@
 [2026-06-29 18:38:10] [AUTO-IMPROVEMENT] Aplicada: KAN-36 - O fluxo de indexação do vault não tem testes de integração —
 
 [2026-06-29 18:38:35] [AUTO-IMPROVEMENT] Aplicada: KAN-33 - O botão 'Resetar Grafo' fica numa posição muito parecida com
+
+[2026-06-29 18:43:21] [AUTO-IMPROVEMENT] Aplicada: KAN-78 - Não vi nenhuma validação de entrada nas rotas de busca — um 
+
+[2026-06-29 18:43:22] [AUTO-IMPROVEMENT] Aplicada: KAN-83 - O SQLite não tem índices nas colunas de busca de feedback — 
+
+[2026-06-29 18:43:26] [AUTO-IMPROVEMENT] Aplicada: KAN-81 - Os timestamps no feedback não estão padronizados em UTC — ve
+
+[2026-06-29 18:43:27] [AUTO-IMPROVEMENT] Aplicada: KAN-80 - A busca de notas faz um fetch a cada tecla digitada sem debo
+
+[2026-06-29 18:43:31] [AUTO-IMPROVEMENT] Aplicada: KAN-82 - O backlog de melhorias tem mais de 4 MB de JSON mas não tem 
+
+[2026-06-29 18:43:52] [AUTO-IMPROVEMENT] Aplicada: KAN-86 - Não há mini-mapa de navegação para grafos grandes — fico com
+
+[2026-06-29 18:44:01] [AUTO-IMPROVEMENT] Aplicada: KAN-84 - Falta paginação no /api/graph — com vault grande o payload u
+
+[2026-06-29 18:44:01] [AUTO-IMPROVEMENT] Aplicada: KAN-85 - O bot não persiste o histórico de conversa por usuário — cad
+
+[2026-06-29 18:44:10] [AUTO-IMPROVEMENT] Aplicada: KAN-79 - O Dockerfile usa 'python:latest' — isso vai quebrar na próxi
