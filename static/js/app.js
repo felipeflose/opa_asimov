@@ -2488,8 +2488,8 @@ async function firePM() {
 }
 
 function renderPMs(pmCount) {
-    // Atualiza as 3 mesas fixas de PMs no mapa
-    for (let i = 0; i < 3; i++) {
+    // Atualiza as 10 mesas fixas de PMs no mapa
+    for (let i = 0; i < 10; i++) {
         const desk = document.getElementById(`pm-desk-${i}`);
         const monitor = document.getElementById(`pm-monitor-${i}`);
         if (!desk || !monitor) continue;
@@ -2503,6 +2503,55 @@ function renderPMs(pmCount) {
             // Monitor acende
             monitor.style.backgroundColor = '#a855f7'; // Roxo
             monitor.style.boxShadow = '0 0 12px #a855f7, 0 0 6px #a855f7';
+        } else {
+            // Demitido - inativo
+            desk.style.opacity = '0.15';
+            desk.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+            desk.style.boxShadow = 'none';
+            monitor.style.backgroundColor = '#475569';
+            monitor.style.boxShadow = 'none';
+        }
+    }
+}
+
+async function hireQA() {
+    try {
+        const r   = await fetch('/api/office/hire-qa', { method: 'POST' });
+        const res = await r.json();
+        if (res.status === 'ok') {
+            loadOfficeData();
+            showToast(`Novo QA contratado! Equipe: ${res.qa_count} QAs.`, 'success');
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function fireQA() {
+    try {
+        const r   = await fetch('/api/office/fire-qa', { method: 'POST' });
+        const res = await r.json();
+        if (res.status === 'ok') {
+            loadOfficeData();
+            showToast(`QA demitido. Equipe: ${res.qa_count} QAs.`, 'info');
+        }
+    } catch(e) { console.error(e); }
+}
+
+function renderQAs(qaCount) {
+    // Atualiza as 10 mesas fixas de QAs no mapa
+    for (let i = 0; i < 10; i++) {
+        const desk = document.getElementById(`qa-desk-${i}`);
+        const monitor = document.getElementById(`qa-monitor-${i}`);
+        if (!desk || !monitor) continue;
+
+        if (i < qaCount) {
+            // Contratado - ativo
+            desk.style.opacity = '1.0';
+            desk.style.borderColor = 'rgba(16, 185, 129, 0.45)';
+            desk.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.15)';
+            
+            // Monitor acende
+            monitor.style.backgroundColor = '#10b981'; // Verde
+            monitor.style.boxShadow = '0 0 12px #10b981, 0 0 6px #10b981';
         } else {
             // Demitido - inativo
             desk.style.opacity = '0.15';
