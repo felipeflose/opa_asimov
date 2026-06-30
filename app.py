@@ -1430,6 +1430,270 @@ def api_rinha_generate_opponents():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/factory-metrics')
+def api_factory_metrics():
+    """
+    Métricas avançadas da fábrica de software TechFuse Ltda.
+    Retorna: sprint velocity, cycle time, QA rates, epic progress, burndown, top contributors.
+    """
+    import re as _re
+    from datetime import datetime as _dt, timedelta as _td
+
+    backlog_file = os.path.join(APP_DIR, 'improvement_backlog.json')
+    feedback_file = os.path.join(APP_DIR, 'user_feedback.json')
+    run_log_file = os.path.join(APP_DIR, 'improvements_run_log.txt')
+
+    backlog, feedbacks = [], []
+    try:
+        if os.path.exists(backlog_file):
+            with open(backlog_file, 'r', encoding='utf-8') as f:
+                backlog = json.load(f)
+    except Exception:
+        pass
+    try:
+        if os.path.exists(feedback_file):
+            with open(feedback_file, 'r', encoding='utf-8') as f:
+                feedbacks = json.load(f)
+    except Exception:
+        pass
+
+    now = _dt.now()
+    today_str = now.date().isoformat()
+    week_ago = now - _td(days=7)
+
+    # ── Kanban counts ──────────────────────────────────────────
+    todo = in_prog = in_analysis = done_total = 0
+    done_today = done_week = 0
+    cycle_times = []
+    category_counts = {}
+    rework_count = total_processed = 0
+
+    for item in backlog:
+        st = item.get('status', 'todo')
+        cat = item.get('category', 'Arquitetura')
+        category_counts[cat] = category_counts.get(cat, 0) + 1
+
+        if st == 'todo':
+            todo += 1
+        elif st == 'in_progress':
+            in_prog += 1
+        elif st == 'in_analysis':
+            in_analysis += 1
+        elif st == 'done':
+            done_total += 1
+            comp = item.get('completed_at') or item.get('updated_at')
+            created = item.get('created_at')
+            if comp:
+                try:
+                    comp_dt = _dt.fromisoformat(comp[:19])
+                    if comp_dt.date().isoformat() == today_str:
+                        done_today += 1
+                    if comp_dt >= week_ago:
+                        done_week += 1
+                    if created:
+                        cr_dt = _dt.fromisoformat(created[:19])
+                        delta_h = (comp_dt - cr_dt).total_seconds() / 3600
+                        if 0 < delta_h < 500:
+                            cycle_times.append(delta_h)
+                except Exception:
+                    pass
+        # Detect rework from title/description patterns
+        if item.get('rework_done'):
+            rework_count += 1
+        total_processed += 1 if st == 'done' else 0
+
+    # ── Sprint velocity (last 7 days) ──────────────────────────
+    sprint_velocity = done_week
+
+    # ── Cycle time median ──────────────────────────────────────
+    avg_cycle_hours = round(sum(cycle_times) / len(cycle_times), 1) if cycle_times else 0
+
+    # ── QA first-pass rate ─────────────────────────────────────
+    qa_first_pass_rate = round(
+        ((total_processed - rework_count) / total_processed * 100) if total_processed > 0 else 85.0, 1
+    )
+
+    # ── Feedback KPIs ─────────────────────────────────────────
+    pending = accepted = rejected = duplicate = 0
+    evidence_rejected = 0
+    for fb in feedbacks:
+        st = fb.get('status', 'pending')
+        if st == 'pending': pending += 1
+        elif st == 'accepted': accepted += 1
+        elif st in ('rejected', 'rejected_insufficient_evidence'):
+            rejected += 1
+            if st == 'rejected_insufficient_evidence':
+                evidence_rejected += 1
+        elif st == 'duplicate': duplicate += 1
+
+    total_fb = len(feedbacks) or 1
+    pm_acceptance_rate = round((accepted / total_fb) * 100, 1)
+    pm_rejection_evidence = round((evidence_rejected / total_fb) * 100, 1)
+
+    # ── Top contributors (by accepted feedbacks) ───────────────
+    contributor_map = {}
+    for fb in feedbacks:
+        if fb.get('status') == 'accepted':
+            user = fb.get('user', '?')
+            avatar = fb.get('avatar', '👤')
+            area = fb.get('area', '')
+            if user not in contributor_map:
+                contributor_map[user] = {'avatar': avatar, 'area': area, 'count': 0}
+            contributor_map[user]['count'] += 1
+
+    top_contributors = sorted(
+        [{'name': k, **v} for k, v in contributor_map.items()],
+        key=lambda x: -x['count']
+    )[:5]
+
+    # ── Chaos monkey ideas (from run log) ─────────────────────
+    chaos_approved = chaos_rejected = 0
+    chaos_ideas = []
+    if os.path.exists(run_log_file):
+        try:
+            with open(run_log_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if '[CHAOS' in line and 'APROVADA' in line:
+                        chaos_approved += 1
+                        idea_match = _re.search(r'Ideia[:\s]+(.{20,80})', line)
+                        if idea_match:
+                            chaos_ideas.append(idea_match.group(1).strip())
+                    elif '[CHAOS' in line and 'REPROV' in line:
+                        chaos_rejected += 1
+        except Exception:
+            pass
+
+    # ── Burndown: stories remaining to hit 10k done ───────────
+    TARGET = 10000
+    remaining = max(0, TARGET - done_total)
+    burndown_rate = done_week / 7 if done_week > 0 else 1  # per day
+    days_to_complete = round(remaining / burndown_rate) if burndown_rate > 0 else 9999
+
+    # ── Epic breakdown by category ─────────────────────────────
+    category_done = {}
+    for item in backlog:
+        if item.get('status') == 'done':
+            cat = item.get('category', 'Arquitetura')
+            category_done[cat] = category_done.get(cat, 0) + 1
+
+    epics = []
+    for cat, total in sorted(category_counts.items(), key=lambda x: -x[1]):
+        done_cat = category_done.get(cat, 0)
+        epics.append({
+            'name': cat,
+            'total': total,
+            'done': done_cat,
+            'pct': round((done_cat / total * 100) if total > 0 else 0, 1)
+        })
+
+    return jsonify({
+        'sprint': {
+            'velocity_week': sprint_velocity,
+            'done_today': done_today,
+            'in_progress': in_prog,
+            'in_analysis': in_analysis,
+            'todo': todo,
+            'done_total': done_total,
+        },
+        'cycle_time': {
+            'avg_hours': avg_cycle_hours,
+            'sample_size': len(cycle_times)
+        },
+        'qa': {
+            'first_pass_rate': qa_first_pass_rate,
+            'rework_count': rework_count,
+            'total_processed': total_processed,
+        },
+        'pm': {
+            'acceptance_rate': pm_acceptance_rate,
+            'rejection_evidence_pct': pm_rejection_evidence,
+            'pending': pending,
+            'accepted': accepted,
+            'rejected': rejected,
+            'duplicate': duplicate,
+        },
+        'chaos': {
+            'approved': chaos_approved,
+            'rejected': chaos_rejected,
+            'latest_ideas': chaos_ideas[-3:],
+        },
+        'burndown': {
+            'target': TARGET,
+            'done': done_total,
+            'remaining': remaining,
+            'rate_per_day': round(burndown_rate, 1),
+            'estimated_days': days_to_complete,
+            'pct_complete': round((done_total / TARGET * 100), 2)
+        },
+        'top_contributors': top_contributors,
+        'epics': epics,
+        'total_feedback': len(feedbacks),
+        'generated_at': now.isoformat()
+    })
+
+
+@app.route('/api/epics')
+def api_epics():
+    """Lista os épicos (agrupados por categoria) com progresso."""
+    backlog_file = os.path.join(APP_DIR, 'improvement_backlog.json')
+    epic_cache_file = os.path.join(APP_DIR, 'epic_cache.json')
+
+    # Primeiro tenta carregar épicos reais do Jira (epic_cache.json)
+    jira_epics = {}
+    if os.path.exists(epic_cache_file):
+        try:
+            with open(epic_cache_file, 'r') as f:
+                jira_epics = json.load(f)
+        except Exception:
+            pass
+
+    # Agrega por categoria do backlog local
+    category_stats = {}
+    try:
+        if os.path.exists(backlog_file):
+            with open(backlog_file, 'r', encoding='utf-8') as f:
+                backlog = json.load(f)
+            for item in backlog:
+                cat = item.get('category', 'Arquitetura')
+                if cat not in category_stats:
+                    category_stats[cat] = {'todo': 0, 'in_progress': 0, 'in_analysis': 0, 'done': 0, 'total': 0}
+                st = item.get('status', 'todo')
+                category_stats[cat]['total'] += 1
+                if st == 'todo': category_stats[cat]['todo'] += 1
+                elif st == 'in_progress': category_stats[cat]['in_progress'] += 1
+                elif st == 'in_analysis': category_stats[cat]['in_analysis'] += 1
+                elif st == 'done': category_stats[cat]['done'] += 1
+    except Exception:
+        pass
+
+    EPIC_COLORS = {
+        'Performance': '#06b6d4', 'Security': '#ef4444', 'RAG/AI': '#a855f7',
+        'UI/UX': '#f59e0b', 'DevOps': '#10b981', 'Arquitetura': '#6366f1',
+        'Mobile': '#ec4899', 'QA': '#14b8a6', 'Telegram': '#3b82f6',
+        'RAG': '#a855f7',
+    }
+    EPIC_ICONS = {
+        'Performance': '⚡', 'Security': '🔐', 'RAG/AI': '🧠',
+        'UI/UX': '🎨', 'DevOps': '🚀', 'Arquitetura': '🏗️',
+        'Mobile': '📱', 'QA': '🧪', 'Telegram': '💬', 'RAG': '🧠',
+    }
+
+    result = []
+    for cat, stats in sorted(category_stats.items(), key=lambda x: -x[1]['total']):
+        pct = round((stats['done'] / stats['total'] * 100) if stats['total'] > 0 else 0, 1)
+        jira_key = jira_epics.get(cat, '')
+        result.append({
+            'name': cat,
+            'jira_key': jira_key,
+            'color': EPIC_COLORS.get(cat, '#94a3b8'),
+            'icon': EPIC_ICONS.get(cat, '📦'),
+            'stats': stats,
+            'pct_done': pct
+        })
+
+    return jsonify({'epics': result, 'total_categories': len(result)})
+
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     # Log da exceção não tratada

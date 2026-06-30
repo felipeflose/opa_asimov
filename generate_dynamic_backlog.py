@@ -5,6 +5,10 @@ Modelo: ao invés de 1 chamada LLM por reclamação (O(N) lento),
 agrupa TODOS os pendentes em 1 única chamada que retorna SIM/NAO para cada um.
 Aceitos → converte em card com 1 segunda chamada batch.
 Resultado: 30 reclamações triadas em ~2 chamadas LLM, não em 30+.
+
+Modelos: Groq (gemma2-9b-it) → fallback Ollama (gemma4-fast:latest)
+PM rigoroso: rejeita feedbacks sem evidências mensuráveis.
+Épicos: vinculados automaticamente por categoria.
 """
 import os
 import json
@@ -47,6 +51,8 @@ def next_id(backlog: list) -> int:
     return last + 1
 
 
+# ── LLM helpers ───────────────────────────────────────────────────────────────
+
 def llm_post(groq_key: str, model: str, messages: list, json_mode=False, max_tokens=4000) -> str:
     """Chama Groq e retorna o texto da resposta, ou '' em erro."""
     try:
@@ -63,10 +69,11 @@ def llm_post(groq_key: str, model: str, messages: list, json_mode=False, max_tok
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
             json=payload,
-            timeout=3,
+            timeout=30,
         )
         if r.status_code == 200:
             return r.json()["choices"][0]["message"]["content"].strip()
+        logging.warning(f"Groq status {r.status_code}: {r.text[:200]}")
     except Exception as e:
         logging.warning(f"Groq error: {e}")
     return ""
@@ -78,13 +85,98 @@ def llm_ollama(prompt: str, json_mode=False) -> str:
             "http://localhost:11434/api/generate",
             json={"model": "gemma4-fast:latest", "prompt": prompt, "stream": False,
                   "format": "json" if json_mode else None, "options": {"temperature": 0.1}},
-            timeout=3,
+            timeout=60,
         )
         if r.status_code == 200:
             return r.json()["response"].strip()
     except Exception as e:
         logging.warning(f"Ollama error: {e}")
     return ""
+
+
+def llm_call(groq_key: str, messages: list, json_mode=False, max_tokens=4000) -> str:
+    """Fallback chain: Groq (gemma2-9b-it) → Ollama (gemma4-fast:latest)."""
+    raw = ""
+    if groq_key:
+        raw = llm_post(groq_key, "gemma2-9b-it", messages,
+                       json_mode=json_mode, max_tokens=max_tokens)
+    if not raw:
+        # Monta prompt simples para Ollama (que usa generate, não chat)
+        prompt = "\n".join(m["content"] for m in messages)
+        raw = llm_ollama(prompt, json_mode=json_mode)
+    return raw
+
+
+# ── Verificação de evidências (PM rigoroso) ───────────────────────────────────
+
+# Padrões que indicam evidência concreta no texto
+_EVIDENCE_PATTERNS = [
+    re.compile(r'\d+[.,]?\d*\s*(%|ms|s|seg|min|kb|mb|gb|requisições|req|nós|notas|linhas)', re.IGNORECASE),
+    re.compile(r'\d+\s*(vezes|vez|usuários|requests|chamadas)', re.IGNORECASE),
+    re.compile(r'(toda\s+vez|sempre\s+que|toda\s+execução|em\s+todos)', re.IGNORECASE),
+    re.compile(r'/[a-zA-Z_/]+\.(py|js|json|html|sh|yml|yaml)', re.IGNORECASE),  # arquivo específico
+    re.compile(r'/(api|rest|v\d)/[a-zA-Z_/]+', re.IGNORECASE),                   # endpoint específico
+    re.compile(r'\b(agent_\w+|app\.py|server\.py|jira_client|vault_embeddings|obsidian_graph|user_feedback)\b', re.IGNORECASE),
+    re.compile(r'(database is locked|KeyError|stack trace|HTTP \d{3}|status \d{3})', re.IGNORECASE),
+    re.compile(r'\b\d{1,4}\s*(ms|segundos|minutos|horas|KB|MB|GB)\b', re.IGNORECASE),
+    re.compile(r'(DevTools|Lighthouse|profiler|benchmark|medido|mensurado)', re.IGNORECASE),
+    re.compile(r'\b\d+\+?\s*notas\b', re.IGNORECASE),
+]
+
+
+def has_evidence(complaint_text: str) -> bool:
+    """
+    Verifica se o texto da reclamação contém evidência concreta.
+    Evidência = número/percentual, tempo, frequência, componente específico, ação reproduzível.
+    """
+    for pattern in _EVIDENCE_PATTERNS:
+        if pattern.search(complaint_text):
+            return True
+    return False
+
+
+def reject_feedback(fb: dict, feedbacks: list, reason: str):
+    """Marca feedback como rejeitado com motivo e dica para melhoria."""
+    fb["status"] = "rejected_insufficient_evidence"
+    fb["rejection_reason"] = reason
+    fb["rejection_tip"] = (
+        "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: "
+        "número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), "
+        "nome de componente específico (ex: /api/graph, agent_rag.py) ou "
+        "erro reproduzível (ex: KeyError, HTTP 500)."
+    )
+    logging.info(f"  [PM REJEITA - SEM EVIDÊNCIA] {fb.get('user','?')}: {fb.get('complaint','')[:60]}")
+
+
+# ── Mapeamento categoria → épico ──────────────────────────────────────────────
+
+CATEGORY_TO_EPIC_AREA = {
+    "Performance": "Performance",
+    "Security": "Security",
+    "RAG/AI": "RAG/AI",
+    "RAG": "RAG/AI",
+    "UI/UX": "UI/UX",
+    "Frontend": "UI/UX",
+    "DevOps": "DevOps",
+    "Arquitetura": "Arquitetura",
+    "Backend": "Arquitetura",
+    "Mobile": "Mobile",
+    "Telegram": "Telegram",
+    "QA": "QA",
+    "Data": "Arquitetura",
+    "SRE": "DevOps",
+    "Product": "Arquitetura",
+    "Full Stack": "Arquitetura",
+}
+
+
+def safe_title(title: str, max_len: int = 60) -> str:
+    """Trunca título de forma segura: sem cortar no meio de palavra, sem ponto final."""
+    title = title.strip().rstrip(".")
+    if len(title) <= max_len:
+        return title
+    truncated = title[:max_len].rsplit(' ', 1)[0]
+    return truncated.rstrip(".,;:").strip()
 
 
 # ── Triagem em Batch ──────────────────────────────────────────────────────────
@@ -114,12 +206,7 @@ Responda APENAS com um JSON no formato:
 Onde: true = DUPLICADO ou irrelevante, false = NOVO e válido.
 A lista deve ter exatamente {len(complaints)} elementos booleanos."""
 
-    raw = ""
-    if groq_key:
-        raw = llm_post(groq_key, "gemma2-9b-it",
-                       [{"role": "user", "content": prompt}], json_mode=True, max_tokens=500)
-    if not raw:
-        raw = llm_ollama(prompt, json_mode=True)
+    raw = llm_call(groq_key, [{"role": "user", "content": prompt}], json_mode=True, max_tokens=500)
 
     try:
         data = json.loads(raw)
@@ -129,7 +216,7 @@ A lista deve ter exatamente {len(complaints)} elementos booleanos."""
     except Exception:
         pass
 
-    # Fallback heurístico: palavra-chave matching
+    # Fallback heurístico
     logging.warning("Triage LLM falhou — usando fallback heurístico.")
     backlog_text = " ".join(backlog_titles).lower()
     out = []
@@ -145,6 +232,7 @@ A lista deve ter exatamente {len(complaints)} elementos booleanos."""
 def batch_convert(complaints: list[str], groq_key: str) -> list[dict]:
     """
     1 chamada LLM para converter N reclamações em cards do backlog.
+    Títulos: máximo 60 caracteres, sem ponto final, sem truncamento no meio de palavra, em português.
     """
     if not complaints:
         return []
@@ -154,32 +242,37 @@ def batch_convert(complaints: list[str], groq_key: str) -> list[dict]:
 
 {numbered}
 
+Regras para o título:
+- Máximo 60 caracteres
+- Sem ponto final
+- Nunca corte no meio de uma palavra
+- Em português
+- Seja específico e técnico
+
 Retorne APENAS um JSON no formato:
 {{"cards": [
-  {{"title": "Título curto", "description": "Descrição técnica", "category": "Performance|RAG|UI/UX|Security|DevOps|Arquitetura", "priority": "high|medium|low", "difficulty": "easy|medium|hard", "impact": "high|medium|low"}},
+  {{"title": "Título curto e preciso em pt-BR", "description": "Descrição técnica detalhada", "category": "Performance|RAG/AI|UI/UX|Security|DevOps|Arquitetura|Mobile|QA|Telegram", "priority": "high|medium|low", "difficulty": "easy|medium|hard", "impact": "high|medium|low"}},
   ...
 ]}}
 
 A lista deve ter exatamente {len(complaints)} cards."""
 
-    raw = ""
-    if groq_key:
-        raw = llm_post(groq_key, "gemma2-9b-it",
-                       [{"role": "user", "content": prompt}], json_mode=True, max_tokens=3000)
-    if not raw:
-        raw = llm_ollama(prompt, json_mode=True)
+    raw = llm_call(groq_key, [{"role": "user", "content": prompt}], json_mode=True, max_tokens=3000)
 
     try:
         data = json.loads(raw)
         cards = data.get("cards", [])
         if len(cards) == len(complaints):
+            # Aplica truncamento seguro em Python
+            for card in cards:
+                card["title"] = safe_title(card.get("title", ""), 60)
             return cards
     except Exception:
         pass
 
     # Fallback: cria cards genéricos
     logging.warning("Conversão LLM falhou — criando cards genéricos.")
-    return [{"title": c[:60], "description": c, "category": "Arquitetura",
+    return [{"title": safe_title(c, 60), "description": c, "category": "Arquitetura",
              "priority": "medium", "difficulty": "medium", "impact": "medium"}
             for c in complaints]
 
@@ -193,10 +286,17 @@ def main():
     load_dotenv(os.path.join(APP_DIR, '.env'))
     groq_key = os.environ.get("GROQ_API_KEY", "")
 
-    # ── Inicializa JiraClient ─────────────────────────────────
+    # ── Inicializa JiraClient e épicos ────────────────────────────────────────
     jira = JiraClient()
+    logging.info("Garantindo épicos no Jira...")
+    try:
+        epic_map = jira.ensure_epics()
+        logging.info(f"Épicos disponíveis: {epic_map}")
+    except Exception as e:
+        logging.warning(f"Não foi possível garantir épicos: {e}")
+        epic_map = {}
 
-    # ── Carrega configuração de PMs ───────────────────────────
+    # ── Carrega configuração de PMs ───────────────────────────────────────────
     pm_count = 1
     config_path = os.path.join(APP_DIR, 'factory_config.json')
     if os.path.exists(config_path):
@@ -206,7 +306,7 @@ def main():
         except Exception:
             pass
 
-    # ── Carrega backlog do Jira e feedbacks locais ─────────────
+    # ── Carrega backlog do Jira e feedbacks locais ────────────────────────────
     logging.info("Carregando backlog do Jira...")
     backlog = jira.get_issues()
 
@@ -223,12 +323,35 @@ def main():
 
     if not pending:
         logging.info("Nenhum feedback pendente. PM em modo standby.")
-        # Sincroniza mesmo assim para garantir consistência
         with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
             json.dump(backlog, f, ensure_ascii=False, indent=2)
         return
 
-    # ── Pre-filtragem por fingerprint (sem LLM) ───────────────
+    # ── PM Rigoroso: verifica evidências antes de tudo ────────────────────────
+    without_evidence = []
+    pending_after_evidence = []
+    for fb in pending:
+        if has_evidence(fb.get("complaint", "")):
+            pending_after_evidence.append(fb)
+        else:
+            reject_feedback(fb, feedbacks,
+                            "Reclamação sem evidências mensuráveis — faltam números, "
+                            "tempos, componentes específicos ou erros reproduzíveis.")
+            without_evidence.append(fb)
+
+    logging.info(f"PM rigoroso: {len(without_evidence)} rejeitados por falta de evidência | "
+                 f"{len(pending_after_evidence)} seguem para triagem.")
+
+    if not pending_after_evidence:
+        with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
+            json.dump(feedbacks, f, ensure_ascii=False, indent=2)
+        with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(backlog, f, ensure_ascii=False, indent=2)
+        return
+
+    pending = pending_after_evidence
+
+    # ── Pre-filtragem por fingerprint (sem LLM) ───────────────────────────────
     known_fps      = existing_fingerprints(backlog)
     backlog_titles = [f"{t['id']}: {t['title']}" for t in backlog if t.get("status") != "done"]
 
@@ -251,7 +374,7 @@ def main():
             json.dump(backlog, f, ensure_ascii=False, indent=2)
         return
 
-    # ── Divide em chunks por PM ───────────────────────────────
+    # ── Divide em chunks por PM ───────────────────────────────────────────────
     chunk_size = max(1, len(to_triage_idxs) // pm_count + (1 if len(to_triage_idxs) % pm_count else 0))
     chunks = [to_triage_idxs[i:i+chunk_size] for i in range(0, len(to_triage_idxs), chunk_size)]
 
@@ -281,86 +404,95 @@ def main():
         for pos, (orig_idx, card) in enumerate(zip(truly_new, cards)):
             fb = pending[orig_idx]
             fp = complaints_fps[orig_idx]
-            
-            title = card.get('title', fb['complaint'][:60])
+
+            title = safe_title(card.get('title', fb['complaint']), 60)
             desc = card.get('description', fb['complaint'])
             details = f"Gerado via feedback de {fb.get('user','?')} ({fb.get('role','?')})"
-            
-            # Cria a issue no Jira
+
+            category = card.get("category", "Arquitetura")
+            priority = card.get("priority", "high")
+            difficulty = card.get("difficulty", "medium")
+            impact = card.get("impact", "medium")
+
+            # Determina épico para a categoria
+            epic_area = CATEGORY_TO_EPIC_AREA.get(category, "Arquitetura")
+            epic_key_val = epic_map.get(epic_area, "")
+
+            # Cria a issue no Jira com épico vinculado
             jira_key = jira.create_issue(
                 summary=title,
                 description=desc,
                 details=details,
                 motivation_justification=fb["complaint"],
-                category=card.get("category", "Arquitetura"),
-                priority=card.get("priority", "high"),
-                difficulty=card.get("difficulty", "medium"),
-                impact=card.get("impact", "medium"),
+                category=category,
+                priority=priority,
+                difficulty=difficulty,
+                impact=impact,
                 source_user=fb.get("user", ""),
-                fingerprint=fp
+                fingerprint=fp,
+                epic_key=epic_key_val or None,
             )
-            
+
             if not jira_key:
                 with counter_lock:
                     start = id_counter[0]
                     id_counter[0] += 1
                 jira_key = f"IMP-{(start + pos):05d}"
             else:
-                # Adiciona o comentário do PM aceitando a demanda
+                # Comentário PM enriquecido com épico e evidências
+                evidences_found = [p.pattern for p in _EVIDENCE_PATTERNS if p.search(fb["complaint"])]
+                epic_info = f"{epic_area} → {epic_key_val}" if epic_key_val else "sem épico"
                 pm_comment = (
-                    f"[PM: DEMANDA ACEITA] A demanda foi validada, classificada e está apta para desenvolvimento.\n"
-                    f"Prioridade: {card.get('priority', 'medium').upper()} | Categoria: {card.get('category', 'Arquitetura')}"
+                    f"[PM: DEMANDA ACEITA] ✅ A demanda foi validada, classificada e está apta para desenvolvimento.\n"
+                    f"Categoria: {category} | Prioridade: {priority.upper()} | Dificuldade: {difficulty} | Impacto: {impact}\n"
+                    f"Épico vinculado: {epic_info}\n"
+                    f"Evidências identificadas: {len(evidences_found)} padrão(ões) encontrado(s)\n"
+                    f"Fonte: {fb.get('user','?')} ({fb.get('role','?')}, área: {fb.get('area','?')})"
                 )
                 jira.add_comment(jira_key, pm_comment)
-                
+
             task = {
                 "id": jira_key,
                 "title": title,
                 "description": desc,
                 "details": details,
                 "motivation_justification": fb["complaint"],
-                "category": card.get("category", "Arquitetura"),
+                "category": category,
                 "status": "todo",
-                "priority": card.get("priority", "high"),
-                "difficulty": card.get("difficulty", "medium"),
-                "impact": card.get("impact", "medium"),
+                "priority": priority,
+                "difficulty": difficulty,
+                "impact": impact,
                 "qualified": True,
                 "fingerprint": fp,
                 "source_user": fb.get("user", ""),
+                "epic_key": epic_key_val or "",
+                "epic_area": epic_area,
                 "created_at": datetime.now().isoformat(),
                 "completed_at": None,
             }
-            
+
             fb["status"] = "accepted"
             logging.info(f"  [PM-{pm_num}] ACEITO Jira {jira_key}: {title[:50]}")
-            
-            # Sincroniza imediatamente o backlog local com lock para atualização em tempo real no Dashboard!
+
             with write_lock:
                 all_new_tasks.append(task)
-                
                 try:
-                    # 1. Atualiza user_feedback.json
                     with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
                         json.dump(feedbacks, f, ensure_ascii=False, indent=2)
-                        
-                    # 2. Atualiza o improvement_backlog.json injetando a nova issue
                     current_backlog = []
                     if os.path.exists(IMPROVEMENTS_FILE):
                         with open(IMPROVEMENTS_FILE, 'r', encoding='utf-8') as f:
                             current_backlog = json.load(f)
-                    
                     if not any(t["id"] == jira_key for t in current_backlog):
                         current_backlog.append(task)
-                        
                     with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
                         json.dump(current_backlog, f, ensure_ascii=False, indent=2)
                 except Exception as e:
                     logging.error(f"Erro na sincronização rápida do backlog pelo PM: {e}")
 
-            # Sleep cadenciado (5 a 10 segundos) para que o cadastro apareça progressivamente no painel!
             time.sleep(random.randint(5, 10))
 
-    # ── Lança threads de PMs em paralelo ──────────────────────
+    # ── Lança threads de PMs em paralelo ─────────────────────────────────────
     threads = []
     for pm_i, chunk in enumerate(chunks):
         t = threading.Thread(target=pm_worker, args=(chunk, pm_i + 1), daemon=True)
@@ -370,15 +502,13 @@ def main():
     for t in threads:
         t.join(timeout=90)
 
-    # ── Sincroniza backlog local com o Jira ───────────────────
+    # ── Sincroniza backlog local com o Jira ───────────────────────────────────
     logging.info("Sincronizando backlog local com o Jira...")
     jira_backlog = jira.get_issues()
 
-    # Salva feedbacks locais atualizados
     with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
         json.dump(feedbacks, f, ensure_ascii=False, indent=2)
 
-    # Salva backlog atualizado do Jira localmente
     with open(IMPROVEMENTS_FILE, 'w', encoding='utf-8') as f:
         json.dump(jira_backlog, f, ensure_ascii=False, indent=2)
 

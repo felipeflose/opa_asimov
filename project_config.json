@@ -1,0 +1,14 @@
+{
+  "project_name": "Obsidian Graph App",
+  "project_description": "Sistema de grafo de conhecimento pessoal com RAG, agentes de IA e automação de melhorias contínuas.",
+  "target_repo": "/Users/felipeflose/obsidian_graph_app",
+  "tech_stack": ["Python", "Flask", "D3.js", "SQLite", "Ollama", "Groq", "Jira"],
+  "jira_project_key": "KAN",
+  "can_create_from_scratch": true,
+  "agents_aware_of_repo": true,
+  "company": "TechFuse Ltda",
+  "dev_count": 3,
+  "pm_count": 2,
+  "qa_count": 2,
+  "client_count": 31
+}

@@ -2108,44 +2108,55 @@ async function loadOfficeData() {
             mysteryContainer.innerHTML = '<div>> Nenhuma refatoração silenciosa aplicada ainda.</div>';
         }
         
-        // 3. Renderiza tabela do Usuário Chato
+        // 3. Renderiza tabela do Usuário Chato (6 colunas)
         const feedbackBody = document.getElementById('office-feedback-table-body');
         if (data.feedbacks && data.feedbacks.length > 0) {
             feedbackBody.innerHTML = data.feedbacks.reverse().map(fb => {
-                let badgeClass = 'badge';
                 let badgeStyle = 'background: rgba(100,116,139,0.1); border-color: rgba(100,116,139,0.2); color: #64748b;';
                 let decisionText = 'PENDENTE';
+                let decisionIcon = '⏳';
                 
                 if (fb.status === 'accepted') {
                     badgeStyle = 'background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: var(--green);';
-                    decisionText = 'ACEITO (KBCard)';
+                    decisionText = 'ACEITO'; decisionIcon = '✅';
                 } else if (fb.status === 'duplicate') {
                     badgeStyle = 'background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: var(--red);';
-                    decisionText = 'REJEITADO (Duplicado)';
-                } else if (fb.status === 'failed') {
-                    badgeStyle = 'background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.2); color: var(--amber);';
-                    decisionText = 'ERRO';
+                    decisionText = 'DUPLICADO'; decisionIcon = '🔁';
+                } else if (fb.status === 'rejected_insufficient_evidence') {
+                    badgeStyle = 'background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); color: #f59e0b;';
+                    decisionText = 'FALTA EVIDÊNCIA'; decisionIcon = '❌';
+                } else if (fb.status === 'rejected') {
+                    badgeStyle = 'background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: var(--red);';
+                    decisionText = 'REJEITADO'; decisionIcon = '🚫';
                 }
                 
                 const timeStr = fb.timestamp ? new Date(fb.timestamp).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '...';
+                const version = fb.version || 'v1';
+                const area = fb.area || (fb.role || 'Geral');
+                const shortComplaint = (fb.complaint || '').length > 100 ? (fb.complaint || '').substring(0, 100) + '...' : (fb.complaint || '');
                 
                 return `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 12px; color: var(--text-muted); padding-left: 15px;">${timeStr}</td>
-                        <td style="padding: 12px; color: #f1f5f9;">
-                            <div style="font-weight: 700; color: var(--cyan); margin-bottom: 4px; font-size: 0.75rem;">
-                                ${fb.avatar || '🤬'} ${fb.user || 'Usuário Chato'} <span style="font-weight: 400; color: var(--text-muted); font-size: 0.65rem;">(${fb.role || 'Testador'})</span>
-                            </div>
-                            <div style="font-weight: 500;">"${fb.complaint}"</div>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                        <td style="padding: 10px 15px; font-size: 1.2rem; text-align: center;">${fb.avatar || '🧑'}</td>
+                        <td style="padding: 10px; white-space: nowrap;">
+                            <div style="font-weight: 700; color: white; font-size: 0.75rem;">${fb.user || 'Usuário'}</div>
+                            <div style="font-size: 0.6rem; color: var(--text-muted);">${fb.role || ''} · ${timeStr}</div>
                         </td>
-                        <td style="padding: 12px; text-align: right; padding-right: 15px;">
-                            <span class="${badgeClass}" style="${badgeStyle}">${decisionText}</span>
+                        <td style="padding: 10px;">
+                            <span style="font-size: 0.6rem; background: rgba(6,182,212,0.1); color: var(--cyan); border: 1px solid rgba(6,182,212,0.2); padding: 2px 6px; border-radius: 4px;">${area}</span>
+                        </td>
+                        <td style="padding: 10px; color: #cbd5e1; font-size: 0.75rem; max-width: 300px;">${shortComplaint}</td>
+                        <td style="padding: 10px; text-align: center;">
+                            <span style="font-size: 0.6rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: var(--text-muted);">${version}</span>
+                        </td>
+                        <td style="padding: 10px 15px; text-align: right;">
+                            <span class="badge" style="${badgeStyle}; font-size: 0.6rem;">${decisionIcon} ${decisionText}</span>
                         </td>
                     </tr>
                 `;
             }).join('');
         } else {
-            feedbackBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma reclamação ou feedback catalogado ainda.</td></tr>';
+            feedbackBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma reclamação ou feedback catalogado ainda.</td></tr>';
         }
 
         // 4. Dispara animação completa do pipeline na mapa do escritório
@@ -2159,6 +2170,9 @@ async function loadOfficeData() {
 
         // 6. Renderiza KPIs de Atendimento TI
         if (data.ranking) renderKPIs(data.ranking);
+
+        // 8. Carrega métricas avançadas da fábrica
+        loadFactoryMetrics();
         
         // 7. Renderiza Métricas e Kanban do Jira
         if (data.jira_metrics) {
@@ -2178,6 +2192,97 @@ async function loadOfficeData() {
         
     } catch(e) {
         console.error("Erro ao carregar dados do escritório virtual:", e);
+    }
+}
+
+async function loadFactoryMetrics() {
+    try {
+        const [metricsRes, epicsRes] = await Promise.all([
+            fetch('/api/factory-metrics'),
+            fetch('/api/epics')
+        ]);
+        const metrics = await metricsRes.json();
+        const epicsData = await epicsRes.json();
+
+        // ── Sprint KPIs ──────────────────────────────────────────
+        const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+        setText('fm-velocity', metrics.sprint?.velocity_week ?? 0);
+        setText('fm-done-today', metrics.sprint?.done_today ?? 0);
+        setText('fm-cycle', (metrics.cycle_time?.avg_hours ?? 0) + 'h');
+        setText('fm-qa-rate', (metrics.qa?.first_pass_rate ?? 0) + '%');
+        setText('fm-pm-rate', (metrics.pm?.acceptance_rate ?? 0) + '%');
+        setText('fm-burndown-pct', (metrics.burndown?.pct_complete ?? 0) + '%');
+        const burndownDays = metrics.burndown?.estimated_days;
+        setText('fm-burndown-days', burndownDays && burndownDays < 9999 ? `~${burndownDays}d para 10k` : `${metrics.burndown?.done ?? 0} / 10.000`);
+
+        // Generated at
+        if (metrics.generated_at) {
+            const el = document.getElementById('factory-generated-at');
+            if (el) el.textContent = 'atualizado ' + new Date(metrics.generated_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+        }
+
+        // ── Chaos Monkey ──────────────────────────────────────────
+        setText('chaos-approved', metrics.chaos?.approved ?? 0);
+        setText('chaos-rejected', metrics.chaos?.rejected ?? 0);
+        const ideasFeed = document.getElementById('chaos-ideas-feed');
+        if (ideasFeed) {
+            const ideas = metrics.chaos?.latest_ideas || [];
+            ideasFeed.innerHTML = ideas.length > 0
+                ? ideas.map((idea, i) => `<div style="margin-bottom: 4px;">💡 <b>#${ideas.length - i}</b>: ${idea}</div>`).join('')
+                : '🐒 Aguardando próxima ideia revolucionária...';
+        }
+
+        // ── Top Contributors ──────────────────────────────────────
+        const ctrbEl = document.getElementById('factory-top-contributors');
+        if (ctrbEl && metrics.top_contributors) {
+            const MEDALS = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+            ctrbEl.innerHTML = metrics.top_contributors.map((c, i) => `
+                <div style="display:flex; align-items:center; gap:10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+                    <span style="font-size:1.1rem;">${c.avatar || '👤'}</span>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:700; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.name}</div>
+                        <div style="font-size:0.6rem; color:var(--text-muted);">${c.area || ''}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.9rem;">${MEDALS[i] || '🏅'}</span>
+                        <div style="font-size:0.65rem; color:var(--green); font-weight:700;">${c.count} aceitos</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ── Épicos por Categoria ──────────────────────────────────
+        const epicsList = document.getElementById('epics-list');
+        const epicsCountBadge = document.getElementById('epics-count-badge');
+        if (epicsList && epicsData.epics) {
+            if (epicsCountBadge) epicsCountBadge.textContent = epicsData.epics.length + ' épicos';
+            epicsList.innerHTML = epicsData.epics.map(epic => {
+                const pct = epic.pct_done || 0;
+                const barW = Math.min(100, pct);
+                return `
+                    <div style="margin-bottom: 2px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                            <span style="font-size:0.7rem; font-weight:600;">${epic.icon || '📦'} ${epic.name}</span>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                ${epic.jira_key ? `<span style="font-size:0.55rem; color:var(--cyan);">${epic.jira_key}</span>` : ''}
+                                <span style="font-size:0.65rem; color:${epic.color};font-weight:700;">${pct}%</span>
+                            </div>
+                        </div>
+                        <div style="height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden;">
+                            <div style="height:100%; width:${barW}%; background:${epic.color}; border-radius:2px; transition:width 0.8s ease;"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.55rem; color:var(--text-muted); margin-top:2px;">
+                            <span>${epic.stats?.done || 0} done / ${epic.stats?.total || 0} total</span>
+                            <span>${epic.stats?.in_progress || 0} 🔄 ${epic.stats?.in_analysis || 0} 🧪</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+    } catch(e) {
+        console.warn('loadFactoryMetrics error:', e);
     }
 }
 

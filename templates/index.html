@@ -505,11 +505,115 @@
         <div id="page-office" class="page">
             <header>
                 <div>
-                    <p style="color: var(--cyan); font-weight: 700; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">Factory Team Simulation</p>
+                    <p style="color: var(--cyan); font-weight: 700; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;">🏢 TechFuse Ltda — Factory Team Simulation</p>
                     <h1>VIRTUAL OFFICE SIMULATOR</h1>
                 </div>
                 <div class="bot-status-tag status-online"><div class="status-dot"></div> MULTI-AGENT COLLABORATION ACTIVE</div>
             </header>
+
+            <!-- ═══ FACTORY METRICS DASHBOARD ════════════════════════════════ -->
+            <div style="margin-bottom: 25px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <h2 style="margin: 0; font-size: 1rem; color: white;">📊 Factory Metrics</h2>
+                    <span class="bot-status-tag status-online" style="font-size: 0.6rem;"><div class="status-dot"></div> LIVE</span>
+                    <span id="factory-generated-at" style="font-size: 0.65rem; color: var(--text-muted); margin-left: auto;"></span>
+                </div>
+
+                <!-- KPI Cards Row 1 -->
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 12px;">
+
+                    <!-- Sprint Velocity -->
+                    <div class="card" style="padding: 14px; text-align: center; border-top: 2px solid var(--cyan); background: rgba(6,182,212,0.04);">
+                        <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">🏃 Sprint Velocity</div>
+                        <div id="fm-velocity" style="font-size: 1.6rem; font-weight: 800; color: var(--cyan); font-family: 'Outfit';">0</div>
+                        <div style="font-size: 0.58rem; color: var(--text-muted); margin-top: 4px;">stories/semana</div>
+                    </div>
+
+                    <!-- Done Today -->
+                    <div class="card" style="padding: 14px; text-align: center; border-top: 2px solid var(--green); background: rgba(16,185,129,0.04);">
+                        <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">✅ Entregues Hoje</div>
+                        <div id="fm-done-today" style="font-size: 1.6rem; font-weight: 800; color: var(--green); font-family: 'Outfit';">0</div>
+                        <div style="font-size: 0.58rem; color: var(--text-muted); margin-top: 4px;">stories done</div>
+                    </div>
+
+                    <!-- Cycle Time -->
+                    <div class="card" style="padding: 14px; text-align: center; border-top: 2px solid #f59e0b; background: rgba(245,158,11,0.04);">
+                        <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">⏱️ Cycle Time</div>
+                        <div id="fm-cycle" style="font-size: 1.6rem; font-weight: 800; color: #f59e0b; font-family: 'Outfit';">0h</div>
+                        <div style="font-size: 0.58rem; color: var(--text-muted); margin-top: 4px;">tempo médio</div>
+                    </div>
+
+                    <!-- QA First-Pass Rate -->
+                    <div class="card" style="padding: 14px; text-align: center; border-top: 2px solid #10b981; background: rgba(16,185,129,0.04);">
+                        <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">🧪 QA 1ª Passagem</div>
+                        <div id="fm-qa-rate" style="font-size: 1.6rem; font-weight: 800; color: #10b981; font-family: 'Outfit';">0%</div>
+                        <div style="font-size: 0.58rem; color: var(--text-muted); margin-top: 4px;">sem retrabalho</div>
+                    </div>
+
+                    <!-- PM Acceptance -->
+                    <div class="card" style="padding: 14px; text-align: center; border-top: 2px solid #a855f7; background: rgba(168,85,247,0.04);">
+                        <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">📋 PM Aprovação</div>
+                        <div id="fm-pm-rate" style="font-size: 1.6rem; font-weight: 800; color: #a855f7; font-family: 'Outfit';">0%</div>
+                        <div style="font-size: 0.58rem; color: var(--text-muted); margin-top: 4px;">demandas aceitas</div>
+                    </div>
+
+                    <!-- Burndown -->
+                    <div class="card" style="padding: 14px; text-align: center; border-top: 2px solid #ef4444; background: rgba(239,68,68,0.04);">
+                        <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">🔥 Burndown</div>
+                        <div id="fm-burndown-pct" style="font-size: 1.6rem; font-weight: 800; color: #ef4444; font-family: 'Outfit';">0%</div>
+                        <div id="fm-burndown-days" style="font-size: 0.58rem; color: var(--text-muted); margin-top: 4px;">meta: 10k stories</div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Épicos + Top Contributors + Chaos Monkey Feed -->
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 15px;">
+
+                    <!-- Épicos Progress -->
+                    <div class="card" style="border-color: rgba(99,102,241,0.25); background: rgba(99,102,241,0.03);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                            <span style="font-size: 1.1rem;">🏗️</span>
+                            <h3 style="margin: 0; font-size: 0.85rem;">Épicos por Categoria</h3>
+                            <span id="epics-count-badge" class="badge" style="margin-left: auto;">0 épicos</span>
+                        </div>
+                        <div id="epics-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+                            <p style="color: var(--text-muted); font-size: 0.75rem;">Carregando épicos...</p>
+                        </div>
+                    </div>
+
+                    <!-- Top Contributors -->
+                    <div class="card" style="border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.02);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                            <span style="font-size: 1.1rem;">🏆</span>
+                            <h3 style="margin: 0; font-size: 0.85rem;">Top Contributors</h3>
+                        </div>
+                        <div id="factory-top-contributors" style="display: flex; flex-direction: column; gap: 8px;">
+                            <p style="color: var(--text-muted); font-size: 0.75rem;">Calculando...</p>
+                        </div>
+                    </div>
+
+                    <!-- Chaos Monkey Innovation Feed -->
+                    <div class="card" style="border-color: rgba(251,191,36,0.25); background: rgba(251,191,36,0.03);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                            <span style="font-size: 1.1rem;">🐒</span>
+                            <h3 style="margin: 0; font-size: 0.85rem;">Chaos Monkey</h3>
+                            <span class="bot-status-tag" id="chaos-status-badge" style="background: rgba(251,191,36,0.1); color: rgb(251,191,36); border-color: rgba(251,191,36,0.2); font-size: 0.55rem; margin-left: auto;">⏰ VOTING</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                            <div style="text-align: center; background: rgba(16,185,129,0.08); border-radius: 8px; padding: 8px;">
+                                <div id="chaos-approved" style="font-size: 1.3rem; font-weight: 800; color: var(--green);">0</div>
+                                <div style="font-size: 0.58rem; color: var(--text-muted);">Aprovadas</div>
+                            </div>
+                            <div style="text-align: center; background: rgba(239,68,68,0.08); border-radius: 8px; padding: 8px;">
+                                <div id="chaos-rejected" style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">0</div>
+                                <div style="font-size: 0.58rem; color: var(--text-muted);">Reprovadas</div>
+                            </div>
+                        </div>
+                        <div id="chaos-ideas-feed" style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.5; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 8px; min-height: 60px;">
+                            🐒 Aguardando próxima ideia revolucionária...
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- MAPA DO ESCRITÓRIO SIMULADO -->
             <div class="office-map" style="position: relative; width: 100%; height: 350px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 25px;">
@@ -531,11 +635,11 @@
                 </div>
 
                 <!-- Avatares de Personagens -->
-                <div class="avatar" id="avatar-user" style="position: absolute; top: 60px; left: 105px; width: 45px; height: 45px; border-radius: 50%; background: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(239,68,68,0.4); border: 2px solid white; cursor: pointer;">🤬</div>
+                <div class="avatar" id="avatar-user" style="position: absolute; top: 60px; left: 105px; width: 45px; height: 45px; border-radius: 50%; background: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(239,68,68,0.4); border: 2px solid white; cursor: pointer;">🧑‍💼</div>
                 
-                <div class="avatar" id="avatar-pm" style="position: absolute; top: 60px; right: 105px; width: 45px; height: 45px; border-radius: 50%; background: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(168,85,247,0.4); border: 2px solid white; cursor: pointer;">📋</div>
+                <div class="avatar" id="avatar-pm" style="position: absolute; top: 60px; right: 105px; width: 45px; height: 45px; border-radius: 50%; background: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(168,85,247,0.4); border: 2px solid white; cursor: pointer;">👩‍💼</div>
 
-                <div class="avatar" id="avatar-qa" style="position: absolute; bottom: 60px; right: 125px; width: 45px; height: 45px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(16,185,129,0.4); border: 2px solid white; cursor: pointer;">🧪</div>
+                <div class="avatar" id="avatar-qa" style="position: absolute; bottom: 60px; right: 125px; width: 45px; height: 45px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 15px rgba(16,185,129,0.4); border: 2px solid white; cursor: pointer;">🧑‍🔬</div>
                 
                 <!-- Container para PMs Dinâmicos (dentro da room-pm, canto superior direito) -->
                 <div id="pm-avatars-container" style="position: absolute; top: 40px; right: 30px; width: 220px; height: 60px; pointer-events: none;"></div>
@@ -653,15 +757,16 @@
                 <div class="card office-desk" id="desk-pm" style="position: relative; overflow: hidden; border-color: rgba(168,85,247,0.15);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                            <span>📋</span> PM Agent
+                            <span>👩‍💼</span> PM Agent
                         </h2>
                         <span class="bot-status-tag status-online" style="background: rgba(168,85,247,0.1); color: rgb(168,85,247); border-color: rgba(168,85,247,0.2);"><div class="status-dot" style="background: rgb(168,85,247);"></div> ACTIVE</span>
                     </div>
                     <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; min-height: 100px; border: 1px solid var(--border);">
-                        <p style="color: rgb(168,85,247); margin: 0 0 5px 0;">[Triage & Backlog Controller — Batch Mode]</p>
+                        <p style="color: rgb(168,85,247); margin: 0 0 5px 0;">[Triage & Backlog Controller — Gemma4 Mode]</p>
                         <div id="pm-console-text" style="color: #f1f5f9; line-height: 1.5; height: 80px; overflow-y: auto;">
                             > Triagem em batch ativa...<br>
-                            > Dedup por fingerprint + LLM.
+                            > Exigindo evidências antes de aceitar.<br>
+                            > Dedup por fingerprint + Gemma4.
                         </div>
                     </div>
                     <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
@@ -680,15 +785,16 @@
                 <div class="card office-desk" id="desk-dev" style="position: relative; overflow: hidden; border-color: rgba(6,182,212,0.15);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                            <span>👨‍💻</span> Dev Agent (Antigravity)
+                            <span>👨‍💻</span> Dev Agent (24/7)
                         </h2>
                         <span class="bot-status-tag status-online" id="dev-work-status"><div class="status-dot"></div> IDLE</span>
                     </div>
                     <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; min-height: 120px; border: 1px solid var(--border);">
-                        <p style="color: var(--cyan); margin: 0 0 5px 0;">[Estação de Trabalho / Console de Evolução]</p>
+                        <p style="color: var(--cyan); margin: 0 0 5px 0;">[Estação de Trabalho / Sprint 24/7]</p>
                         <div id="dev-console-text" style="color: #a7f3d0; line-height: 1.5; height: 100px; overflow-y: auto;">
-                            > Monitorando backlog...<br>
-                            > Aguardando sprints semanais.
+                            > Modo daemon ativo...<br>
+                            > Loop contínuo a cada 90s.<br>
+                            > Dev questionador habilitado.
                         </div>
                     </div>
                     <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
@@ -707,7 +813,7 @@
                 <div class="card office-desk" id="desk-qa" style="position: relative; overflow: hidden; border-color: rgba(16,185,129,0.15);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                            <span>🧪</span> QA Agent (Quality)
+                            <span>🧑‍🔬</span> QA Agent (Quality)
                         </h2>
                         <span class="bot-status-tag status-online" style="background: rgba(16,185,129,0.1); color: var(--green); border-color: rgba(16,185,129,0.2);"><div class="status-dot"></div> ACTIVE</span>
                     </div>
@@ -727,45 +833,56 @@
                 <div class="card office-desk" id="desk-client" style="position: relative; overflow: hidden; border-color: rgba(239,68,68,0.15); grid-column: span 3;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                            <span>🤬</span> Inbox do Usuário Chato (Beta Tester)
+                            <span>🧑‍💼</span> Inbox dos 31 Clientes (Beta Testers com Meta)
                         </h2>
-                        <span class="bot-status-tag" style="background: rgba(239,68,68,0.1); color: rgb(239,68,68); border-color: rgba(239,68,68,0.2);"><div class="status-dot" style="background: rgb(239,68,68);"></div> SPAMMING FEEDBACK (20m)</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="bot-status-tag" style="background: rgba(239,68,68,0.1); color: rgb(239,68,68); border-color: rgba(239,68,68,0.2); font-size: 0.6rem;">30x META: 10K | 🧑‍💼 META: 50K</span>
+                        </div>
                     </div>
                     
                     <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: rgba(0,0,0,0.15);">
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);">
-                                    <th style="padding: 10px; width: 20%; padding-left: 15px;">Horário</th>
-                                    <th style="padding: 10px; width: 60%;">Reclamação do Usuário</th>
-                                    <th style="padding: 10px; width: 20; text-align: right; padding-right: 15px;">Decisão do PM</th>
+                                    <th style="padding: 10px; width: 8%; padding-left: 15px;">Avatar</th>
+                                    <th style="padding: 10px; width: 15%;">Cliente</th>
+                                    <th style="padding: 10px; width: 10%;">Área</th>
+                                    <th style="padding: 10px; width: 47%;">Reclamação / Demanda</th>
+                                    <th style="padding: 10px; width: 10%;">Versão</th>
+                                    <th style="padding: 10px; width: 10%; text-align: right; padding-right: 15px;">Status PM</th>
                                 </tr>
                             </thead>
                             <tbody id="office-feedback-table-body">
                                 <tr>
-                                    <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum feedback catalogado.</td>
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum feedback catalogado.</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- PERSONA: O CLIENTE OCULTO (CHAOS MONKEY) -->
-                <div class="card office-desk" id="desk-mystery" style="position: relative; overflow: hidden; border-color: rgba(251,191,36,0.15); grid-column: span 3;">
+                <!-- PERSONA: CHAOS MONKEY (INOVADOR) -->
+                <div class="card office-desk" id="desk-mystery" style="position: relative; overflow: hidden; border-color: rgba(251,191,36,0.25); grid-column: span 3; background: rgba(251,191,36,0.02);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                            <span>🕵️‍♂️</span> Histórico do Cliente Oculto (Chaos Monkey)
+                            <span>🐒</span> Chaos Monkey — Chief Innovation Disruptor
                         </h2>
-                        <span class="bot-status-tag" style="background: rgba(251,191,36,0.1); color: rgb(251,191,36); border-color: rgba(251,191,36,0.2);"><div class="status-dot" style="background: rgb(251,191,36);"></div> SLEEPING (1h / 25% chance)</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="bot-status-tag" style="background: rgba(251,191,36,0.1); color: rgb(251,191,36); border-color: rgba(251,191,36,0.2); font-size: 0.6rem;">⚡ 1 IDEIA/HORA | VOTAÇÃO: 10 DEVS + 3 PMs</span>
+                        </div>
                     </div>
-                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; max-height: 150px; overflow-y: auto; border: 1px solid var(--border);" id="mystery-logs-container">
-                        > Carregando histórico de refatorações secretas...
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.8rem; max-height: 180px; overflow-y: auto; border: 1px solid rgba(251,191,36,0.1);" id="mystery-logs-container">
+                            > 🐒 Aguardando geração de ideia revolucionária...
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; border: 1px solid rgba(251,191,36,0.1);">
+                            <p style="color: rgb(251,191,36); font-size: 0.75rem; font-weight: 700; margin: 0 0 10px 0;">🗳️ Última Votação:</p>
+                            <div id="chaos-vote-detail" style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.6;">
+                                Nenhuma votação registrada ainda. Aguardando primeira hora...
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-            </div>
-        </div>
-    </div>
 
     <!-- Tooltip Flutuante -->
     <div id="tooltip" class="tooltip"></div>
