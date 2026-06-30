@@ -568,8 +568,8 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Épicos + Top Contributors + Chaos Monkey Feed -->
-                <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 15px;">
+                <!-- Row 2: Épicos + Top Contributors + Ranking Devs + Chaos Monkey Feed -->
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 15px;">
 
                     <!-- Épicos Progress -->
                     <div class="card" style="border-color: rgba(99,102,241,0.25); background: rgba(99,102,241,0.03);">
@@ -587,9 +587,20 @@
                     <div class="card" style="border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.02);">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
                             <span style="font-size: 1.1rem;">🏆</span>
-                            <h3 style="margin: 0; font-size: 0.85rem;">Top Contributors</h3>
+                            <h3 style="margin: 0; font-size: 0.85rem;">Top Clientes</h3>
                         </div>
                         <div id="factory-top-contributors" style="display: flex; flex-direction: column; gap: 8px;">
+                            <p style="color: var(--text-muted); font-size: 0.75rem;">Calculando...</p>
+                        </div>
+                    </div>
+
+                    <!-- Ranking de Devs (Leaderboard) -->
+                    <div class="card" style="border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.02);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                            <span style="font-size: 1.1rem;">💻</span>
+                            <h3 style="margin: 0; font-size: 0.85rem;">Ranking de Devs</h3>
+                        </div>
+                        <div id="factory-top-devs" style="display: flex; flex-direction: column; gap: 8px;">
                             <p style="color: var(--text-muted); font-size: 0.75rem;">Calculando...</p>
                         </div>
                     </div>
