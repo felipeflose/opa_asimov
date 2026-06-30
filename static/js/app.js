@@ -12,7 +12,7 @@ const sparkHistory = { cpu: [], ram: [] };
 const SPARK_MAX = 18;
 
 // Mapeamento das posições dos ícones da sidebar (para a pílula)
-const NAV_ORDER = ['home', 'graph', 'bot', 'system', 'study', 'rinha', 'kanban', 'office'];
+const NAV_ORDER = ['home', 'office', 'graph', 'bot', 'system', 'study', 'rinha', 'kanban'];
 
 // ============================================================
 // UTILITÁRIOS
