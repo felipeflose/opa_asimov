@@ -2257,7 +2257,7 @@
     "role": "Cloud Architect",
     "area": "DevOps",
     "complaint": "O SQLite é incompatível com multi-instância cloud — qualquer tentativa de escalar horizontalmente resultará em corrupção de dados; migração para PostgreSQL é pré-requisito para qualquer escala. — medido via 'docker stats' e 'ls -lh' dos arquivos de log",
-    "status": "pending",
+    "status": "accepted",
     "version": "v3",
     "improved_from": "579a5d21be4dd9c9",
     "total_submitted": 5,
