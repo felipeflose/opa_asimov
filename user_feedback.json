@@ -1272,7 +1272,7 @@
     "role": "Accessibility Specialist",
     "area": "UI/UX",
     "complaint": "Os inputs do painel admin não têm labels associadas (<label for>) — o Axe DevTools reporta 8 erros críticos de acessibilidade; leitores de tela leem apenas o placeholder, que some ao digitar.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v2",
     "improved_from": null,
     "total_submitted": 4,

@@ -1988,5 +1988,24 @@
     "epic_area": "Arquitetura",
     "created_at": "2026-06-29T23:03:32.448641",
     "completed_at": null
+  },
+  {
+    "id": "KAN-117",
+    "title": "Os inputs do painel admin não têm labels associadas (<label",
+    "description": "Os inputs do painel admin não têm labels associadas (<label for>) — o Axe DevTools reporta 8 erros críticos de acessibilidade; leitores de tela leem apenas o placeholder, que some ao digitar.",
+    "details": "Gerado via feedback de Camila Duarte (Accessibility Specialist)",
+    "motivation_justification": "Os inputs do painel admin não têm labels associadas (<label for>) — o Axe DevTools reporta 8 erros críticos de acessibilidade; leitores de tela leem apenas o placeholder, que some ao digitar.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "1207974c8e98",
+    "source_user": "Camila Duarte",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:03:42.190448",
+    "completed_at": null
   }
 ]
