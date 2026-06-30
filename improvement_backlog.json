@@ -1,12 +1,66 @@
 [
   {
+    "id": "KAN-219",
+    "title": "Implementar Logging Estruturado com Trace ID",
+    "description": "Adicionar logging estruturado JSON e trace ID correlacionado entre agentes para rastreamento de bugs e redução do MTTR.",
+    "details": "Gerado via feedback de Rafael Auditoria (Chief Metrics Officer)",
+    "motivation_justification": "[CMO AUDIT] Logging estruturado JSON + trace ID correlacionado entre agentes. EVIDÊNCIA REAL: O server_stderr.log tem 2.9MB de logs não estruturados. Sem trace ID, rastrear 1 bug entre agent_bot, agent_rag e agent_core leva 40+ minutos. MTTR atual estimado: >25 minutos (benchmark: times top = 5 minutos). BENCHMARK: OpenTelemetry + structlog reduz MTTR em 60-80% em stacks similares. ROI ESTIMADO: Com trace ID, correlação de logs cai de 40min para <5min. MTTD (Mean Time To Detect) cai de 30+ min para <5 min com alertas estruturados. COMPONENTE: Todos os agentes *.py — padronizar structlog + opentelemetry-python. PRIORITY: Impact=ALTO / Effort=MÉDIO (3-4 dias de refatoração). Benchmark: Times top MTTR=5min, média industria=25min. Métricas capturadas em 2026-06-29 23:33: backlog=100 itens, taxa_rejeição=28.6%, feedbacks_total=336.",
+    "category": "DevOps|Arquitetura|RAG/AI",
+    "status": "todo",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "1f0a109579f6",
+    "source_user": "Rafael Auditoria",
+    "epic_key": "KAN-101",
+    "created_at": "2026-06-29T23:35:47.775-0300",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-218",
+    "title": "Implementar pipeline CI/CD para deploys seguros",
+    "description": "Criar pipeline CI/CD completo para garantir testes automatizados antes do deploy em produção",
+    "details": "Gerado via feedback de Rafael Barbosa (DevOps Engineer)",
+    "motivation_justification": "Não existe pipeline CI/CD — o último merge na main foi direto para produção sem testes; em 3 dos últimos 5 deploys, bugs chegaram ao usuário que um CI básico teria pego. — medido via 'docker stats' e 'ls -lh' dos arquivos de log",
+    "category": "DevOps",
+    "status": "todo",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "7ae53d579097",
+    "source_user": "Rafael Barbosa",
+    "epic_key": "KAN-100",
+    "created_at": "2026-06-29T23:35:44.534-0300",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-217",
+    "title": "Refinar estratégia de chunking e busca semântica no RAG",
+    "description": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 28.6%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:33: backlog=100 itens, taxa_rejeição=28.6%, feedbacks_total=336.",
+    "details": "Gerado via feedback de Rafael Auditoria (Chief Metrics Officer)",
+    "motivation_justification": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 28.6%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:33: backlog=100 itens, taxa_rejeição=28.6%, feedbacks_total=336.",
+    "category": "DevOps",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "f0f9e366c7c5",
+    "source_user": "Rafael Auditoria",
+    "epic_key": "KAN-100",
+    "created_at": "2026-06-29T23:35:42.041-0300",
+    "completed_at": null
+  },
+  {
     "id": "KAN-216",
     "title": "Melhorar representação visual de arestas no grafo",
     "description": "A espessura das arestas no grafo não reflete a força da conexão, perdendo informação de centralidade em grafos grandes",
     "details": "Gerado via feedback de Simone Batista (Knowledge Manager)",
     "motivation_justification": "O grafo mostra todas as arestas com espessura 1px independente da força da conexão — uma nota com 50 links tem a mesma representação visual que uma com 1 link; perdo 100% da informação de centralidade.",
     "category": "Arquitetura|Visualização de Dados|Performance",
-    "status": "in_progress",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -15,7 +69,7 @@
     "source_user": "Simone Batista",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:33:30.762-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:22.570-0300"
   },
   {
     "id": "KAN-215",
@@ -24,7 +78,7 @@
     "details": "Gerado via feedback de Eduardo Prado (API Specialist)",
     "motivation_justification": "A API não tem versionamento — mudei o campo 'link' para 'links' (array) no /api/graph e quebraram 3 consumers em produção simultaneamente; /api/v1/graph e /api/v2/graph resolveriam isso.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -33,7 +87,7 @@
     "source_user": "Eduardo Prado",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:32:13.740-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:28.478-0300"
   },
   {
     "id": "KAN-214",
@@ -42,7 +96,7 @@
     "details": "Gerado via feedback de Simone Batista (Knowledge Manager)",
     "motivation_justification": "A indexação do vault ignora o frontmatter YAML completamente — metadados como 'author', 'date', 'tags' e 'status' são ignorados, perdendo riqueza semântica que melhoraria o RAG em ~30%.",
     "category": "RAG/AI",
-    "status": "in_progress",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -51,7 +105,7 @@
     "source_user": "Simone Batista",
     "epic_key": "KAN-98",
     "created_at": "2026-06-29T23:32:10.739-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:30.235-0300"
   },
   {
     "id": "KAN-213",
@@ -60,7 +114,7 @@
     "details": "Gerado via feedback de Rafael Barbosa (DevOps Engineer)",
     "motivation_justification": "O Dockerfile usa 'FROM python:latest' — a última quebra de versão (3.11→3.12) causou falha silenciosa em 3 dependências; fixar em python:3.11-slim reduz o tamanho da imagem em 40% também.",
     "category": "DevOps",
-    "status": "in_progress",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -69,7 +123,7 @@
     "source_user": "Rafael Barbosa",
     "epic_key": "KAN-100",
     "created_at": "2026-06-29T23:29:54.892-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:20.495-0300"
   },
   {
     "id": "KAN-212",
@@ -78,7 +132,7 @@
     "details": "Gerado via feedback de Aline Rodrigues (UI Designer)",
     "motivation_justification": "O botão 'Resetar Grafo' está a apenas 8px do botão 'Deletar Nota' no layout atual — cliquei errado 2 vezes hoje, causando perda de estado; a distância mínima recomendada pelo Fitts's Law é 24px.",
     "category": "UI/UX",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "easy",
     "impact": "medium",
@@ -87,7 +141,7 @@
     "source_user": "Aline Rodrigues",
     "epic_key": "KAN-99",
     "created_at": "2026-06-29T23:29:52.116-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:26.259-0300"
   },
   {
     "id": "KAN-211",
@@ -96,7 +150,7 @@
     "details": "Gerado via feedback de Isabela Gomes (Graph Visualization Specialist)",
     "motivation_justification": "As arestas do grafo não têm setas direcionais — impossível saber qual nota referencia qual só pelo visual; em um vault com 2.000 links, a direção das referências é informação crucial perdida. — medido via DevTools Performance tab com 500+ nós no viewport",
     "category": "Performance",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -105,7 +159,7 @@
     "source_user": "Isabela Gomes",
     "epic_key": "KAN-96",
     "created_at": "2026-06-29T23:29:49.176-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:18.288-0300"
   },
   {
     "id": "KAN-210",
@@ -1248,7 +1302,7 @@
     "details": "Gerado via feedback de Tiago Borges (Prompt Engineer)",
     "motivation_justification": "Não há avaliação de qualidade de prompts — mudamos o system prompt do agent_core.py na semana passada e só saberemos se melhorou quando o usuário reclamar; sem evals automatizados, operamos às cegas.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1257,7 +1311,7 @@
     "source_user": "Tiago Borges",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:31.833-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:24.357-0300"
   },
   {
     "id": "KAN-146",
@@ -1266,7 +1320,7 @@
     "details": "Gerado via feedback de Felipe Fróes (Product Owner)",
     "motivation_justification": "Sem roadmap visual, em 2 meses diferentes devs implementaram cache (agent_rag.py) e sem-cache (agent_core.py) para o mesmo problema — trabalho duplicado estimado em 3 dias de desenvolvimento.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1275,7 +1329,7 @@
     "source_user": "Felipe Fróes",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:29.195-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:16.582-0300"
   },
   {
     "id": "KAN-145",
@@ -1284,7 +1338,7 @@
     "details": "Gerado via feedback de Isabela Gomes (Graph Visualization Specialist)",
     "motivation_justification": "Não há mini-mapa de navegação — em vault com 847 nós em área de 8.000x8.000px, o usuário perde a localização depois de 3 interações de zoom; um mini-mapa de 200x150px resolveria completamente.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1293,7 +1347,7 @@
     "source_user": "Isabela Gomes",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:20.019-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:35:32.176-0300"
   },
   {
     "id": "KAN-144",
@@ -1743,60 +1797,6 @@
     "source_user": "Vanessa Correia",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:04:08.756-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-119",
-    "title": "O agent_mba.py gera análises sem salvar resultados",
-    "description": "O agent_mba.py gera análises sem salvar resultados estruturados — cada análise é efêmera; depois de 10 execuções, não tenho nenhum histórico comparável para ver tendências.",
-    "details": "Gerado via feedback de Natalia Pimentel (Data Scientist)",
-    "motivation_justification": "O agent_mba.py gera análises sem salvar resultados estruturados — cada análise é efêmera; depois de 10 execuções, não tenho nenhum histórico comparável para ver tendências.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "ff9ae3c77f38",
-    "source_user": "Natalia Pimentel",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:03:59.294-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-118",
-    "title": "O /api/graph reconstrói o JSON completo a cada request sem",
-    "description": "O /api/graph reconstrói o JSON completo a cada request sem cache — para 1.000 notas, medei 890ms de CPU por request; com cache Redis de 5 minutos, 98% dos requests seriam sub-10ms.",
-    "details": "Gerado via feedback de Diego Cavalcante (Performance Engineer)",
-    "motivation_justification": "O /api/graph reconstrói o JSON completo a cada request sem cache — para 1.000 notas, medei 890ms de CPU por request; com cache Redis de 5 minutos, 98% dos requests seriam sub-10ms.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "45fa18393703",
-    "source_user": "Diego Cavalcante",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:03:50.662-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-117",
-    "title": "Os inputs do painel admin não têm labels associadas (<label",
-    "description": "Os inputs do painel admin não têm labels associadas (<label for>) — o Axe DevTools reporta 8 erros críticos de acessibilidade; leitores de tela leem apenas o placeholder, que some ao digitar.",
-    "details": "Gerado via feedback de Camila Duarte (Accessibility Specialist)",
-    "motivation_justification": "Os inputs do painel admin não têm labels associadas (<label for>) — o Axe DevTools reporta 8 erros críticos de acessibilidade; leitores de tela leem apenas o placeholder, que some ao digitar.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "1207974c8e98",
-    "source_user": "Camila Duarte",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:03:41.065-0300",
     "completed_at": null
   }
 ]
