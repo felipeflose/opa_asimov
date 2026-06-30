@@ -1950,5 +1950,24 @@
     "epic_area": "Arquitetura",
     "created_at": "2026-06-29T23:03:16.035693",
     "completed_at": null
+  },
+  {
+    "id": "KAN-115",
+    "title": "O agent_rag.py não tem circuit breaker para falhas do Groq",
+    "description": "O agent_rag.py não tem circuit breaker para falhas do Groq — quando a API ficou offline por 8 minutos na semana passada, todas as queries empilharam timeout de 30s, bloqueando 4 threads Flask.",
+    "details": "Gerado via feedback de Lucas Rezende (ML Engineer)",
+    "motivation_justification": "O agent_rag.py não tem circuit breaker para falhas do Groq — quando a API ficou offline por 8 minutos na semana passada, todas as queries empilharam timeout de 30s, bloqueando 4 threads Flask.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "ba513e7823f7",
+    "source_user": "Lucas Rezende",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:03:22.504470",
+    "completed_at": null
   }
 ]
