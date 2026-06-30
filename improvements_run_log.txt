@@ -757,3 +757,23 @@
 [2026-06-29 23:14:32] [AUTO-IMPROVEMENT] Aplicada: KAN-159 - O /api/graph retorna o payload inteiro de 412KB sem
 
 [2026-06-29 23:14:39] [AUTO-IMPROVEMENT] Aplicada: KAN-160 - O servidor Flask roda HTTP puro na porta 8091 sem HTTPS —
+
+[2026-06-29 23:17:32] [AUTO-IMPROVEMENT] Aplicada: KAN-191 - Governança e validação de digest automático
+
+[2026-06-29 23:17:32] [AUTO-IMPROVEMENT] Aplicada: KAN-195 - Spans de Tracing LLM
+
+[2026-06-29 23:17:36] [AUTO-IMPROVEMENT] Aplicada: KAN-194 - Implementar Cache-Control e ETag para rotas estáticas
+
+[2026-06-29 23:17:43] [AUTO-IMPROVEMENT] Aplicada: KAN-189 - Adicionar documentação interativa da API
+
+[2026-06-29 23:17:46] [AUTO-IMPROVEMENT] Aplicada: KAN-187 - Documentação da API
+
+[2026-06-29 23:17:48] [AUTO-IMPROVEMENT] Aplicada: KAN-192 - Implementar backup automatizado do SQLite
+
+[2026-06-29 23:18:09] [AUTO-IMPROVEMENT] Aplicada: KAN-188 - Adicionar spans de tracing para chamadas Groq LLM
+
+[2026-06-29 23:18:13] [AUTO-IMPROVEMENT] Aplicada: KAN-193 - Histórico de Versão do Grafo
+
+[2026-06-29 23:18:15] [AUTO-IMPROVEMENT] Aplicada: KAN-190 - Histórico de versão das notas no grafo
+
+[2026-06-29 23:18:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (2/10), PMs insuficientes (1/3)): Análise de sentimento das notas — detecta quando o estudo está frustrante vs eng

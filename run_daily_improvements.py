@@ -404,7 +404,7 @@ def run_sprint(jira: JiraClient, config: dict):
     # ── Busca backlog do Jira ──────────────────────────────────────────────
     logging.info("👨💻 [DEV] Buscando tarefas ativas no Jira...")
     all_issues = jira.get_issues()
-    candidates = [c for c in all_issues if c.get("status") == "todo"][:max_tasks]
+    candidates = [c for c in all_issues if c.get("status") in ("todo", "in_progress")][:max_tasks]
 
     # ── NUNCA DEV PARADO — se faltar tarefas, cria no Jira e busca de novo ──
     if len(candidates) < max_tasks:
@@ -412,7 +412,7 @@ def run_sprint(jira: JiraClient, config: dict):
         logging.info(f"👨💻 [DEV] Backlog insuficiente. Criando {gap} tarefas de dívida técnica no Jira...")
         generate_and_create_technical_tasks(jira, gap)
         all_issues = jira.get_issues()
-        candidates = [c for c in all_issues if c.get("status") == "todo"][:max_tasks]
+        candidates = [c for c in all_issues if c.get("status") in ("todo", "in_progress")][:max_tasks]
 
     if not candidates:
         logging.warning("👨💻 [DEV] Nenhuma tarefa disponível no Jira. Dev em espera.")

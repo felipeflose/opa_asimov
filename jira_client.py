@@ -285,16 +285,27 @@ class JiraClient:
                         metadata = json.loads(parts[1].strip())
                     except Exception:
                         pass
-
-                # Mapeia status do Jira para local
+                
+                # Mapeia status do Jira para local (suporta Português e Inglês)
                 jira_status = fields.get("status", {}).get("name", "A fazer")
                 status_map = {
-                    "A fazer": "todo",
-                    "Em andamento": "in_progress",
-                    "Em análise": "in_analysis",
-                    "Concluído": "done"
+                    "a fazer": "todo",
+                    "to do": "todo",
+                    "todo": "todo",
+                    "em andamento": "in_progress",
+                    "in progress": "in_progress",
+                    "in_progress": "in_progress",
+                    "em análise": "in_analysis",
+                    "em analise": "in_analysis",
+                    "in review": "in_analysis",
+                    "in_review": "in_analysis",
+                    "review": "in_analysis",
+                    "concluído": "done",
+                    "concluido": "done",
+                    "done": "done",
+                    "closed": "done"
                 }
-                status = status_map.get(jira_status, "todo")
+                status = status_map.get(jira_status.lower(), "todo")
 
                 # Epic key via parent
                 parent_key = ""
@@ -327,10 +338,11 @@ class JiraClient:
             logging.error(f"Erro ao buscar/mapear issues do Jira: {e}")
         return []
 
+
     # ── Transition ────────────────────────────────────────────────────────────
 
     def transition_issue(self, issue_key, status_name):
-        """Muda o status da issue baseado no nome do status."""
+        """Muda o status da issue baseado no nome do status com mapeamento semântico PT/EN."""
         url_trans = f"{self.host}/rest/api/3/issue/{issue_key}/transitions"
         try:
             r = requests.get(url_trans, headers=self.headers, auth=self.auth, timeout=10)
@@ -340,15 +352,30 @@ class JiraClient:
 
             transitions = r.json().get("transitions", [])
             transition_id = None
+            
+            # Mapeamento semântico de sinônimos
+            status_lower = status_name.lower()
+            synonyms = []
+            if status_lower in ["todo", "to do", "a fazer", "backlog"]:
+                synonyms = ["todo", "to do", "a fazer", "open", "aberto", "backlog"]
+            elif status_lower in ["in progress", "in_progress", "em andamento", "em_andamento", "desenvolvimento"]:
+                synonyms = ["in progress", "in_progress", "em andamento", "desenvolvimento", "active"]
+            elif status_lower in ["review", "in review", "in_review", "em análise", "em_análise", "em analise", "qa"]:
+                synonyms = ["review", "in review", "em análise", "em analise", "qa", "homologação", "testing"]
+            elif status_lower in ["done", "concluído", "concluido", "closed", "finalizado"]:
+                synonyms = ["done", "concluído", "concluido", "closed", "resolved", "resolvido"]
+            else:
+                synonyms = [status_lower]
+
             for t in transitions:
                 to_name = t.get("to", {}).get("name", "").lower()
-                target_name = status_name.lower()
-                if target_name in to_name or to_name in target_name:
+                # Verifica se bate com o status_name ou com qualquer um dos sinônimos
+                if status_lower in to_name or to_name in status_lower or any(s in to_name or to_name in s for s in synonyms):
                     transition_id = t.get("id")
                     break
 
             if not transition_id:
-                logging.warning(f"Transição para '{status_name}' não encontrada para {issue_key}.")
+                logging.warning(f"Transição para '{status_name}' (sinônimos: {synonyms}) não encontrada para {issue_key}.")
                 return False
 
             payload = {"transition": {"id": transition_id}}
