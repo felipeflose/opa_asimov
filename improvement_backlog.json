@@ -1817,5 +1817,24 @@
     "epic_area": "RAG/AI",
     "created_at": "2026-06-29T23:27:33.746514",
     "completed_at": null
+  },
+  {
+    "id": "KAN-210",
+    "title": "Limpar embeddings mortos no vault_embeddings.json",
+    "description": "Remover vetores de 47 notas deletadas há mais de 30 dias do vault_embeddings.json para reduzir o tamanho do arquivo em ~4MB.",
+    "details": "Gerado via feedback de Thiago Nascimento (Data Engineer)",
+    "motivation_justification": "O vault_embeddings.json contém vetores de 47 notas deletadas há mais de 30 dias (verificado via diff com vault ativo) — embeddings mortos aumentam o tamanho do arquivo em ~4MB desnecessariamente.",
+    "category": "RAG/AI",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "b4a292d11853",
+    "source_user": "Thiago Nascimento",
+    "epic_key": "KAN-98",
+    "epic_area": "RAG/AI",
+    "created_at": "2026-06-29T23:27:36.727153",
+    "completed_at": null
   }
 ]
