@@ -795,3 +795,23 @@
 [2026-06-29 23:21:30] [AUTO-IMPROVEMENT] Aplicada: KAN-182 - Persistência de Tooltips
 
 [2026-06-29 23:21:36] [AUTO-IMPROVEMENT] Aplicada: KAN-184 - Detecção de Notas Duplicadas
+
+[2026-06-29 23:23:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (7/10)): Integração com GitHub: notas de código linkadas automaticamente a commits releva
+
+[2026-06-29 23:24:32] [AUTO-IMPROVEMENT] Aplicada: KAN-202 - Otimizar renderização D3.js de nós do vault
+
+[2026-06-29 23:24:38] [AUTO-IMPROVEMENT] Aplicada: KAN-199 - Tratamento KeyError em agent_graph_generator ao testar
+
+[2026-06-29 23:24:42] [AUTO-IMPROVEMENT] Aplicada: KAN-200 - Comandos /help do bot listam comandos inválidos
+
+[2026-06-29 23:24:43] [AUTO-IMPROVEMENT] Aplicada: KAN-204 - Implementar versionamento de migrações Alembic
+
+[2026-06-29 23:24:46] [AUTO-IMPROVEMENT] Aplicada: KAN-206 - Implementar CI/CD com GitHub Actions para testes e deploy
+
+[2026-06-29 23:24:48] [AUTO-IMPROVEMENT] Aplicada: KAN-198 - Visualização de subgrafo por tag
+
+[2026-06-29 23:24:53] [AUTO-IMPROVEMENT] Aplicada: KAN-203 - Definir limits CPU/memória no docker-compose
+
+[2026-06-29 23:25:14] [AUTO-IMPROVEMENT] Aplicada: KAN-205 - Alerta de token usage anômalo ausente
+
+[2026-06-29 23:25:27] [AUTO-IMPROVEMENT] Aplicada: KAN-201 - Implementar NLP para análise de feedback
