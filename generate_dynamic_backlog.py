@@ -450,6 +450,8 @@ def main():
                     f"Fonte: {fb.get('user','?')} ({fb.get('role','?')}, área: {fb.get('area','?')})"
                 )
                 jira.add_comment(jira_key, pm_comment)
+                # Transiciona imediatamente para em andamento no Jira
+                jira.transition_issue(jira_key, "em andamento")
 
             task = {
                 "id": jira_key,
@@ -458,7 +460,7 @@ def main():
                 "details": details,
                 "motivation_justification": fb["complaint"],
                 "category": category,
-                "status": "todo",
+                "status": "in_progress",
                 "priority": priority,
                 "difficulty": difficulty,
                 "impact": impact,
