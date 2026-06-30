@@ -815,3 +815,21 @@
 [2026-06-29 23:25:14] [AUTO-IMPROVEMENT] Aplicada: KAN-205 - Alerta de token usage anômalo ausente
 
 [2026-06-29 23:25:27] [AUTO-IMPROVEMENT] Aplicada: KAN-201 - Implementar NLP para análise de feedback
+
+[2026-06-29 23:26:48] [AUTO-IMPROVEMENT] Aplicada: KAN-178 - Definição de SLOs Ausentes
+
+[2026-06-29 23:26:56] [AUTO-IMPROVEMENT] Aplicada: KAN-174 - Viewport e Responsividade HTML
+
+[2026-06-29 23:26:59] [AUTO-IMPROVEMENT] Aplicada: KAN-173 - Testes Unitários e CI
+
+[2026-06-29 23:27:02] [AUTO-IMPROVEMENT] Aplicada: KAN-177 - Falha de Testes no CI
+
+[2026-06-29 23:27:06] [AUTO-IMPROVEMENT] Aplicada: KAN-176 - Fuso Horário em Timestamps
+
+[2026-06-29 23:27:06] [AUTO-IMPROVEMENT] Aplicada: KAN-197 - Porta 8091 exposta sem firewall
+
+[2026-06-29 23:27:06] [AUTO-IMPROVEMENT] Aplicada: KAN-175 - Busca Semântica Incorreta
+
+[2026-06-29 23:27:14] [AUTO-IMPROVEMENT] Aplicada: KAN-207 - Redução ruído visual arestas grafo
+
+[2026-06-29 23:27:24] [AUTO-IMPROVEMENT] Aplicada: KAN-208 - Falha no daily digest sem alertas
