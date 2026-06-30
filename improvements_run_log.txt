@@ -873,3 +873,23 @@
 [2026-06-29 23:35:05] [AUTO-IMPROVEMENT] Aplicada: KAN-214 - Indexação Vault ignora frontmatter YAML
 
 [2026-06-29 23:35:07] [AUTO-IMPROVEMENT] Aplicada: KAN-145 - Não há mini-mapa de navegação — em vault com 847 nós em
+
+[2026-06-29 23:37:52] [AUTO-IMPROVEMENT] Aplicada: KAN-141 - 47 notas arquivadas (com tag #archived) continuam
+
+[2026-06-29 23:37:53] [AUTO-IMPROVEMENT] Aplicada: KAN-139 - Os erros da API retornam HTML do Flask (página de erro 500)
+
+[2026-06-29 23:37:53] [AUTO-IMPROVEMENT] Aplicada: KAN-217 - Refinar estratégia de chunking e busca semântica no RAG
+
+[2026-06-29 23:37:59] [AUTO-IMPROVEMENT] Aplicada: KAN-218 - Implementar pipeline CI/CD para deploys seguros
+
+[2026-06-29 23:37:59] [AUTO-IMPROVEMENT] Aplicada: KAN-143 - O server.log mistura INFO, DEBUG e ERROR em texto livre sem
+
+[2026-06-29 23:38:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (7/10)): Sistema de 'pergunta socrática': bot questiona o usuário sobre tópicos pouco rev
+
+[2026-06-29 23:38:28] [AUTO-IMPROVEMENT] Aplicada: KAN-140 - O server.log cresceu para 403 MB (confirmado via ls -lh)
+
+[2026-06-29 23:38:28] [AUTO-IMPROVEMENT] Aplicada: KAN-219 - Implementar Logging Estruturado com Trace ID
+
+[2026-06-29 23:38:30] [AUTO-IMPROVEMENT] Aplicada: KAN-144 - O fluxo de indexação do vault não tem testes de integração
+
+[2026-06-29 23:38:36] [AUTO-IMPROVEMENT] Aplicada: KAN-142 - O obsidian_graph.json não tem schema versionado — na última
