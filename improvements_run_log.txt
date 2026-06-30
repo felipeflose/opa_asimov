@@ -717,3 +717,23 @@
 [2026-06-29 23:06:46] [AUTO-IMPROVEMENT] Aplicada: KAN-133 - O /api/graph reconstrói o JSON completo a cada request sem
 
 [2026-06-29 23:07:22] [AUTO-IMPROVEMENT] Aplicada: KAN-127 - O obsidian_graph.json de 485KB é carregado inteiro a cada
+
+[2026-06-29 23:08:16] [CHAOS-MONKEY] IDEIA REPROVADA (PMs insuficientes (1/3)): Sistema de 'pergunta socrática': bot questiona o usuário sobre tópicos pouco rev
+
+[2026-06-29 23:10:17] [AUTO-IMPROVEMENT] Aplicada: KAN-167 - Os logs não têm trace ID correlacionando requests entre os
+
+[2026-06-29 23:10:21] [AUTO-IMPROVEMENT] Aplicada: KAN-165 - Sem roadmap visual, em 2 meses diferentes devs
+
+[2026-06-29 23:10:30] [AUTO-IMPROVEMENT] Aplicada: KAN-163 - Não há score de similaridade exposto nas respostas do RAG —
+
+[2026-06-29 23:10:30] [AUTO-IMPROVEMENT] Aplicada: KAN-169 - Não há benchmark de avaliação do RAG — mudei o chunking de
+
+[2026-06-29 23:10:37] [AUTO-IMPROVEMENT] Aplicada: KAN-164 - O Flask de desenvolvimento está exposto diretamente na
+
+[2026-06-29 23:10:45] [AUTO-IMPROVEMENT] Aplicada: KAN-162 - O sistema não detecta notas orfãs automaticamente — tenho
+
+[2026-06-29 23:11:00] [AUTO-IMPROVEMENT] Aplicada: KAN-166 - O server.log cresceu para 403 MB (confirmado via ls -lh)
+
+[2026-06-29 23:11:04] [AUTO-IMPROVEMENT] Aplicada: KAN-161 - O fluxo de indexação do vault não tem testes de integração
+
+[2026-06-29 23:11:20] [AUTO-IMPROVEMENT] Aplicada: KAN-168 - O obsidian_graph.json não tem schema versionado — na última
