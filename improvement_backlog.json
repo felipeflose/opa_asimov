@@ -2026,5 +2026,43 @@
     "epic_area": "RAG/AI",
     "created_at": "2026-06-29T23:15:06.299413",
     "completed_at": null
+  },
+  {
+    "id": "KAN-187",
+    "title": "Documentação da API",
+    "description": "Ausência de documentação interativa da API, aumentando o tempo de integração de novos consumidores",
+    "details": "Gerado via feedback de Eduardo Prado (API Specialist)",
+    "motivation_justification": "Não há documentação interativa da API — integrando um novo consumer, levei 40 minutos lendo 1.327 linhas de app.py para deduzir o schema do /api/graph; OpenAPI + Swagger UI economizaria esse tempo.",
+    "category": "DevOps",
+    "status": "in_progress",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "c0a57d607a97",
+    "source_user": "Eduardo Prado",
+    "epic_key": "KAN-100",
+    "epic_area": "DevOps",
+    "created_at": "2026-06-29T23:15:13.484429",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-188",
+    "title": "Adicionar spans de tracing para chamadas Groq LLM",
+    "description": "Implementar spans de tracing nas chamadas ao Groq LLM para medir o tempo exato gasto em Retrieval de Embeddings versus LLM (RAG pipeline)",
+    "details": "Gerado via feedback de Amanda Ribeiro (Observability Engineer)",
+    "motivation_justification": "Não há spans de tracing nas chamadas ao Groq LLM — sei que o pipeline RAG leva ~3s mas não sei se é 2.8s de LLM ou 2.8s de retrieval de embeddings; sem tracing, não posso otimizar o gargalo certo.",
+    "category": "Performance|RAG/AI|DevOps",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "3650c31cf4ce",
+    "source_user": "Amanda Ribeiro",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:15:13.877132",
+    "completed_at": null
   }
 ]
