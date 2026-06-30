@@ -3420,7 +3420,7 @@
     "role": "Product Owner",
     "area": "Product",
     "complaint": "O daily digest falhou em 3 dos últimos 7 dias sem nenhum alerta — só descobri checando manualmente os logs; o usuário não recebe nada e não sabe que o sistema falhou. — dado coletado de 6 semanas de operação sem nenhuma instrumentação",
-    "status": "pending",
+    "status": "accepted",
     "version": "v6",
     "improved_from": "22435d5509e4375b",
     "total_submitted": 9,

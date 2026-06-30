@@ -1817,5 +1817,24 @@
     "epic_area": "UI/UX",
     "created_at": "2026-06-29T23:25:26.356293",
     "completed_at": null
+  },
+  {
+    "id": "KAN-208",
+    "title": "Falha no daily digest sem alertas",
+    "description": "O daily digest falhou em 3 dos últimos 7 dias sem alertas, exigindo checagem manual dos logs. Falta de instrumentação para notificação de falhas.",
+    "details": "Gerado via feedback de Felipe Fróes (Product Owner)",
+    "motivation_justification": "O daily digest falhou em 3 dos últimos 7 dias sem nenhum alerta — só descobri checando manualmente os logs; o usuário não recebe nada e não sabe que o sistema falhou. — dado coletado de 6 semanas de operação sem nenhuma instrumentação",
+    "category": "DevOps",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "e04d31731622",
+    "source_user": "Felipe Fróes",
+    "epic_key": "KAN-100",
+    "epic_area": "DevOps",
+    "created_at": "2026-06-29T23:25:30.168125",
+    "completed_at": null
   }
 ]
