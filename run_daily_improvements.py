@@ -303,7 +303,7 @@ class {cleaned_key}Implementation:
 """
 
 
-def run_improvement_task(item, jira: JiraClient, applied_items):
+def run_improvement_task(item, jira: JiraClient, applied_items, dev_name: str):
     """Executa uma melhoria individualmente em uma thread com idas e vindas no QA (tempos mais longos e realistas)."""
     item_id = item["id"]
     category = item.get("category", "Arquitetura")
@@ -393,6 +393,7 @@ def run_improvement_task(item, jira: JiraClient, applied_items):
         lf.write(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [AUTO-IMPROVEMENT] Aplicada: {item_id} - {title}\n")
 
     item["rework_done"] = qa_fail
+    item["completed_by"] = dev_name
     applied_items.append(item)
 
 
@@ -424,13 +425,16 @@ def run_sprint(jira: JiraClient, config: dict):
     subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, capture_output=True)
     subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=APP_DIR, capture_output=True)
 
+    dev_names = ["Lucas Oliveira", "Ana Paula Ribeiro", "Thiago Martins", "Jessica Souza", "Rafael Lima", "Fernanda Costa", "Gabriel Santos", "Isabela Rocha", "Pedro Alves", "Mariana Souza"]
+
     # ── Executa tarefas em paralelo (1 thread por Dev) ────────────────────
     applied_items = []
     threads = []
-    for item in candidates:
+    for idx, item in enumerate(candidates):
+        dev_name = dev_names[idx % dev_count]
         t = threading.Thread(
             target=run_improvement_task,
-            args=(item, jira, applied_items),
+            args=(item, jira, applied_items, dev_name),
             daemon=True
         )
         t.start()
