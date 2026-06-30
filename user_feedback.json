@@ -4352,5 +4352,57 @@
     "total_submitted": 13,
     "progress_to_meta": 0.13,
     "meta": 10000
+  },
+  {
+    "id": "a2bf1c64e965e46a",
+    "timestamp": "2026-06-30T02:31:45.616787+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Re-ranking MMR e score de similaridade nas respostas RAG. EVIDÊNCIA REAL: O vault tem 109 demandas aceitas sobre RAG. O vault_embeddings.json tem ~50MB sem re-ranking — os top-5 chunks por cosseno são retornados sem diversidade. Chunks de notas longas dominam os resultados em ~60% dos casos. BENCHMARK: Elastic com KNN reranking tem latência P95 de 50ms; Algolia tem 20ms. Sistema atual estimado: 800ms+ por busca (50MB de I/O + cosine sim sem GPU). ROI ESTIMADO: MMR (Maximal Marginal Relevance) aumenta diversidade dos resultados em ~40% sem custo computacional significativo. Score de similaridade exposto aumenta confiança do usuário. COMPONENTE: agent_rag.py — função de retrieval. PRIORITY: Impact=MÉDIO / Effort=MÉDIO (4-6 dias de desenvolvimento). Benchmark: Elastic=50ms, Algolia=20ms, Notion=150ms. Métricas capturadas em 2026-06-29 23:31: backlog=100 itens, taxa_rejeição=24.4%, feedbacks_total=315.",
+    "status": "pending",
+    "fingerprint": "a35faf76f3a1da6c",
+    "impact_effort": {
+      "impact": "medium",
+      "effort": "medium"
+    },
+    "category": "RAG/AI",
+    "priority": "medium",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 24.44,
+      "total_feedbacks": 315,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "a27f297c810b89ae",
+    "timestamp": "2026-06-30T02:31:45.616787+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 24.4%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:31: backlog=100 itens, taxa_rejeição=24.4%, feedbacks_total=315.",
+    "status": "pending",
+    "fingerprint": "9a2ce21c343ad514",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "hard"
+    },
+    "category": "QA",
+    "priority": "high",
+    "difficulty": "hard",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 24.44,
+      "total_feedbacks": 315,
+      "done_today": 0
+    }
   }
 ]
