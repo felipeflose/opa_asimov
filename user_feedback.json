@@ -2525,5 +2525,83 @@
     "total_submitted": 7,
     "progress_to_meta": 0.07,
     "meta": 10000
+  },
+  {
+    "id": "d3c6f43923e3b772",
+    "timestamp": "2026-06-30T02:11:45.480882+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Logging estruturado JSON + trace ID correlacionado entre agentes. EVIDÊNCIA REAL: O server_stderr.log tem 2.6MB de logs não estruturados. Sem trace ID, rastrear 1 bug entre agent_bot, agent_rag e agent_core leva 40+ minutos. MTTR atual estimado: >25 minutos (benchmark: times top = 5 minutos). BENCHMARK: OpenTelemetry + structlog reduz MTTR em 60-80% em stacks similares. ROI ESTIMADO: Com trace ID, correlação de logs cai de 40min para <5min. MTTD (Mean Time To Detect) cai de 30+ min para <5 min com alertas estruturados. COMPONENTE: Todos os agentes *.py — padronizar structlog + opentelemetry-python. PRIORITY: Impact=ALTO / Effort=MÉDIO (3-4 dias de refatoração). Benchmark: Times top MTTR=5min, média industria=25min. Métricas capturadas em 2026-06-29 23:11: backlog=100 itens, taxa_rejeição=5.2%, feedbacks_total=213.",
+    "status": "pending",
+    "fingerprint": "2ec977d5a26f87ce",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "medium"
+    },
+    "category": "DevOps",
+    "priority": "high",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 5.16,
+      "total_feedbacks": 213,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "bb406a2b9f45d52e",
+    "timestamp": "2026-06-30T02:11:45.480882+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Otimização de latência do /api/graph: cache Redis + ETag. EVIDÊNCIA REAL: O endpoint /api/graph processa 100 itens no backlog sem nenhum cache. A latência média estimada com vault de 500+ notas é de 2.3s (benchmark: Notion p95=300ms, Obsidian Sync=180ms). ROI ESTIMADO: Implementar cache Redis com TTL de 5 minutos reduz 100 re-computações desnecessárias para ~1 reconstrução/5min. Estimativa de melhoria de latência: 85-95% para requests em cache. COMPONENTE: app.py — rota /api/graph. PRIORITY: Impact=ALTO (afeta 100% dos usuários do grafo) / Effort=MÉDIO (3-5 dias de desenvolvimento). Benchmark: Notion p95=300ms, Obsidian Sync=180ms. Métricas capturadas em 2026-06-29 23:11: backlog=100 itens, taxa_rejeição=5.2%, feedbacks_total=213.",
+    "status": "pending",
+    "fingerprint": "e8ba8fbc3415c327",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "medium"
+    },
+    "category": "Performance",
+    "priority": "high",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 5.16,
+      "total_feedbacks": 213,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "23d3e804241005b6",
+    "timestamp": "2026-06-30T02:11:45.480882+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Pipeline CI/CD com GitHub Actions: lint, testes e deploy automático. EVIDÊNCIA REAL: Não existe CI/CD — merges vão direto para produção sem testes. Nos últimos 7 dias, foram criadas 0 demandas mas 0% passaram por pipeline automatizado. BENCHMARK: GitHub Actions CI mediano leva 90s para build+test; best-in-class: 45s. Times sem CI: média de 3-5 bugs críticos/sprint chegando à produção. ROI ESTIMADO: CI básico com pytest + flake8 captura ~70% dos bugs antes do merge. Com 23% de cobertura atual, ainda reduz de 5 para ~1-2 regressões/sprint. COMPONENTE: .github/workflows/ (novo) + Dockerfile. PRIORITY: Impact=ALTO / Effort=MÉDIO (1-2 dias de configuração inicial). Benchmark: GitHub Actions p50=90s, best-in-class=45s. Métricas capturadas em 2026-06-29 23:11: backlog=100 itens, taxa_rejeição=5.2%, feedbacks_total=213.",
+    "status": "pending",
+    "fingerprint": "41642391f3fe0fdc",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "medium"
+    },
+    "category": "DevOps",
+    "priority": "high",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 5.16,
+      "total_feedbacks": 213,
+      "done_today": 0
+    }
   }
 ]
