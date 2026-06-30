@@ -3885,5 +3885,35 @@
       "total_feedbacks": 286,
       "done_today": 0
     }
+  },
+  {
+    "id": "e233ae4b079932b6",
+    "timestamp": "2026-06-30T02:26:38.596857+00:00",
+    "user": "Natalia Pimentel",
+    "avatar": "👩‍🔬",
+    "role": "Data Scientist",
+    "area": "Data",
+    "complaint": "O sistema não coleta métricas de uso de features — após 6 semanas de operação, não temos nenhum dado sobre quais partes do grafo são mais usadas; decisões de produto são baseadas em opinião.",
+    "status": "pending",
+    "version": "v7",
+    "improved_from": null,
+    "total_submitted": 10,
+    "progress_to_meta": 0.1,
+    "meta": 10000
+  },
+  {
+    "id": "24ac6f2650049a86",
+    "timestamp": "2026-06-30T02:26:38.599462+00:00",
+    "user": "Isabela Gomes",
+    "avatar": "🕸️",
+    "role": "Graph Visualization Specialist",
+    "area": "UI/UX",
+    "complaint": "Com 847 nós no vault, o D3.js usa SVG puro — o Chrome DevTools reporta 3.200ms de rendering time; sigma.js com WebGL renderizaria 10.000+ nós em <16ms (60fps estável).",
+    "status": "pending",
+    "version": "v5",
+    "improved_from": null,
+    "total_submitted": 8,
+    "progress_to_meta": 0.08,
+    "meta": 10000
   }
 ]
