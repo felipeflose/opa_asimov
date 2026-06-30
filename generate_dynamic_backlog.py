@@ -517,4 +517,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys, time
+    if "--daemon" in sys.argv:
+        logging.info("👩‍💼 [PM DAEMON] Iniciando PM de triagem no modo daemon (sprints de 60s)...")
+        while True:
+            try:
+                main()
+            except Exception as e:
+                logging.error(f"Erro no loop do PM: {e}")
+            time.sleep(60)
+    else:
+        main()
