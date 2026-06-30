@@ -1546,6 +1546,27 @@ def api_factory_metrics():
         key=lambda x: -x['count']
     )[:5]
 
+    # ── Dev Leaderboard (quem entregou mais) ───────────────────
+    dev_ranking_map = {}
+    dev_names = ["Lucas Oliveira", "Ana Paula Ribeiro", "Thiago Martins", "Jessica Souza", "Rafael Lima", "Fernanda Costa", "Gabriel Santos", "Isabela Rocha", "Pedro Alves", "Mariana Souza"]
+    dev_emojis = ["👨‍💻", "👩‍💻", "🧑‍💻", "👩‍💻", "👨‍💻", "👩‍💻", "👨‍💻", "👩‍💻", "👨‍💻", "👩‍💻"]
+    for d_name, d_emoji in zip(dev_names, dev_emojis):
+        dev_ranking_map[d_name] = {"emoji": d_emoji, "count": 0}
+
+    for item in backlog:
+        st = item.get('status', 'todo')
+        if st == 'done':
+            dev_c = item.get('completed_by')
+            if dev_c in dev_ranking_map:
+                dev_ranking_map[dev_c]["count"] += 1
+            elif dev_c:
+                dev_ranking_map[dev_c] = {"emoji": "👨‍💻", "count": 1}
+
+    dev_leaderboard = sorted(
+        [{"name": name, "emoji": info["emoji"], "count": info["count"]} for name, info in dev_ranking_map.items()],
+        key=lambda x: -x["count"]
+    )
+
     # ── Chaos monkey ideas (from run log) ─────────────────────
     chaos_approved = chaos_rejected = 0
     chaos_ideas = []
