@@ -969,10 +969,13 @@ def api_office():
 
     # Carrega contagem de PMs da configuração
     pm_count = 1
+    qa_count = 1
     if os.path.exists(config_file):
         try:
             with open(config_file, 'r') as f:
-                pm_count = json.load(f).get("pm_count", 1)
+                config_data = json.load(f)
+                pm_count = config_data.get("pm_count", 1)
+                qa_count = config_data.get("qa_count", 1)
         except Exception:
             pass
 
@@ -1010,6 +1013,7 @@ def api_office():
         "dev_status": dev_status,
         "dev_count": dev_count,
         "pm_count": pm_count,
+        "qa_count": qa_count,
         "ranking": ranking,
         "jira_metrics": jira_metrics,
         "jira_issues": jira_issues,

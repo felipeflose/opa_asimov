@@ -833,3 +833,23 @@
 [2026-06-29 23:27:14] [AUTO-IMPROVEMENT] Aplicada: KAN-207 - Redução ruído visual arestas grafo
 
 [2026-06-29 23:27:24] [AUTO-IMPROVEMENT] Aplicada: KAN-208 - Falha no daily digest sem alertas
+
+[2026-06-29 23:28:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (7/10)): Sistema de badges e achievements para gamificação do processo de aprendizado
+
+[2026-06-29 23:30:28] [AUTO-IMPROVEMENT] Aplicada: KAN-210 - Limpar embeddings mortos no vault_embeddings.json
+
+[2026-06-29 23:30:29] [AUTO-IMPROVEMENT] Aplicada: KAN-149 - Com 300+ nós no vault, os labels se sobrepõem em 60-80% da
+
+[2026-06-29 23:30:44] [AUTO-IMPROVEMENT] Aplicada: KAN-148 - Não há benchmark de avaliação do RAG — mudei o chunking de
+
+[2026-06-29 23:30:46] [AUTO-IMPROVEMENT] Aplicada: KAN-170 - O layout de força do D3.js oscila indefinidamente sem
+
+[2026-06-29 23:30:46] [AUTO-IMPROVEMENT] Aplicada: KAN-171 - O README.md não tem instruções de setup do ambiente de
+
+[2026-06-29 23:31:06] [AUTO-IMPROVEMENT] Aplicada: KAN-209 - Embeddings não atualizados após edição de nota
+
+[2026-06-29 23:31:11] [AUTO-IMPROVEMENT] Aplicada: KAN-150 - O SQLite é compartilhado entre agent_core, agent_rag e
+
+[2026-06-29 23:31:11] [AUTO-IMPROVEMENT] Aplicada: KAN-172 - Latência de Tooltips D3.js
+
+[2026-06-29 23:31:15] [AUTO-IMPROVEMENT] Aplicada: KAN-151 - O servidor Flask não usa connection pooling no SQLite — nos
