@@ -2074,6 +2074,23 @@ async function fireDev() {
     }
 }
 
+const CLIENT_PERSONAS = [
+    { name: "Felipe Fróes", emoji: "🧔", role: "Product Owner", dept: "product", desk: "desk-c-prod-0" },
+    { name: "Vanessa Correia", emoji: "🏃", role: "Product Manager", dept: "product", desk: "desk-c-prod-1" },
+    { name: "Rafael Auditoria", emoji: "🧑‍💼", role: "Metrics (CMO)", dept: "product", desk: "desk-c-prod-2" },
+    { name: "Gustavo Lima", emoji: "👨‍📱", role: "Mobile Product", dept: "product", desk: "desk-c-prod-3" },
+    { name: "Aline Rodrigues", emoji: "👩‍🎨", role: "UI/UX Designer", dept: "design", desk: "desk-c-design-0" },
+    { name: "Beatriz Ferreira", emoji: "👩‍💻", role: "Frontend Dev", dept: "design", desk: "desk-c-design-1" },
+    { name: "Juliana Moreira", emoji: "👩‍💻", role: "Full Stack Dev", dept: "design", desk: "desk-c-design-2" },
+    { name: "Amanda Ribeiro", emoji: "👩‍🎨", role: "UX Designer", dept: "design", desk: "desk-c-design-3" },
+    { name: "Carlos Mendes", emoji: "👨‍💻", role: "Backend Developer", dept: "eng", desk: "desk-c-eng-0" },
+    { name: "Fernanda Alves", emoji: "👩‍🔒", role: "Security Architect", dept: "eng", desk: "desk-c-eng-1" },
+    { name: "Mariana Costa", emoji: "🧠", role: "RAG & AI Specialist", dept: "eng", desk: "desk-c-eng-2" },
+    { name: "Rafael Barbosa", emoji: "👨‍⚙️", role: "DevOps Architect", dept: "eng", desk: "desk-c-eng-3" },
+    { name: "Thiago Nascimento", emoji: "👨‍💼", role: "Data Engineer", dept: "eng", desk: "desk-c-eng-4" },
+    { name: "Priscila Santos", emoji: "🧪", role: "QA Engineer", dept: "eng", desk: "desk-c-eng-5" }
+];
+
 async function loadOfficeData() {
     try {
         const r = await fetch('/api/office');
@@ -2097,7 +2114,7 @@ async function loadOfficeData() {
         if (data.dev_status === 'WORKING') {
             devStatusTag.className = 'bot-status-tag status-online';
             devStatusTag.innerHTML = `<div class="status-dot"></div> CODANDO (${devCountVal} DEVS)`;
-            devConsoleText.innerHTML = `> Sprint ativo: ${devCountVal * 3} tarefas em paralelo...\n> Rodando pytest QA gate...\n> Push direto na main.`;
+            devConsoleText.innerHTML = `> Sprint ativo: ${devCountVal} tarefas em paralelo...\n> Rodando pytest QA gate...\n> Push direto na main.`;
             devStatusTag.style.background = 'rgba(6,182,212,0.1)';
             devStatusTag.style.color = 'var(--cyan)';
         } else {
@@ -2113,15 +2130,29 @@ async function loadOfficeData() {
         renderPMs(pmCountVal);
         renderQAs(qaCountVal);
 
-        // Posiciona clientes ociosos nas suas respectivas mesas físicas
-        const c0 = document.getElementById('client-static-0');
-        const c1 = document.getElementById('client-static-1');
-        const c2 = document.getElementById('client-static-2');
-        const c3 = document.getElementById('client-static-3');
-        if (c0) Object.assign(c0.style, getCoords('desk-client-2'));
-        if (c1) Object.assign(c1.style, getCoords('desk-client-3'));
-        if (c2) Object.assign(c2.style, getCoords('desk-client-0'));
-        if (c3) Object.assign(c3.style, getCoords('desk-client-1'));
+        // Posiciona clientes nas suas respectivas mesas nos novos departamentos do meio
+        CLIENT_PERSONAS.forEach((client, idx) => {
+            const avatarId = `client-static-${idx}`;
+            let avatar = document.getElementById(avatarId);
+            if (!avatar) {
+                avatar = document.createElement('div');
+                avatar.id = avatarId;
+                avatar.className = 'avatar character-avatar';
+                avatar.style.cssText = 'position: absolute; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 2px solid #cbd5e1; box-shadow: 0 0 10px rgba(255,255,255,0.05); z-index: 45; transition: all 1.2s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer;';
+                document.querySelector('.office-map').appendChild(avatar);
+            }
+            avatar.innerHTML = client.emoji;
+            avatar.setAttribute('data-tooltip', `${client.name} (${client.role})`);
+            avatar.style.background = '#1e293b';
+            
+            if (client.dept === 'product') avatar.style.borderColor = '#c084fc';
+            else if (client.dept === 'design') avatar.style.borderColor = '#f472b6';
+            else if (client.dept === 'eng') avatar.style.borderColor = '#60a5fa';
+            
+            if (avatar.style.display !== 'none' && avatar.getAttribute('animating') !== 'true') {
+                Object.assign(avatar.style, getCoords(client.desk));
+            }
+        });
         
         // 2. Renderiza logs do Cliente Oculto
         const mysteryContainer = document.getElementById('mystery-logs-container');
@@ -2672,18 +2703,48 @@ async function triggerOfficeAnimation(latestFeedback) {
         document.querySelector('.office-map').appendChild(devAvatar);
     }
 
+    // Detecta se o cliente faz parte da lista de 14 personas proeminentes
+    const clientName = latestFeedback.user;
+    const persona = CLIENT_PERSONAS.find(p => p.name === clientName);
+    let clientDeskId = 'desk-reception';
+    let staticAvatarId = null;
+    let waypoint = null;
+
+    if (persona) {
+        clientDeskId = persona.desk;
+        const pIdx = CLIENT_PERSONAS.indexOf(persona);
+        staticAvatarId = `client-static-${pIdx}`;
+        
+        // Define pontos de passagem para não atravessar as salas do meio
+        if (persona.dept === 'product') waypoint = { left: '120px', top: '300px' };
+        else if (persona.dept === 'design') waypoint = { left: '370px', top: '300px' };
+        else if (persona.dept === 'eng') waypoint = { left: '550px', top: '300px' };
+    }
+
+    const startCoords = getCoords(clientDeskId) || getCoords('desk-reception');
+    const staticAvatar = staticAvatarId ? document.getElementById(staticAvatarId) : null;
+
     // ── RESET positions nos seus postos iniciais ───────────
-    Object.assign(user.style, getCoords('desk-reception'));
+    Object.assign(user.style, startCoords);
     Object.assign(pm.style, getCoords('pm-desk-0')); // Bea
     if (qa) Object.assign(qa.style, getCoords('qa-desk-0')); // Paulão
     devAvatar.style.display = 'none';
+
+    // Oculta temporariamente o avatar estático do cliente enquanto ele caminha
+    if (staticAvatar) {
+        staticAvatar.style.display = 'none';
+        staticAvatar.setAttribute('animating', 'true');
+    }
 
     const userEmoji = latestFeedback.avatar || '🤬';
     devAvatar.innerHTML = '👨‍💻';
 
     // ── FASE 1: Cliente vai ao balcão e registra reclamação ────
     await wait(400);
-    // Move para frente da recepção no corredor
+    // Caminha do departamento até a recepção
+    if (waypoint) {
+        await moveAvatar('avatar-user', waypoint);
+    }
     await moveAvatar('avatar-user', { left: '190px', top: '150px' });
     showBubble('bubble-user', 'avatar-user', `${userEmoji} "${latestFeedback.complaint.substring(0, 40)}..."`, 3000);
     await wait(3200);
@@ -2698,9 +2759,22 @@ async function triggerOfficeAnimation(latestFeedback) {
         await wait(3200);
         showBubble('bubble-user', 'avatar-user', `${userEmoji} "Entendido, vou melhorar o pedido! 😤"`, 2500);
         await wait(2700);
+        
         // Voltam para as posições originais
         Object.assign(pm.style, getCoords('pm-desk-0'));
+        
+        // Cliente caminha de volta para sua mesa de departamento
+        if (waypoint) {
+            await moveAvatar('avatar-user', waypoint);
+        }
+        await moveAvatar('avatar-user', startCoords);
+        if (staticAvatar) {
+            staticAvatar.style.display = 'flex';
+            staticAvatar.removeAttribute('animating');
+        }
+        await wait(200);
         Object.assign(user.style, getCoords('desk-reception'));
+        
         isOfficeAnimating = false;
         return;
     }
@@ -2722,8 +2796,17 @@ async function triggerOfficeAnimation(latestFeedback) {
     showBubble('bubble-pm', 'avatar-pm', '👩‍💼 "Perfeito. Critérios de aceitação aprovados e salvos no backlog! 🚀"', 3200);
     await wait(3400);
 
-    // PM volta para a sala dele para delegar e o Cliente vai para sua baia ociosa
+    // PM volta para a sala dele para delegar e o Cliente caminha de volta para sua baia ociosa
     Object.assign(pm.style, getCoords('pm-desk-0'));
+    if (waypoint) {
+        await moveAvatar('avatar-user', waypoint);
+    }
+    await moveAvatar('avatar-user', startCoords);
+    if (staticAvatar) {
+        staticAvatar.style.display = 'flex';
+        staticAvatar.removeAttribute('animating');
+    }
+    await wait(200);
     Object.assign(user.style, getCoords('desk-reception'));
     await wait(1300);
 
@@ -2837,10 +2920,21 @@ async function triggerOfficeAnimation(latestFeedback) {
 
     // ── RESET FINAL ────────────────────────────────────────
     // Retorna avatares aos postos originais e apaga o dev animado
-    Object.assign(user.style, getCoords('desk-reception'));
     Object.assign(pm.style, getCoords('pm-desk-0'));
     if (qa) Object.assign(qa.style, getCoords('qa-desk-0'));
     devAvatar.style.display = 'none';
+
+    // Cliente caminha de volta para sua mesa de departamento
+    if (waypoint) {
+        await moveAvatar('avatar-user', waypoint);
+    }
+    await moveAvatar('avatar-user', startCoords);
+    if (staticAvatar) {
+        staticAvatar.style.display = 'flex';
+        staticAvatar.removeAttribute('animating');
+    }
+    await wait(200);
+    Object.assign(user.style, getCoords('desk-reception'));
     
     // Reseta cor do monitor do dev para azul (idle) se contratado
     if (monitor) {
