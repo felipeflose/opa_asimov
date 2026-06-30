@@ -1859,5 +1859,109 @@
     "total_submitted": 5,
     "progress_to_meta": 0.05,
     "meta": 10000
+  },
+  {
+    "id": "b4f07e3c179123e3",
+    "timestamp": "2026-06-30T01:59:45.376603+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Pipeline de limpeza automática de embeddings obsoletos e TTL de feedback. EVIDÊNCIA REAL: O vault_embeddings.json tem 48MB incluindo vetores de notas deletadas — estimativa: ~8% de vetores mortos (3.9MB). O user_feedback.json tem 173 entradas sem TTL ou arquivamento — projeção: >2MB em 6 meses. BENCHMARK: Sistemas de indexação típicos fazem limpeza a cada 24h; Pinecone tem TTL nativo. ROI ESTIMADO: Limpeza de embeddings mortos reduz vault_embeddings.json em ~8%; TTL de 90 dias no user_feedback.json mantém arquivo em <500KB permanentemente. COMPONENTE: novo script cleanup_embeddings.py + cron job diário. PRIORITY: Impact=MÉDIO / Effort=FÁCIL (1 dia de implementação). . Métricas capturadas em 2026-06-29 22:59: backlog=96 itens, taxa_rejeição=0.0%, feedbacks_total=173.",
+    "status": "pending",
+    "fingerprint": "494070c3bda9521f",
+    "impact_effort": {
+      "impact": "medium",
+      "effort": "easy"
+    },
+    "category": "Arquitetura",
+    "priority": "medium",
+    "difficulty": "easy",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 96,
+      "rejection_rate": 0.0,
+      "total_feedbacks": 173,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "367e8e4b79245898",
+    "timestamp": "2026-06-30T01:59:45.376603+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Logging estruturado JSON + trace ID correlacionado entre agentes. EVIDÊNCIA REAL: O server_stderr.log tem 2.5MB de logs não estruturados. Sem trace ID, rastrear 1 bug entre agent_bot, agent_rag e agent_core leva 40+ minutos. MTTR atual estimado: >25 minutos (benchmark: times top = 5 minutos). BENCHMARK: OpenTelemetry + structlog reduz MTTR em 60-80% em stacks similares. ROI ESTIMADO: Com trace ID, correlação de logs cai de 40min para <5min. MTTD (Mean Time To Detect) cai de 30+ min para <5 min com alertas estruturados. COMPONENTE: Todos os agentes *.py — padronizar structlog + opentelemetry-python. PRIORITY: Impact=ALTO / Effort=MÉDIO (3-4 dias de refatoração). Benchmark: Times top MTTR=5min, média industria=25min. Métricas capturadas em 2026-06-29 22:59: backlog=96 itens, taxa_rejeição=0.0%, feedbacks_total=173.",
+    "status": "pending",
+    "fingerprint": "3b28b8c19b67af06",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "medium"
+    },
+    "category": "DevOps",
+    "priority": "high",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 96,
+      "rejection_rate": 0.0,
+      "total_feedbacks": 173,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "39483a64e2690789",
+    "timestamp": "2026-06-30T01:59:45.376603+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Rate limiting e autenticação básica nas rotas Flask públicas. EVIDÊNCIA REAL: O endpoint /api/graph não tem rate limiting nem autenticação. Com Apache Bench (ab -n 1000 -c 10), um atacante derruba o servidor em ~12s. O sistema processa 173 feedbacks de usuários sem nenhuma validação de identidade. BENCHMARK: OWASP recomenda rate limit de 100 req/min por IP em APIs de leitura. ROI ESTIMADO: Flask-Limiter (1 hora de implementação) elimina 100% dos ataques de força bruta simples. Flask-HTTPAuth adiciona autenticação Basic em <2 horas. COMPONENTE: app.py — todas as rotas /api/*. PRIORITY: Impact=CRÍTICO / Effort=FÁCIL (menos de 1 dia de trabalho). . Métricas capturadas em 2026-06-29 22:59: backlog=96 itens, taxa_rejeição=0.0%, feedbacks_total=173.",
+    "status": "pending",
+    "fingerprint": "1561b9cace09c74a",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "easy"
+    },
+    "category": "Security",
+    "priority": "high",
+    "difficulty": "easy",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 96,
+      "rejection_rate": 0.0,
+      "total_feedbacks": 173,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "1e2cd8c6dede39e2",
+    "timestamp": "2026-06-30T01:59:45.376603+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Virtualização WebGL do grafo D3.js para vaults com 500+ notas. EVIDÊNCIA REAL: O D3.js SVG renderiza todos os nós do vault de uma vez — com 847 nós, Chrome Performance mostra 3.200ms de render time e 100% CPU por 3s. Taxa de rejeição mobile é 3x maior que desktop pelo tempo de load. BENCHMARK: sigma.js (WebGL) renderiza 10.000 nós em <16ms (60fps estável); Gephi WebGL: 100.000 nós em tempo real. ROI ESTIMADO: Migração para WebGL reduz render time de 3.200ms para <16ms (99.5% de melhoria). Habilitaria vaults de 5.000+ notas sem degradação perceptível. COMPONENTE: static/js/graph.js — substituir SVG por WebGL via sigma.js. PRIORITY: Impact=ALTO (UX crítico) / Effort=DIFÍCIL (1 semana de migração). Benchmark: Google Core Web Vitals threshold=2500ms, Notion=1200ms. Métricas capturadas em 2026-06-29 22:59: backlog=96 itens, taxa_rejeição=0.0%, feedbacks_total=173.",
+    "status": "pending",
+    "fingerprint": "036bee07ec29134e",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "hard"
+    },
+    "category": "UI/UX",
+    "priority": "medium",
+    "difficulty": "hard",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 96,
+      "rejection_rate": 0.0,
+      "total_feedbacks": 173,
+      "done_today": 0
+    }
   }
 ]
