@@ -2007,5 +2007,24 @@
     "epic_area": "Arquitetura",
     "created_at": "2026-06-29T23:03:42.190448",
     "completed_at": null
+  },
+  {
+    "id": "KAN-118",
+    "title": "O /api/graph reconstrói o JSON completo a cada request sem",
+    "description": "O /api/graph reconstrói o JSON completo a cada request sem cache — para 1.000 notas, medei 890ms de CPU por request; com cache Redis de 5 minutos, 98% dos requests seriam sub-10ms.",
+    "details": "Gerado via feedback de Diego Cavalcante (Performance Engineer)",
+    "motivation_justification": "O /api/graph reconstrói o JSON completo a cada request sem cache — para 1.000 notas, medei 890ms de CPU por request; com cache Redis de 5 minutos, 98% dos requests seriam sub-10ms.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "45fa18393703",
+    "source_user": "Diego Cavalcante",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:03:51.767896",
+    "completed_at": null
   }
 ]
