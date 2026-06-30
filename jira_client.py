@@ -3,6 +3,8 @@ import json
 import re
 import logging
 import requests
+import fcntl
+import time
 from typing import Optional
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
@@ -11,6 +13,7 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(APP_DIR, '.env'))
 
 EPIC_CACHE_FILE = os.path.join(APP_DIR, 'epic_cache.json')
+TRANSITION_CACHE_FILE = os.path.join(APP_DIR, 'recent_transitions.json')
 
 EPIC_CATEGORIES = [
     "Performance", "Security", "RAG/AI", "UI/UX",
@@ -55,6 +58,83 @@ class JiraClient:
                 json.dump(self._epic_cache, f, ensure_ascii=False, indent=2)
         except Exception as e:
             logging.warning(f"Não foi possível salvar epic_cache.json: {e}")
+
+    def _write_transition_cache(self, issue_key, status):
+        """Salva a transição recente no cache com timestamp."""
+        try:
+            if not os.path.exists(TRANSITION_CACHE_FILE):
+                with open(TRANSITION_CACHE_FILE, 'w') as f:
+                    json.dump({}, f)
+                    
+            with open(TRANSITION_CACHE_FILE, 'r+', encoding='utf-8') as f:
+                fcntl.flock(f, fcntl.LOCK_EX)
+                try:
+                    cache = json.load(f)
+                except Exception:
+                    cache = {}
+                
+                cache[issue_key] = {
+                    "status": status,
+                    "timestamp": time.time()
+                }
+                
+                # Limpa registros antigos (>60s)
+                now = time.time()
+                cache = {k: v for k, v in cache.items() if now - v["timestamp"] < 60}
+                
+                f.seek(0)
+                f.truncate()
+                json.dump(cache, f, ensure_ascii=False, indent=2)
+                fcntl.flock(f, fcntl.LOCK_UN)
+        except Exception as e:
+            logging.warning(f"Erro ao gravar no cache de transições: {e}")
+
+    def _read_transition_cache(self) -> dict:
+        """Lê o cache de transições recente do disco de forma thread-safe."""
+        if not os.path.exists(TRANSITION_CACHE_FILE):
+            return {}
+        try:
+            with open(TRANSITION_CACHE_FILE, 'r', encoding='utf-8') as f:
+                fcntl.flock(f, fcntl.LOCK_SH)
+                try:
+                    cache = json.load(f)
+                except Exception:
+                    cache = {}
+                fcntl.flock(f, fcntl.LOCK_UN)
+                return cache
+        except Exception:
+            return {}
+
+    def _update_local_backlog_status(self, issue_key, status, completed_by=None, completed_at=None):
+        """Atualiza imediatamente o status de uma issue no arquivo local improvement_backlog.json."""
+        backlog_file = os.path.join(APP_DIR, 'improvement_backlog.json')
+        if not os.path.exists(backlog_file):
+            return
+        try:
+            with open(backlog_file, 'r+', encoding='utf-8') as f:
+                fcntl.flock(f, fcntl.LOCK_EX)
+                try:
+                    data = json.load(f)
+                except Exception:
+                    data = []
+                
+                updated = False
+                for item in data:
+                    if item.get("id") == issue_key:
+                        item["status"] = status
+                        if completed_by is not None:
+                            item["completed_by"] = completed_by
+                        if completed_at is not None:
+                            item["completed_at"] = completed_at
+                        updated = True
+                
+                if updated:
+                    f.seek(0)
+                    f.truncate()
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                fcntl.flock(f, fcntl.LOCK_UN)
+        except Exception as e:
+            logging.error(f"Erro ao atualizar status local para {issue_key}: {e}")
 
     # ── Epics ─────────────────────────────────────────────────────────────────
 
@@ -256,6 +336,9 @@ class JiraClient:
 
             issues_data = r.json().get("issues", [])
             local_backlog = []
+            
+            # Carrega cache local de transições recentes para evitar JQL lag
+            transition_cache = self._read_transition_cache()
 
             for issue in issues_data:
                 key = issue.get("key")
@@ -307,6 +390,12 @@ class JiraClient:
                 }
                 status = status_map.get(jira_status.lower(), "todo")
 
+                # Sobrescreve status se houver transição recente no cache local (lag de indexação do Jira)
+                if key in transition_cache:
+                    cached = transition_cache[key]
+                    if time.time() - cached["timestamp"] < 30:
+                        status = cached["status"]
+
                 # Epic key via parent
                 parent_key = ""
                 parent = fields.get("parent")
@@ -329,7 +418,8 @@ class JiraClient:
                     "source_user": metadata.get("source_user", ""),
                     "epic_key": metadata.get("epic_key", parent_key),
                     "created_at": fields.get("created"),
-                    "completed_at": fields.get("updated") if status == "done" else None
+                    "completed_at": fields.get("updated") if status == "done" else None,
+                    "completed_by": metadata.get("completed_by", "")
                 }
                 local_backlog.append(task)
 
@@ -383,12 +473,98 @@ class JiraClient:
                                    json=payload, timeout=15)
             if r_post.status_code in [204, 200]:
                 logging.info(f"Issue {issue_key} transicionada para '{status_name}'.")
+                
+                # Identifica status local correspondente para cachear e salvar localmente
+                status_map_inv = {
+                    "todo": "todo", "to do": "todo", "a fazer": "todo", "open": "todo", "aberto": "todo", "backlog": "todo",
+                    "in progress": "in_progress", "in_progress": "in_progress", "em andamento": "in_progress", "desenvolvimento": "in_progress", "active": "in_progress",
+                    "review": "in_analysis", "in review": "in_analysis", "em análise": "in_analysis", "em analise": "in_analysis", "qa": "in_analysis", "homologação": "in_analysis", "testing": "in_analysis",
+                    "done": "done", "concluído": "done", "concluido": "done", "closed": "done", "resolved": "done", "resolvido": "done"
+                }
+                local_status = status_map_inv.get(status_lower, "todo")
+                
+                # Grava no cache de transições recentes para evitar lag de JQL do Jira
+                self._write_transition_cache(issue_key, local_status)
+                
+                # Atualiza diretamente o arquivo local improvement_backlog.json
+                from datetime import datetime
+                completed_at = datetime.now().isoformat() if local_status == "done" else None
+                self._update_local_backlog_status(issue_key, local_status, completed_at=completed_at)
+                
                 return True
             else:
                 logging.error(f"Falha ao transicionar {issue_key} "
                               f"(Status {r_post.status_code}): {r_post.text}")
         except Exception as e:
             logging.error(f"Erro ao transicionar issue no Jira: {e}")
+        return False
+
+    def update_issue_completed_by(self, issue_key, dev_name):
+        """Atualiza a descrição da issue no Jira para adicionar completed_by nos metadados."""
+        url = f"{self.host}/rest/api/3/issue/{issue_key}"
+        try:
+            r_get = requests.get(url, headers=self.headers, auth=self.auth, timeout=10)
+            if r_get.status_code != 200:
+                logging.error(f"Erro ao obter issue {issue_key} para atualização de metadados: {r_get.text}")
+                return False
+
+            fields = r_get.json().get("fields", {})
+            description_obj = fields.get("description")
+            
+            description_text = ""
+            if description_obj and isinstance(description_obj, dict):
+                contents = description_obj.get("content", [])
+                texts = []
+                for content in contents:
+                    for item in content.get("content", []):
+                        if item.get("type") == "text":
+                            texts.append(item.get("text", ""))
+                description_text = "\n".join(texts)
+            elif isinstance(description_obj, str):
+                description_text = description_obj
+
+            metadata = {}
+            main_desc = description_text
+            if "--- METADADOS ---" in description_text:
+                parts = description_text.split("--- METADADOS ---")
+                main_desc = parts[0].strip()
+                try:
+                    metadata = json.loads(parts[1].strip())
+                except Exception:
+                    pass
+
+            metadata["completed_by"] = dev_name
+
+            metadata_str = f"\n\n--- METADADOS ---\n{json.dumps(metadata, ensure_ascii=False, indent=2)}"
+            full_description = main_desc + metadata_str
+
+            payload = {
+                "fields": {
+                    "description": {
+                        "type": "doc",
+                        "version": 1,
+                        "content": [
+                            {
+                                "type": "paragraph",
+                                "content": [{"type": "text", "text": full_description}]
+                            }
+                        ]
+                    }
+                }
+            }
+
+            r_put = requests.put(url, headers=self.headers, auth=self.auth, json=payload, timeout=15)
+            if r_put.status_code in [200, 204]:
+                logging.info(f"Issue {issue_key} metadados atualizados com completed_by={dev_name}.")
+                
+                # Atualiza localmente no improvement_backlog.json
+                from datetime import datetime
+                self._update_local_backlog_status(issue_key, "done", completed_by=dev_name, completed_at=datetime.now().isoformat())
+                return True
+            else:
+                logging.error(f"Falha ao atualizar metadados de {issue_key} (Status {r_put.status_code}): {r_put.text}")
+        except Exception as e:
+            logging.error(f"Erro ao atualizar completed_by da issue {issue_key}: {e}")
         return False
 
     # ── Comment ───────────────────────────────────────────────────────────────

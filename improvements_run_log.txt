@@ -893,3 +893,21 @@
 [2026-06-29 23:38:30] [AUTO-IMPROVEMENT] Aplicada: KAN-144 - O fluxo de indexação do vault não tem testes de integração
 
 [2026-06-29 23:38:36] [AUTO-IMPROVEMENT] Aplicada: KAN-142 - O obsidian_graph.json não tem schema versionado — na última
+
+[2026-06-29 23:41:14] [AUTO-IMPROVEMENT] Aplicada: KAN-134 - O servidor Flask não usa connection pooling no SQLite — nos
+
+[2026-06-29 23:41:21] [AUTO-IMPROVEMENT] Aplicada: KAN-135 - O agent_mba.py gera análises sem salvar resultados
+
+[2026-06-29 23:41:22] [AUTO-IMPROVEMENT] Aplicada: KAN-124 - O run_server.sh usa o servidor de desenvolvimento Flask
+
+[2026-06-29 23:41:24] [AUTO-IMPROVEMENT] Aplicada: KAN-136 - O servidor Flask roda HTTP puro na porta 8091 sem HTTPS —
+
+[2026-06-29 23:41:25] [AUTO-IMPROVEMENT] Aplicada: KAN-123 - O webhook do Telegram tem timeout de 60s mas sem retry — se
+
+[2026-06-29 23:41:34] [AUTO-IMPROVEMENT] Aplicada: KAN-137 - O improvement_backlog.json tem 289 itens sem estimativa de
+
+[2026-06-29 23:41:49] [AUTO-IMPROVEMENT] Aplicada: KAN-138 - Não há score de similaridade exposto nas respostas do RAG —
+
+[2026-06-29 23:41:50] [AUTO-IMPROVEMENT] Aplicada: KAN-221 - Adicionar mocks LLM em testes agent_rag e agent_core
+
+[2026-06-29 23:42:22] [AUTO-IMPROVEMENT] Aplicada: KAN-220 - Refinar estratégia de chunking e busca semântica no RAG

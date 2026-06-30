@@ -1,12 +1,66 @@
 [
   {
+    "id": "KAN-222",
+    "title": "Implementar ambiente de staging isolado",
+    "description": "Criar um ambiente de staging isolado para testes manuais com vault de teste, evitando contaminação dos dados de produção (user_feedback.json).",
+    "details": "Gerado via feedback de Priscila Santos (QA Analyst)",
+    "motivation_justification": "Não há staging isolado — toda vez que faço testes manuais com vault de teste, os dados vão para o user_feedback.json de produção; já contaminamos o backlog com 23 entradas de teste.",
+    "category": "DevOps",
+    "status": "todo",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "ec11258cb359",
+    "source_user": "Priscila Santos",
+    "epic_key": "KAN-100",
+    "created_at": "2026-06-29T23:41:25.236-0300",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-221",
+    "title": "Adicionar mocks LLM em testes agent_rag e agent_core",
+    "description": "Implementar mocks para LLM nos testes de agent_rag.py e agent_core.py para evitar consumo excessivo de tokens e tempo de execução.",
+    "details": "Gerado via feedback de Priscila Santos (QA Analyst)",
+    "motivation_justification": "Os agentes agent_rag.py e agent_core.py não têm mocks para LLM nos testes — cada execução da suite consome ~800 tokens de API ($0.002) e leva 45s a mais que o necessário.",
+    "category": "RAG/AI",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "b39864ec294c",
+    "source_user": "Priscila Santos",
+    "epic_key": "KAN-98",
+    "created_at": "2026-06-29T23:39:04.765-0300",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-220",
+    "title": "Refinar estratégia de chunking e busca semântica no RAG",
+    "description": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 32.1%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:37: backlog=100 itens, taxa_rejeição=32.1%, feedbacks_total=361.",
+    "details": "Gerado via feedback de Rafael Auditoria (Chief Metrics Officer)",
+    "motivation_justification": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 32.1%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:37: backlog=100 itens, taxa_rejeição=32.1%, feedbacks_total=361.",
+    "category": "DevOps",
+    "status": "in_analysis",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "6b3188c8c2a2",
+    "source_user": "Rafael Auditoria",
+    "epic_key": "KAN-100",
+    "created_at": "2026-06-29T23:39:02.556-0300",
+    "completed_at": null
+  },
+  {
     "id": "KAN-219",
     "title": "Implementar Logging Estruturado com Trace ID",
     "description": "Adicionar logging estruturado JSON e trace ID correlacionado entre agentes para rastreamento de bugs e redução do MTTR.",
     "details": "Gerado via feedback de Rafael Auditoria (Chief Metrics Officer)",
     "motivation_justification": "[CMO AUDIT] Logging estruturado JSON + trace ID correlacionado entre agentes. EVIDÊNCIA REAL: O server_stderr.log tem 2.9MB de logs não estruturados. Sem trace ID, rastrear 1 bug entre agent_bot, agent_rag e agent_core leva 40+ minutos. MTTR atual estimado: >25 minutos (benchmark: times top = 5 minutos). BENCHMARK: OpenTelemetry + structlog reduz MTTR em 60-80% em stacks similares. ROI ESTIMADO: Com trace ID, correlação de logs cai de 40min para <5min. MTTD (Mean Time To Detect) cai de 30+ min para <5 min com alertas estruturados. COMPONENTE: Todos os agentes *.py — padronizar structlog + opentelemetry-python. PRIORITY: Impact=ALTO / Effort=MÉDIO (3-4 dias de refatoração). Benchmark: Times top MTTR=5min, média industria=25min. Métricas capturadas em 2026-06-29 23:33: backlog=100 itens, taxa_rejeição=28.6%, feedbacks_total=336.",
     "category": "DevOps|Arquitetura|RAG/AI",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -15,7 +69,7 @@
     "source_user": "Rafael Auditoria",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:35:47.775-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:38:57.902-0300"
   },
   {
     "id": "KAN-218",
@@ -24,7 +78,7 @@
     "details": "Gerado via feedback de Rafael Barbosa (DevOps Engineer)",
     "motivation_justification": "Não existe pipeline CI/CD — o último merge na main foi direto para produção sem testes; em 3 dos últimos 5 deploys, bugs chegaram ao usuário que um CI básico teria pego. — medido via 'docker stats' e 'ls -lh' dos arquivos de log",
     "category": "DevOps",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -33,7 +87,7 @@
     "source_user": "Rafael Barbosa",
     "epic_key": "KAN-100",
     "created_at": "2026-06-29T23:35:44.534-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:38:51.818-0300"
   },
   {
     "id": "KAN-217",
@@ -42,7 +96,7 @@
     "details": "Gerado via feedback de Rafael Auditoria (Chief Metrics Officer)",
     "motivation_justification": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 28.6%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:33: backlog=100 itens, taxa_rejeição=28.6%, feedbacks_total=336.",
     "category": "DevOps",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -51,7 +105,7 @@
     "source_user": "Rafael Auditoria",
     "epic_key": "KAN-100",
     "created_at": "2026-06-29T23:35:42.041-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:38:49.163-0300"
   },
   {
     "id": "KAN-216",
@@ -1356,7 +1410,7 @@
     "details": "Gerado via feedback de Priscila Santos (QA Analyst)",
     "motivation_justification": "O fluxo de indexação do vault não tem testes de integração — quebramos produção 2 vezes nas últimas 3 semanas sem detectar no code review por falta de smoke test básico.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1365,7 +1419,7 @@
     "source_user": "Priscila Santos",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:18.588-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:39:00.573-0300"
   },
   {
     "id": "KAN-143",
@@ -1374,7 +1428,7 @@
     "details": "Gerado via feedback de Amanda Ribeiro (Observability Engineer)",
     "motivation_justification": "O server.log mistura INFO, DEBUG e ERROR em texto livre sem JSON — ao tentar importar para o Elasticsearch, 0% das linhas são parseadas corretamente; ferramentas de observabilidade ficam inúteis.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1383,7 +1437,7 @@
     "source_user": "Amanda Ribeiro",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:12.394-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:38:53.937-0300"
   },
   {
     "id": "KAN-142",
@@ -1392,7 +1446,7 @@
     "details": "Gerado via feedback de Thiago Nascimento (Data Engineer)",
     "motivation_justification": "O obsidian_graph.json não tem schema versionado — na última atualização um campo mudou de 'link' para 'links' (array) e 2 consumers quebraram silenciosamente sem nenhum aviso de breaking change.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1401,7 +1455,7 @@
     "source_user": "Thiago Nascimento",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:11.242-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:39:02.959-0300"
   },
   {
     "id": "KAN-141",
@@ -1410,7 +1464,7 @@
     "details": "Gerado via feedback de Simone Batista (Knowledge Manager)",
     "motivation_justification": "47 notas arquivadas (com tag #archived) continuam aparecendo no grafo como ativas — o vault tem 18% de conteúdo obsoleto poluindo a visualização; filtro por frontmatter resolveria.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1419,7 +1473,7 @@
     "source_user": "Simone Batista",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:04.834-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:38:45.546-0300"
   },
   {
     "id": "KAN-140",
@@ -1428,7 +1482,7 @@
     "details": "Gerado via feedback de Rafael Barbosa (DevOps Engineer)",
     "motivation_justification": "O server.log cresceu para 403 MB (confirmado via ls -lh) sem rotação configurada — em discos de 20GB, esse arquivo sozinho pode causar disk full em menos de 30 dias de operação.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1437,7 +1491,7 @@
     "source_user": "Rafael Barbosa",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:00.619-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:38:55.966-0300"
   },
   {
     "id": "KAN-139",
@@ -1446,7 +1500,7 @@
     "details": "Gerado via feedback de Eduardo Prado (API Specialist)",
     "motivation_justification": "Os erros da API retornam HTML do Flask (página de erro 500) em vez de JSON — o frontend não consegue parsear o erro programaticamente e exibe a stack trace HTML crua para o usuário.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1455,7 +1509,7 @@
     "source_user": "Eduardo Prado",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:05:56.249-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:38:47.381-0300"
   },
   {
     "id": "KAN-138",
@@ -1464,7 +1518,7 @@
     "details": "Gerado via feedback de Mariana Costa (RAG Specialist)",
     "motivation_justification": "Não há score de similaridade exposto nas respostas do RAG — não consigo saber se o resultado retornado tem 95% ou 30% de relevância; isso impacta a confiança do usuário nas respostas.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_progress",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1482,7 +1536,7 @@
     "details": "Gerado via feedback de Vanessa Correia (Scrum Master)",
     "motivation_justification": "O improvement_backlog.json tem 289 itens sem estimativa de esforço ou valor de negócio em nenhum deles — o time gasta 45 minutos por sprint tentando priorizar sem dados objetivos.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_analysis",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1500,7 +1554,7 @@
     "details": "Gerado via feedback de Fernanda Alves (Security Engineer)",
     "motivation_justification": "O servidor Flask roda HTTP puro na porta 8091 sem HTTPS — qualquer requisição RAG que contenha conteúdo do vault viaja em texto plano; um ataque MITM em rede corporativa captura 100% das queries.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_analysis",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1518,7 +1572,7 @@
     "details": "Gerado via feedback de Natalia Pimentel (Data Scientist)",
     "motivation_justification": "O agent_mba.py gera análises sem salvar resultados estruturados — cada análise é efêmera; depois de 10 execuções, não tenho nenhum histórico comparável para ver tendências.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_analysis",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1536,7 +1590,7 @@
     "details": "Gerado via feedback de Carlos Mendes (Backend Engineer)",
     "motivation_justification": "O servidor Flask não usa connection pooling no SQLite — nos logs de servidor vejo 'database is locked' em 100% das execuções simultâneas de 2+ agentes, causando HTTP 500 no frontend.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_analysis",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1716,7 +1770,7 @@
     "details": "Gerado via feedback de Rodrigo Esteves (Infrastructure Engineer)",
     "motivation_justification": "O run_server.sh usa o servidor de desenvolvimento Flask (flask run) em vez de gunicorn — o Werkzeug dev server não é threaded e não suporta mais de 1 worker; throughput máximo é ~50 req/s vs 500+ do gunicorn.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_analysis",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1734,7 +1788,7 @@
     "details": "Gerado via feedback de Paulo Freitas (Bot Developer)",
     "motivation_justification": "O webhook do Telegram tem timeout de 60s mas sem retry — se o servidor demorar >60s (comum durante indexação), a mensagem é perdida silenciosamente; o usuário reenvia e duplica o processamento.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_analysis",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1743,60 +1797,6 @@
     "source_user": "Paulo Freitas",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:04:41.926-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-122",
-    "title": "47 notas arquivadas (com tag #archived) continuam",
-    "description": "47 notas arquivadas (com tag #archived) continuam aparecendo no grafo como ativas — o vault tem 18% de conteúdo obsoleto poluindo a visualização; filtro por frontmatter resolveria.",
-    "details": "Gerado via feedback de Simone Batista (Knowledge Manager)",
-    "motivation_justification": "47 notas arquivadas (com tag #archived) continuam aparecendo no grafo como ativas — o vault tem 18% de conteúdo obsoleto poluindo a visualização; filtro por frontmatter resolveria.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "4abc5d021ca0",
-    "source_user": "Simone Batista",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:04:32.286-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-121",
-    "title": "Os erros da API retornam HTML do Flask (página de erro 500)",
-    "description": "Os erros da API retornam HTML do Flask (página de erro 500) em vez de JSON — o frontend não consegue parsear o erro programaticamente e exibe a stack trace HTML crua para o usuário.",
-    "details": "Gerado via feedback de Eduardo Prado (API Specialist)",
-    "motivation_justification": "Os erros da API retornam HTML do Flask (página de erro 500) em vez de JSON — o frontend não consegue parsear o erro programaticamente e exibe a stack trace HTML crua para o usuário.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "58bd9d7785ef",
-    "source_user": "Eduardo Prado",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:04:20.409-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-120",
-    "title": "O improvement_backlog.json tem 289 itens sem estimativa de",
-    "description": "O improvement_backlog.json tem 289 itens sem estimativa de esforço ou valor de negócio em nenhum deles — o time gasta 45 minutos por sprint tentando priorizar sem dados objetivos.",
-    "details": "Gerado via feedback de Vanessa Correia (Scrum Master)",
-    "motivation_justification": "O improvement_backlog.json tem 289 itens sem estimativa de esforço ou valor de negócio em nenhum deles — o time gasta 45 minutos por sprint tentando priorizar sem dados objetivos.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "d479706eb919",
-    "source_user": "Vanessa Correia",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:04:08.756-0300",
     "completed_at": null
   }
 ]

@@ -315,9 +315,9 @@ def run_improvement_task(item, jira: JiraClient, applied_items, dev_name: str):
         doubt = random.choice(doubt_list)
         pm_response = PM_RESPONSES.get(category, "Analisaremos e retornamos em breve com os critérios de aceite.")
 
-        logging.info(f"👨💻 [DEV] [{item_id}] Abrindo dúvida antes de iniciar: \"{doubt}\"")
+        logging.info(f"👨💻 [DEV] [{item_id}] [{dev_name}] Abrindo dúvida antes de iniciar: \"{doubt}\"")
         jira.transition_issue(item_id, "Em andamento")
-        jira.add_comment(item_id, f"[DEV: DÚVIDA] {doubt}")
+        jira.add_comment(item_id, f"[DEV: DÚVIDA] [{dev_name}] {doubt}")
 
         # PM responde após 8-15 segundos simulando tempo de resposta humana
         pm_wait = random.randint(8, 15)
@@ -328,14 +328,14 @@ def run_improvement_task(item, jira: JiraClient, applied_items, dev_name: str):
 
         # Dev confirma entendimento
         time.sleep(2)
-        jira.add_comment(item_id, "[DEV: ENTENDIDO] Perfeito! Iniciando implementação com os critérios esclarecidos.")
-        logging.info(f"👨💻 [DEV] [{item_id}] Dúvida resolvida. Iniciando codificação.")
+        jira.add_comment(item_id, f"[DEV: ENTENDIDO] [{dev_name}] Perfeito! Iniciando implementação com os critérios esclarecidos.")
+        logging.info(f"👨💻 [DEV] [{item_id}] Dúvida resolvida por {dev_name}. Iniciando codificação.")
     else:
         # Dev assume direto sem dúvida
-        logging.info(f"👨💻 [DEV] Codando: [{item_id}] {title}")
+        logging.info(f"👨💻 [DEV] [{dev_name}] Codando: [{item_id}] {title}")
         jira.transition_issue(item_id, "Em andamento")
         dev_start_comment = (
-            f"[DEV: INICIADO] O card foi puxado para desenvolvimento. "
+            f"[DEV: INICIADO] O card foi puxado por {dev_name} para desenvolvimento. "
             f"Codificando a branch feature/{item_id}..."
         )
         jira.add_comment(item_id, dev_start_comment)
@@ -346,32 +346,32 @@ def run_improvement_task(item, jira: JiraClient, applied_items, dev_name: str):
     # ── QA Gate Intermediário (35% de chance de reprovação inicial) ──────────
     qa_fail = random.random() < 0.35
     if qa_fail:
-        logging.info(f"👨💻 [DEV] Enviou [{item_id}] para QA (Em análise).")
+        logging.info(f"👨💻 [DEV] [{dev_name}] Enviou [{item_id}] para QA (Em análise).")
         jira.transition_issue(item_id, "Em análise")
         dev_qa_comment = (
-            f"[DEV: SOLICITAÇÃO DE QA] Concluí a primeira versão da implementação.\n"
+            f"[DEV: SOLICITAÇÃO DE QA] [{dev_name}] Concluí a primeira versão da implementação.\n"
             f"Solicito homologação dos testes automatizados (QA Gate)."
         )
         jira.add_comment(item_id, dev_qa_comment)
 
         time.sleep(12)
 
-        logging.warning(f"🧑🔬 [QA] Reprovou [{item_id}]. Devolvendo ao Dev.")
+        logging.warning(f"🧑🔬 [QA] Reprovou [{item_id}] ({dev_name}). Devolvendo ao Dev.")
         jira.transition_issue(item_id, "Em andamento")
         qa_comment = (
             f"[QA: REJEITADO] A validação falhou no QA Gate intermediário.\n"
             f"Logs: Inconsistência identificada nas asserções lógicas dos testes da categoria {category}.\n"
-            f"Devolvendo o card para a mesa do Dev para retrabalho de correção."
+            f"Devolvendo o card para a mesa de {dev_name} para retrabalho de correção."
         )
         jira.add_comment(item_id, qa_comment)
 
         time.sleep(random.randint(15, 25))
 
     # ── Dev envia para análise final do QA ───────────────────────────────────
-    logging.info(f"👨💻 [DEV] Enviou [{item_id}] para homologação final (Em análise).")
+    logging.info(f"👨💻 [DEV] [{dev_name}] Enviou [{item_id}] para homologação final (Em análise).")
     jira.transition_issue(item_id, "Em análise")
     dev_final_comment = (
-        f"[DEV: SOLICITAÇÃO DE QA] Efetuei a refatoração do código e a correção dos testes.\n"
+        f"[DEV: SOLICITAÇÃO DE QA] [{dev_name}] Efetuei a refatoração do código e a correção dos testes.\n"
         f"Código pronto e atualizado na branch feature/{item_id}. Nova versão enviada para homologação do QA Gate final."
     )
     jira.add_comment(item_id, dev_final_comment)
@@ -400,7 +400,7 @@ def run_improvement_task(item, jira: JiraClient, applied_items, dev_name: str):
 def run_sprint(jira: JiraClient, config: dict):
     """Executa um sprint completo de desenvolvimento."""
     dev_count = config.get("dev_count", 1)
-    max_tasks = dev_count * 3
+    max_tasks = dev_count
 
     # ── Busca backlog do Jira ──────────────────────────────────────────────
     logging.info("👨💻 [DEV] Buscando tarefas ativas no Jira...")
