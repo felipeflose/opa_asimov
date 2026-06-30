@@ -5697,12 +5697,14 @@
     "role": "Security Engineer",
     "area": "Security",
     "complaint": "A GROQ_API_KEY está no .env sem vault ou secret manager — qualquer dev com acesso ao repositório vê a chave; uma rotação não programada de chave pode custar $0 mas um vazamento pode custar centenas de dólares em uso indevido. — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v18",
     "improved_from": "3faeb95569d2811d",
     "total_submitted": 21,
     "progress_to_meta": 0.21,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "68b3ed34e541f40f",
@@ -5712,12 +5714,14 @@
     "role": "RAG Specialist",
     "area": "RAG/AI",
     "complaint": "O contexto enviado ao Groq LLM inclui notas inteiras sem truncamento — uma nota de 3.000 tokens sozinha pode exceder o contexto de 8.192 tokens do modelo, causando erro silencioso. — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v12",
     "improved_from": "be5a4990a8ccff44",
     "total_submitted": 19,
     "progress_to_meta": 0.19,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "8cb16c5ffd753127",
@@ -5727,12 +5731,14 @@
     "role": "Frontend Developer",
     "area": "Frontend",
     "complaint": "As cores dos nós estão hardcoded em 12 lugares diferentes do código (confirmado via grep '#[0-9a-fA-F]' | wc -l) — mudar o tema requer alterar 12 pontos distintos manualmente. — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v17",
     "improved_from": "6934ac1437f72937",
     "total_submitted": 19,
     "progress_to_meta": 0.19,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "7b468e422902ac25",
@@ -5742,12 +5748,14 @@
     "role": "Full Stack Developer",
     "area": "Full Stack",
     "complaint": "Não há separação de configs dev/prod — na última semana um dev apontou FEEDBACK_FILE para o arquivo de produção em dev local e sobrescreveu 15 feedbacks reais com dados de teste. — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v18",
     "improved_from": "9996eb7fe3ce8550",
     "total_submitted": 21,
     "progress_to_meta": 0.21,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "91f26905fb171bea",
@@ -5757,12 +5765,14 @@
     "role": "ML Engineer",
     "area": "RAG/AI",
     "complaint": "Não há logging de chamadas ao LLM — sem saber tokens usados por query, não consigo otimizar custos; estimativa atual sugere $8-15/mês mas pode ser 3x isso sem visibilidade real. — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v15",
     "improved_from": "dfcfe5137d7cd780",
     "total_submitted": 17,
     "progress_to_meta": 0.17,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "de7e7ca261697748",
@@ -5772,12 +5782,14 @@
     "role": "Tech Lead",
     "area": "Backend",
     "complaint": "Cada arquivo usa um estilo de logging diferente (8 estilos diferentes identificados via grep 'logging' *.py) — agregação no ELK Stack é impossível; padronizar em JSON estruturado resolveria. — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l)",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v18",
     "improved_from": "10db862c5d5e6307",
     "total_submitted": 20,
     "progress_to_meta": 0.2,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "270069a316694b93",
@@ -5787,12 +5799,14 @@
     "role": "Prompt Engineer",
     "area": "RAG/AI",
     "complaint": "Os prompts dos 8 agentes estão hardcoded no código Python — qualquer ajuste fino exige redeploy completo; em 3 meses de operação, fiz 12 deploys só para ajustar prompts que deveriam ser configuráveis. — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v17",
     "improved_from": "490475b1a5214cfe",
     "total_submitted": 20,
     "progress_to_meta": 0.2,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "51c059b111613183",
@@ -5802,12 +5816,14 @@
     "role": "Compliance Officer",
     "area": "Security",
     "complaint": "Não há processo de Data Subject Request — se 1 usuário pedir exclusão de seus dados (direito LGPD Art. 18), não temos como identificar e deletar todos os registros relacionados a ele nos 5+ arquivos do sistema. — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v18",
     "improved_from": "c076aab6cb68641b",
     "total_submitted": 21,
     "progress_to_meta": 0.21,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "1ed481590b1c3c19",
@@ -5817,12 +5833,14 @@
     "role": "Test Automation Engineer",
     "area": "QA",
     "complaint": "A suite /tests não tem fixtures para mock do SQLite — cada um dos 15 testes cria e modifica arquivos reais, causando 3-5 falhas por dependência de ordem de execução (testado com pytest -v 10x). — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v18",
     "improved_from": "f345e0ded68bd5ef",
     "total_submitted": 21,
     "progress_to_meta": 0.21,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "eda50258553407b7",
@@ -5832,12 +5850,14 @@
     "role": "Open Source Contributor",
     "area": "Full Stack",
     "complaint": "O projeto não tem licença definida — tecnicamente ninguém pode usar, modificar ou contribuir legalmente; para um projeto que já tem 3 contribuidores externos, isso é risco legal real que impede adoção. — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v18",
     "improved_from": "502155be44b624c4",
     "total_submitted": 20,
     "progress_to_meta": 0.2,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "5fb246b3d9ef127c",
@@ -5847,7 +5867,7 @@
     "role": "Chief Metrics Officer",
     "area": "Metrics & Analytics",
     "complaint": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 36.6%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:45: backlog=100 itens, taxa_rejeição=36.6%, feedbacks_total=399.",
-    "status": "pending",
+    "status": "accepted",
     "fingerprint": "362f4776fd585e76",
     "impact_effort": {
       "impact": "high",
@@ -5873,7 +5893,7 @@
     "role": "Chief Metrics Officer",
     "area": "Metrics & Analytics",
     "complaint": "[CMO AUDIT] Re-ranking MMR e score de similaridade nas respostas RAG. EVIDÊNCIA REAL: O vault tem 120 demandas aceitas sobre RAG. O vault_embeddings.json tem ~50MB sem re-ranking — os top-5 chunks por cosseno são retornados sem diversidade. Chunks de notas longas dominam os resultados em ~60% dos casos. BENCHMARK: Elastic com KNN reranking tem latência P95 de 50ms; Algolia tem 20ms. Sistema atual estimado: 800ms+ por busca (50MB de I/O + cosine sim sem GPU). ROI ESTIMADO: MMR (Maximal Marginal Relevance) aumenta diversidade dos resultados em ~40% sem custo computacional significativo. Score de similaridade exposto aumenta confiança do usuário. COMPONENTE: agent_rag.py — função de retrieval. PRIORITY: Impact=MÉDIO / Effort=MÉDIO (4-6 dias de desenvolvimento). Benchmark: Elastic=50ms, Algolia=20ms, Notion=150ms. Métricas capturadas em 2026-06-29 23:45: backlog=100 itens, taxa_rejeição=36.6%, feedbacks_total=399.",
-    "status": "pending",
+    "status": "duplicate",
     "fingerprint": "d2ba3d7b25a705ac",
     "impact_effort": {
       "impact": "medium",
