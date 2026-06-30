@@ -1240,7 +1240,7 @@
     "role": "Database Administrator",
     "area": "Data",
     "complaint": "O SQLite não tem índices nas colunas de busca — uma query LIKE '%termo%' em tabela com 5.000 registros leva 340ms (medido via EXPLAIN QUERY PLAN); com índice trigram seria <10ms.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v2",
     "improved_from": null,
     "total_submitted": 4,
