@@ -2272,7 +2272,7 @@
     "role": "Scrum Master",
     "area": "Product",
     "complaint": "O daily digest é gerado automaticamente mas 0 humanos validam se as ações fazem sentido — automatizamos geração mas não governança; já implementamos 2 features que ninguém pediu. — dado coletado de 6 semanas de operação sem nenhuma instrumentação",
-    "status": "pending",
+    "status": "accepted",
     "version": "v4",
     "improved_from": "c112a038f996da6c",
     "total_submitted": 5,
