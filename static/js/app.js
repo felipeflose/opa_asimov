@@ -2084,11 +2084,15 @@ async function loadOfficeData() {
         const devConsoleText = document.getElementById('dev-console-text');
         const devCountVal   = data.dev_count || 1;
         const pmCountVal    = data.pm_count  || 1;
+        const qaCountVal    = data.qa_count  || 1;
 
         document.getElementById('dev-hired-count').innerText = devCountVal;
 
         const pmHiredEl = document.getElementById('pm-hired-count');
         if (pmHiredEl) pmHiredEl.innerText = pmCountVal;
+
+        const qaHiredEl = document.getElementById('qa-hired-count');
+        if (qaHiredEl) qaHiredEl.innerText = qaCountVal;
 
         if (data.dev_status === 'WORKING') {
             devStatusTag.className = 'bot-status-tag status-online';
@@ -2101,12 +2105,13 @@ async function loadOfficeData() {
             devStatusTag.innerHTML = '<div class="status-dot" style="background:#64748b;"></div> OCIOSO';
             devStatusTag.style.background = 'rgba(100,116,139,0.1)';
             devStatusTag.style.color = '#64748b';
-            devConsoleText.innerHTML = `> Monitorando backlog...\n> ${devCountVal} Dev(s) | ${pmCountVal} PM(s) prontos.`;
+            devConsoleText.innerHTML = `> Monitorando backlog...\n> ${devCountVal} Dev(s) | ${pmCountVal} PM(s) | ${qaCountVal} QA(s) prontos.`;
         }
 
-        // Renderiza avatares do Dev e do PM no mapa
+        // Renderiza avatares do Dev, PM e QA no mapa
         renderDevs(devCountVal, data.dev_status);
         renderPMs(pmCountVal);
+        renderQAs(qaCountVal);
         
         // 2. Renderiza logs do Cliente Oculto
         const mysteryContainer = document.getElementById('mystery-logs-container');
