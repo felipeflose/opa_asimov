@@ -2017,27 +2017,35 @@ async function applyDailyImprovements(btn) {
 let isOfficeAnimating = false;
 
 function renderDevs(count, devStatus) {
-    const container = document.getElementById('dev-avatars-container');
-    if (!container) return;
-    
-    let html = '';
-    const width = 38;
-    const spacing = 44;
-    const devEmojis = ['👨‍💻', '👩‍💻', '💻', '🖥️', '⌨️', '⚙️', '🛠️', '🔌', '💾', '💿'];
-    // Devs ficam alinhados da esquerda para a direita dentro do container
-    for (let i = 0; i < count; i++) {
-        const leftPx = i * spacing;
-        const emoji = devEmojis[i % devEmojis.length];
-        const name = `Dev-${i + 1}`;
-        const isLead = i === 0;
-        const glowColor = isLead ? '6,182,212' : '56,189,248';
-        html += `
-            <div class="avatar dev-avatar" id="avatar-dev-${i}" style="position: absolute; bottom: 5px; left: ${leftPx}px; width: ${width}px; height: ${width}px; border-radius: 50%; background: #06b6d4; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 1.2s ease-in-out; z-index: 10; box-shadow: 0 0 10px rgba(${glowColor},0.4); border: 2px solid white; cursor: pointer;" data-tooltip="${name} ${isLead ? '(Lead)' : ''}">
-                ${emoji}
-            </div>
-        `;
+    // Atualiza as 10 mesas fixas de Devs no mapa
+    for (let i = 0; i < 10; i++) {
+        const desk = document.getElementById(`dev-desk-${i}`);
+        const monitor = document.getElementById(`dev-monitor-${i}`);
+        if (!desk || !monitor) continue;
+
+        if (i < count) {
+            // Contratado - ativo
+            desk.style.opacity = '1.0';
+            desk.style.borderColor = 'rgba(6, 182, 212, 0.45)';
+            desk.style.boxShadow = '0 0 15px rgba(6, 182, 212, 0.15)';
+            
+            // Monitor acende
+            if (devStatus === 'WORKING') {
+                monitor.style.backgroundColor = '#10b981'; // verde coding
+                monitor.style.boxShadow = '0 0 12px #10b981, 0 0 6px #10b981';
+            } else {
+                monitor.style.backgroundColor = '#06b6d4'; // ciano idle
+                monitor.style.boxShadow = '0 0 10px #06b6d4, 0 0 4px #06b6d4';
+            }
+        } else {
+            // Demitido - inativo
+            desk.style.opacity = '0.15';
+            desk.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+            desk.style.boxShadow = 'none';
+            monitor.style.backgroundColor = '#475569';
+            monitor.style.boxShadow = 'none';
+        }
     }
-    container.innerHTML = html;
 }
 
 async function hireDev() {
@@ -2461,26 +2469,64 @@ async function firePM() {
 }
 
 function renderPMs(pmCount) {
-    const container = document.getElementById('pm-avatars-container');
-    if (!container) return;
-    const emojis = ['📋','🗂️','📌','📊','📝'];
-    let html = '';
-    for (let i = 0; i < pmCount; i++) {
-        html += `<div class="avatar" id="avatar-pm-${i}" style="position:absolute;top:5px;left:${i*42}px;width:34px;height:34px;border-radius:50%;background:#a855f7;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 8px rgba(168,85,247,0.4);border:2px solid white;cursor:pointer;z-index:10;" data-tooltip="PM-${i+1}">${emojis[i % emojis.length]}</div>`;
+    // Atualiza as 3 mesas fixas de PMs no mapa
+    for (let i = 0; i < 3; i++) {
+        const desk = document.getElementById(`pm-desk-${i}`);
+        const monitor = document.getElementById(`pm-monitor-${i}`);
+        if (!desk || !monitor) continue;
+
+        if (i < pmCount) {
+            // Contratado - ativo
+            desk.style.opacity = '1.0';
+            desk.style.borderColor = 'rgba(168, 85, 247, 0.45)';
+            desk.style.boxShadow = '0 0 15px rgba(168, 85, 247, 0.15)';
+            
+            // Monitor acende
+            monitor.style.backgroundColor = '#a855f7'; // Roxo
+            monitor.style.boxShadow = '0 0 12px #a855f7, 0 0 6px #a855f7';
+        } else {
+            // Demitido - inativo
+            desk.style.opacity = '0.15';
+            desk.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+            desk.style.boxShadow = 'none';
+            monitor.style.backgroundColor = '#475569';
+            monitor.style.boxShadow = 'none';
+        }
     }
-    container.innerHTML = html;
-    // Atualiza o avatar principal do mapa (avatar-pm) para o primeiro
-    const mainPM = document.getElementById('avatar-pm');
-    if (mainPM) mainPM.innerHTML = emojis[0];
 }
 
-function showBubble(id, text, timeout = 3000) {
-    const bubble = document.getElementById(id);
-    if (!bubble) return;
+function showBubble(bubbleId, avatarId, text, timeout = 3000) {
+    const bubble = document.getElementById(bubbleId);
+    const avatar = document.getElementById(avatarId);
+    if (!bubble || !avatar) return;
+    
+    // Posiciona o balão logo acima do avatar móvel
+    const map = document.querySelector('.office-map');
+    if (!map) return;
+    const avatarRect = avatar.getBoundingClientRect();
+    const mapRect = map.getBoundingClientRect();
+    
+    const left = avatarRect.left - mapRect.left + (avatarRect.width / 2) - 100; // Centraliza balão de 200px
+    const top = avatarRect.top - mapRect.top - 65; // 65px acima do avatar
+    
     bubble.innerHTML = text;
+    bubble.style.left = `${Math.max(10, Math.min(mapRect.width - 210, left))}px`;
+    bubble.style.top = `${Math.max(10, top)}px`;
     bubble.style.display = 'block';
+    
+    // Pequeno fade-in/out via JS
+    bubble.style.opacity = '0';
+    bubble.style.transform = 'translateY(10px)';
     setTimeout(() => {
-        bubble.style.display = 'none';
+        bubble.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        bubble.style.opacity = '1';
+        bubble.style.transform = 'translateY(0)';
+    }, 50);
+    
+    setTimeout(() => {
+        bubble.style.opacity = '0';
+        bubble.style.transform = 'translateY(-10px)';
+        setTimeout(() => { bubble.style.display = 'none'; }, 300);
     }, timeout);
 }
 
@@ -2489,14 +2535,37 @@ function moveAvatar(id, props, delay = 0) {
         setTimeout(() => {
             const el = document.getElementById(id);
             if (el) Object.assign(el.style, props);
-            setTimeout(resolve, 1300); // Wait for CSS transition to finish
+            setTimeout(resolve, 1300); // Espera transição do CSS acabar (1.2s)
         }, delay);
     });
 }
 
-function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+// Helper para calcular coordenadas absolutas dos avatares no mapa do escritório
+function getCoords(elementId) {
+    const el = document.getElementById(elementId);
+    const map = document.querySelector('.office-map');
+    if (!el || !map) return { left: '100px', top: '100px' };
+    const rect = el.getBoundingClientRect();
+    const mapRect = map.getBoundingClientRect();
+    return {
+        left: `${rect.left - mapRect.left + (rect.width - 36)/2}px`,
+        top: `${rect.top - mapRect.top + (rect.height - 36)/2}px`
+    };
 }
+
+// Mapeia categoria de demanda para o índice do Desenvolvedor responsável
+const DEV_BY_CATEGORY = {
+    "Performance": 0,  // Lucas
+    "Backend": 1,      // Ana Paula
+    "Arquitetura": 2,  // Thiago
+    "UI/UX": 3,        // Jessica
+    "DevOps": 4,       // Rafael
+    "RAG/AI": 5,       // Fernanda
+    "Mobile": 6,       // Gabriel
+    "Security": 7,     // Isabela
+    "QA": 8,           // Pedro
+    "Data": 9          // Mariana
+};
 
 // Full pipeline state machine:
 // User → PM → Dev → QA → (fail: QA→Dev loop) → (pass: QA→User approval) → done or back to backlog
@@ -2510,116 +2579,172 @@ async function triggerOfficeAnimation(latestFeedback) {
 
     if (!user || !pm) { isOfficeAnimating = false; return; }
 
-    // ── RESET positions ────────────────────────────────────
-    const devCount = document.querySelectorAll('.dev-avatar').length || 1;
-    const devSpacing = 38;
-    const devLeadLeft = `calc(15% + ${(devCount - 1) * devSpacing / 2}px - ${(devCount - 1) * devSpacing / 2}px)`;
-    
-    user.style.cssText += '; top:60px; left:105px;';
-    pm.style.cssText += '; top:60px; right:105px;';
-    if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
+    // Cria o avatar móvel do dev na primeira vez
+    let devAvatar = document.getElementById('avatar-dev-animation');
+    if (!devAvatar) {
+        devAvatar = document.createElement('div');
+        devAvatar.id = 'avatar-dev-animation';
+        devAvatar.className = 'avatar character-avatar';
+        devAvatar.style.cssText = 'position: absolute; width: 36px; height: 36px; border-radius: 50%; background: #06b6d4; display: none; align-items: center; justify-content: center; font-size: 1.25rem; transition: all 1.2s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 50; box-shadow: 0 0 15px rgba(6,182,212,0.5); border: 2px solid white; cursor: pointer;';
+        document.querySelector('.office-map').appendChild(devAvatar);
+    }
+
+    // ── RESET positions nos seus postos iniciais ───────────
+    Object.assign(user.style, getCoords('desk-reception'));
+    Object.assign(pm.style, getCoords('pm-desk-0')); // Bea
+    if (qa) Object.assign(qa.style, getCoords('qa-desk-0')); // Paulão
+    devAvatar.style.display = 'none';
 
     const userEmoji = latestFeedback.avatar || '🤬';
+    devAvatar.innerHTML = '👨‍💻';
 
-    // ── FASE 1: Usuário vai ao TI e registra a melhoria ────
+    // ── FASE 1: Cliente vai ao balcão e registra reclamação ────
     await wait(400);
-    await moveAvatar('avatar-user', { left: '200px' });
-    showBubble('bubble-user', `${userEmoji} "${latestFeedback.complaint.substring(0, 40)}..."`, 3000);
+    // Move para frente da recepção no corredor
+    await moveAvatar('avatar-user', { left: '190px', top: '150px' });
+    showBubble('bubble-user', 'avatar-user', `${userEmoji} "${latestFeedback.complaint.substring(0, 40)}..."`, 3000);
     await wait(3200);
 
+    // ── FASE 2: PM vai até a recepção triar a demanda ────
+    // PM caminha pelo corredor até o cliente
+    await moveAvatar('avatar-pm', { left: '260px', top: '150px' });
+    
     if (latestFeedback.status !== 'accepted') {
-        // PM aparece e rejeita
-        await moveAvatar('avatar-pm', { right: 'calc(100% - 260px)', top: '60px' });
-        showBubble('bubble-pm', "📋 \"Duplicado ou fora do escopo, vou rejeitar!\"", 2800);
-        await wait(2800);
-        await moveAvatar('avatar-pm', { right: '105px' });
-        await moveAvatar('avatar-user', { left: '105px' });
-        showBubble('bubble-user', `${userEmoji} \"Entendido... 😤\"`, 2000);
-        await wait(2200);
+        // PM rejeita por falta de evidência
+        showBubble('bubble-pm', 'avatar-pm', '📋 "Falta evidência técnica! Precisa de métricas ou passos para reproduzir."', 3000);
+        await wait(3200);
+        showBubble('bubble-user', 'avatar-user', `${userEmoji} "Entendido, vou melhorar o pedido! 😤"`, 2500);
+        await wait(2700);
+        // Voltam para as posições originais
+        Object.assign(pm.style, getCoords('pm-desk-0'));
+        Object.assign(user.style, getCoords('desk-reception'));
         isOfficeAnimating = false;
         return;
     }
 
-    // ── FASE 2: PM vai ao TI, recebe e cria card no backlog ─
-    await moveAvatar('avatar-pm', { right: 'calc(100% - 250px)', top: '60px' });
-    showBubble('bubble-pm', "📋 \"Recebi! Vou criar um card no backlog agora.\"", 2500);
-    await wait(2700);
-    await moveAvatar('avatar-pm', { right: '105px' });
-    showBubble('bubble-pm', "📋 \"Card criado! Mandando pro Dev...\"", 2000);
-    await wait(2200);
+    // PM aceita
+    showBubble('bubble-pm', 'avatar-pm', '📋 "Demanda aceita! Vou criar a issue e mandar pro Dev."', 2800);
+    await wait(3000);
+    
+    // PM volta para a sala dele para delegar
+    Object.assign(pm.style, getCoords('pm-desk-0'));
+    await wait(1300);
 
-    // ── FASE 3: PM notifica Dev, Dev começa a codar ────────
-    const dev0 = document.getElementById('avatar-dev-0');
-    if (dev0) {
-        showBubble('bubble-dev', `👨‍💻 "Recebi do PM! Iniciando sprint..."`, 2800);
-        await wait(3000);
+    // ── FASE 3: PM notifica o Dev correspondente à categoria ────
+    // Descobre quem é o dev da categoria
+    const devCount = parseInt(document.getElementById('office-dev-count')?.textContent || '3');
+    const category = latestFeedback.category || 'Arquitetura';
+    let devIdx = DEV_BY_CATEGORY[category] !== undefined ? DEV_BY_CATEGORY[category] : 0;
+    
+    // Se o dev da categoria não estiver contratado, pega um contratado aleatório
+    if (devIdx >= devCount) {
+        devIdx = Math.floor(Math.random() * devCount);
+    }
+    
+    const devDeskId = `dev-desk-${devIdx}`;
+    const devMonitorId = `dev-monitor-${devIdx}`;
+    
+    // Acende o monitor do dev contratado com cor verde de coding
+    const monitor = document.getElementById(devMonitorId);
+    if (monitor) {
+        monitor.style.backgroundColor = '#10b981';
+        monitor.style.boxShadow = '0 0 15px #10b981, 0 0 5px #10b981';
     }
 
-    // ── FASE 4: Loop QA ↔ Dev (simula até 2 rejeições) ────
-    const qaAttempts = Math.random() < 0.45 ? 2 : (Math.random() < 0.5 ? 1 : 0);
+    // Posiciona o Dev Avatar na mesa dele e o exibe
+    Object.assign(devAvatar.style, getCoords(devDeskId));
+    devAvatar.style.display = 'flex';
+    
+    const devNames = ['Lucas', 'Ana Paula', 'Thiago', 'Jessica', 'Rafael', 'Fernanda', 'Gabriel', 'Isabela', 'Pedro', 'Mariana'];
+    const devEmojis = ['👨‍💻', '👩‍💻', '🧑‍💻', '👩‍💻', '👨‍💻', '👩‍💻', '👨‍💻', '👩‍💻', '👨‍💻', '👩‍💻'];
+    const devName = devNames[devIdx];
+    devAvatar.innerHTML = devEmojis[devIdx];
+    
+    showBubble('bubble-dev', 'avatar-dev-animation', `${devEmojis[devIdx]} [${devName}]: "Demanda recebida! Iniciando implementação da issue... 💻"`, 3000);
+    await wait(3200);
+
+    // ── FASE 4: Loop QA ↔ Dev (simula até 1 rejeição) ────
+    const qaAttempts = Math.random() < 0.45 ? 1 : 0;
     const qaConsole = document.getElementById('qa-console-text');
 
     for (let attempt = 0; attempt < qaAttempts; attempt++) {
-        // Dev envia para QA
-        if (dev0) { dev0.style.bottom = '60px'; dev0.style.right = '130px'; dev0.style.left = 'auto'; }
-        showBubble('bubble-dev', `👨‍💻 "Implementei! Mandando pra QA... (v${attempt + 1})"`, 2500);
-        if (qaConsole) qaConsole.innerHTML = `> Recebendo build v${attempt + 1} do Dev...\n> Rodando pytest...`;
+        // Dev caminha até a mesa do QA Paulão para mostrar o build
+        await moveAvatar('avatar-dev-animation', { left: '460px', top: '350px' }); // Corredor inferior
+        await moveAvatar('avatar-dev-animation', getCoords('qa-desk-0'));
+        
+        showBubble('bubble-dev', 'avatar-dev-animation', `👨‍💻 "Paulão, finalizei a build v${attempt + 1}. Dá uma olhada!"`, 2500);
+        if (qaConsole) qaConsole.innerHTML = `> Recebendo build v${attempt + 1} do Dev...\n> Rodando suite de testes automatizados...`;
         await wait(2700);
 
-        // QA encontra falha e devolve
-        if (qa) qa.style.cssText += '; bottom:120px; right:300px;';
-        showBubble('bubble-qa', `🧪 "v${attempt + 1}: ${attempt === 0 ? 'Falhou no pytest!' : 'Ainda há edge cases!'} Voltando ao Dev."`, 3000);
-        if (qaConsole) qaConsole.innerHTML = `> ❌ Falha detectada na v${attempt + 1}!\n> Enviando relatório de bugs ao Dev...`;
-        await wait(3200);
-
-        // QA volta para estação
-        if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
-
-        // Dev recebe feedback e corrige
-        if (dev0) { dev0.style.right = 'auto'; dev0.style.bottom = '50px'; dev0.style.left = 'calc(15%)'; }
-        showBubble('bubble-dev', `👨‍💻 "Falhou! Corrigindo os bugs...  🔧"`, 2800);
+        // QA encontra erro e devolve
+        showBubble('bubble-qa', 'avatar-qa', `🧪 "v${attempt + 1} falhou nos testes de regressão! Corrige lá."`, 2800);
+        if (qaConsole) qaConsole.innerHTML = `> ❌ Falha crítica na cobertura v${attempt + 1}!\n> Retornando card ao desenvolvedor...`;
         await wait(3000);
+
+        // Dev volta para a sua mesa para corrigir
+        await moveAvatar('avatar-dev-animation', { left: '460px', top: '350px' });
+        await moveAvatar('avatar-dev-animation', getCoords(devDeskId));
+        
+        showBubble('bubble-dev', 'avatar-dev-animation', `👨‍💻 "Opa, corrigindo os bugs encontrados... 🔧"`, 2500);
+        await wait(2700);
     }
 
-    // ── FASE 5: QA aprova e pede validação do cliente ──────
-    if (dev0) { dev0.style.bottom = '60px'; dev0.style.right = '130px'; dev0.style.left = 'auto'; }
-    showBubble('bubble-dev', "👨‍💻 \"Build final pronto, mandando pra QA!\"", 2500);
-    if (qaConsole) qaConsole.innerHTML = '> Recebendo build final...\n> Rodando suite completa de testes...';
+    // ── FASE 5: QA aprova build e pede validação do cliente ───
+    // Dev leva a build final aprovada pro QA
+    await moveAvatar('avatar-dev-animation', { left: '460px', top: '350px' });
+    await moveAvatar('avatar-dev-animation', getCoords('qa-desk-0'));
+    
+    showBubble('bubble-dev', 'avatar-dev-animation', `👨‍💻 "Build final pronta! Mandando pro QA."`, 2200);
+    if (qaConsole) qaConsole.innerHTML = '> Testando build final...\n> ✅ Todos os testes passaram! Homologado!';
+    await wait(2400);
+
+    showBubble('bubble-qa', 'avatar-qa', '🧪 "Aprovado! Vou pegar o OK final do cliente."', 2500);
     await wait(2700);
 
-    if (qa) qa.style.cssText += '; bottom:120px; right:300px;';
-    showBubble('bubble-qa', "🧪 \"✅ 100%! Todos os testes passaram!\"", 2800);
-    if (qaConsole) qaConsole.innerHTML = '> ✅ Suite completa aprovada!\n> Solicitando validação do cliente...';
+    // QA caminha até a recepção encontrar o Cliente
+    await moveAvatar('avatar-qa', { left: '260px', top: '150px' });
+    showBubble('bubble-qa', 'avatar-qa', '🧪 "Sistema validado. Consegue dar uma olhada e homologar?"', 2800);
     await wait(3000);
 
-    // QA vai até o TI pedir validação do cliente
-    if (qa) qa.style.cssText += '; bottom:200px; right:calc(100% - 250px);';
-    showBubble('bubble-qa', "🧪 \"Tudo ok! Pode validar a melhoria?\"", 2800);
-    await wait(3000);
-
-    // ── FASE 6: Usuário valida e aprova ────────────────────
-    const userApproves = Math.random() < 0.8; // 80% de chance de aprovar
+    // ── FASE 6: Usuário homologa e aprova ─────────────────────
+    const userApproves = Math.random() < 0.85;
     if (userApproves) {
-        showBubble('bubble-user', `${userEmoji} \"Perfeito! Exatamente o que eu queria! ✅\"`, 3000);
-        if (qaConsole) qaConsole.innerHTML = '> 🎉 Cliente aprovou!\n> Commit direto na main. Entrega concluída!';
+        showBubble('bubble-user', 'avatar-user', `${userEmoji} "Sensacional! Latência e evidências corrigidas. Aprovado! ✅"`, 3000);
+        if (qaConsole) qaConsole.innerHTML = '> 🎉 Homologado pelo cliente!\n> Deploy automático concluído na main!';
         await wait(3200);
-        if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
-        if (dev0) { dev0.style.right = 'auto'; dev0.style.bottom = '50px'; dev0.style.left = 'calc(15%)'; }
-        showBubble('bubble-dev', "👨‍💻 \"🎉 Deploy feito! Próxima tarefa!\"", 2500);
+        
+        // PM comemora na sala dele
+        showBubble('bubble-pm', 'avatar-pm', '👩‍💼 "Mais uma entrega concluída! Próxima sprint!"', 2500);
+        
+        // Dev comemora na mesa dele (ele se move de volta para a mesa)
+        await moveAvatar('avatar-dev-animation', getCoords(devDeskId));
+        showBubble('bubble-dev', 'avatar-dev-animation', `🎉 "Feito! Código em produção!"`, 2500);
+        await wait(2700);
     } else {
-        showBubble('bubble-user', `${userEmoji} \"Hmm, não era bem isso... 🤔 Volta pro backlog!\"`, 3000);
-        if (qaConsole) qaConsole.innerHTML = '> ❌ Cliente rejeitou!\n> Abrindo novo card no backlog para revisão...';
+        showBubble('bubble-user', 'avatar-user', `${userEmoji} "Hmm, ainda tem um pequeno gap visual. Volta pro backlog!"`, 3000);
+        if (qaConsole) qaConsole.innerHTML = '> ❌ Homologação rejeitada!\n> Movendo card de volta para o backlog...';
         await wait(3200);
-        if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
-        showBubble('bubble-pm', "📋 \"Entendido! Vou recriar o card com mais detalhes.\"", 2800);
-        if (qaConsole) qaConsole.innerHTML = '> 🔄 Card devolvido ao backlog.\n> Aguardando próximo sprint...';
+        
+        // PM recolhe
+        showBubble('bubble-pm', 'avatar-pm', '👩‍💼 "Ok, vou reabrir o card com os novos feedbacks."', 2500);
+        
+        // Dev volta triste
+        await moveAvatar('avatar-dev-animation', getCoords(devDeskId));
+        await wait(2700);
     }
 
-    // Reset all positions
-    await wait(2500);
-    user.style.left = '105px';
-    pm.style.right = '105px';
-    if (qa) qa.style.cssText += '; bottom:60px; right:125px;';
-    if (dev0) { dev0.style.right = 'auto'; dev0.style.bottom = '50px'; dev0.style.left = 'calc(15%)'; }
+    // ── RESET FINAL ────────────────────────────────────────
+    // Retorna avatares aos postos originais e apaga o dev animado
+    Object.assign(user.style, getCoords('desk-reception'));
+    Object.assign(pm.style, getCoords('pm-desk-0'));
+    if (qa) Object.assign(qa.style, getCoords('qa-desk-0'));
+    devAvatar.style.display = 'none';
+    
+    // Reseta cor do monitor do dev para azul (idle) se contratado
+    if (monitor) {
+        monitor.style.backgroundColor = '#06b6d4';
+        monitor.style.boxShadow = '0 0 10px #06b6d4, 0 0 4px #06b6d4';
+    }
+
     isOfficeAnimating = false;
 }
