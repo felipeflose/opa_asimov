@@ -1817,5 +1817,24 @@
     "epic_area": "UI/UX",
     "created_at": "2026-06-29T23:42:43.045376",
     "completed_at": null
+  },
+  {
+    "id": "KAN-224",
+    "title": "Validação de schema JSON em scripts de I/O",
+    "description": "Implementar validação de schema para dados JSON lidos e escritos, prevenindo entradas malformadas e erros KeyError no PM Agent.",
+    "details": "Gerado via feedback de Thiago Nascimento (Data Engineer)",
+    "motivation_justification": "Os scripts leem e escrevem JSON direto sem validação de schema — encontrei 3 entradas malformadas no user_feedback.json hoje que causaram KeyError silencioso no PM Agent.",
+    "category": "RAG/AI",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "c1c395b8e981",
+    "source_user": "Thiago Nascimento",
+    "epic_key": "KAN-98",
+    "epic_area": "RAG/AI",
+    "created_at": "2026-06-29T23:42:45.861945",
+    "completed_at": null
   }
 ]

@@ -5249,7 +5249,7 @@
     "role": "Data Engineer",
     "area": "Data",
     "complaint": "Os scripts leem e escrevem JSON direto sem validação de schema — encontrei 3 entradas malformadas no user_feedback.json hoje que causaram KeyError silencioso no PM Agent.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v7",
     "improved_from": null,
     "total_submitted": 8,
