@@ -2695,12 +2695,26 @@ async function triggerOfficeAnimation(latestFeedback) {
         return;
     }
 
-    // PM aceita
-    showBubble('bubble-pm', 'avatar-pm', '📋 "Demanda aceita! Vou criar a issue e mandar pro Dev."', 2800);
+    // PM aceita e convida para a Sala de Reunião
+    showBubble('bubble-pm', 'avatar-pm', '👩‍💼 "Excelente! Vamos para a Sala de Reunião detalhar esta demanda?"', 2800);
     await wait(3000);
-    
-    // PM volta para a sala dele para delegar
+    showBubble('bubble-user', 'avatar-user', `${userEmoji} "Claro! Vamos lá!"`, 2200);
+    await wait(2400);
+
+    // Caminham juntos para a mesa de reuniões (desk-meeting)
+    moveAvatar('avatar-pm', getCoords('desk-meeting'));
+    await moveAvatar('avatar-user', getCoords('desk-meeting'));
+    await wait(1400); // Aguarda eles sentarem
+
+    // Conversa na sala de reuniões
+    showBubble('bubble-user', 'avatar-user', `${userEmoji} "Apresentei o ROI estimado e as métricas de performance no Jira."`, 3200);
+    await wait(3400);
+    showBubble('bubble-pm', 'avatar-pm', '👩‍💼 "Perfeito. Critérios de aceitação aprovados e salvos no backlog! 🚀"', 3200);
+    await wait(3400);
+
+    // PM volta para a sala dele para delegar e o Cliente vai para sua baia ociosa
     Object.assign(pm.style, getCoords('pm-desk-0'));
+    Object.assign(user.style, getCoords('desk-reception'));
     await wait(1300);
 
     // ── FASE 3: PM notifica o Dev correspondente à categoria ────
