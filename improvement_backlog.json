@@ -1969,5 +1969,24 @@
     "epic_area": "Performance",
     "created_at": "2026-06-29T23:14:35.291915",
     "completed_at": null
+  },
+  {
+    "id": "KAN-184",
+    "title": "Detecção de Notas Duplicadas",
+    "description": "Falta de detecção automática de notas duplicadas entre 3.000 embeddings, estimando 5-8% de duplicatas parciais",
+    "details": "Gerado via feedback de Natalia Pimentel (Data Scientist)",
+    "motivation_justification": "Com 3.000 vetores de embeddings disponíveis, falta detecção automática de notas duplicadas — estimo que 5-8% das notas são duplicatas parciais (tópico similar) baseado em análise manual de 50 amostras.",
+    "category": "RAG/AI",
+    "status": "in_progress",
+    "priority": "medium",
+    "difficulty": "hard",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "936176cb4931",
+    "source_user": "Natalia Pimentel",
+    "epic_key": "KAN-98",
+    "epic_area": "RAG/AI",
+    "created_at": "2026-06-29T23:14:45.837654",
+    "completed_at": null
   }
 ]
