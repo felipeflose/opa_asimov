@@ -442,6 +442,19 @@ def main():
 
     pending = pending_after_evidence
 
+    # Carrega configs locais de WIP (dev_count)
+    config_path = os.path.join(APP_DIR, 'project_config.json')
+    dev_count = 3
+    if os.path.exists(config_path):
+        try:
+            with open(config_path, 'r') as f:
+                dev_count = json.load(f).get("dev_count", 3)
+        except:
+            pass
+
+    # Conta issues ativas atualmente em andamento (in_progress)
+    in_progress_counter = [sum(1 for t in backlog if t.get("status") == "in_progress")] # mutable list
+
     # ── Pre-filtragem por fingerprint (sem LLM) ───────────────────────────────
     known_fps      = existing_fingerprints(backlog)
     backlog_titles = [f"{t['id']}: {t['title']}" for t in backlog if t.get("status") != "done"]
@@ -524,6 +537,13 @@ def main():
                 epic_key=epic_key_val or None,
             )
 
+            # WIP Limit: transiciona para 'em andamento' se houver vaga de dev, senão vai para 'todo'
+            initial_status = "todo"
+            with counter_lock:
+                if in_progress_counter[0] < dev_count:
+                    initial_status = "in_progress"
+                    in_progress_counter[0] += 1
+
             if not jira_key:
                 with counter_lock:
                     start = id_counter[0]
@@ -541,8 +561,9 @@ def main():
                     f"Fonte: {fb.get('user','?')} ({fb.get('role','?')}, área: {fb.get('area','?')})"
                 )
                 jira.add_comment(jira_key, pm_comment)
-                # Transiciona imediatamente para em andamento no Jira
-                jira.transition_issue(jira_key, "em andamento")
+                # Transiciona para em andamento no Jira se respeitado o WIP limit
+                if initial_status == "in_progress":
+                    jira.transition_issue(jira_key, "em andamento")
 
             task = {
                 "id": jira_key,
@@ -551,7 +572,7 @@ def main():
                 "details": details,
                 "motivation_justification": fb["complaint"],
                 "category": category,
-                "status": "in_progress",
+                "status": initial_status,
                 "priority": priority,
                 "difficulty": difficulty,
                 "impact": impact,
