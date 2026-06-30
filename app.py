@@ -1647,6 +1647,7 @@ def api_factory_metrics():
             'pct_complete': round((done_total / TARGET * 100), 2)
         },
         'top_contributors': top_contributors,
+        'dev_leaderboard': dev_leaderboard,
         'epics': epics,
         'total_feedback': len(feedbacks),
         'generated_at': now.isoformat()
