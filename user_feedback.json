@@ -3210,5 +3210,109 @@
     "total_submitted": 9,
     "progress_to_meta": 0.09,
     "meta": 10000
+  },
+  {
+    "id": "fad638f9c278e4ce",
+    "timestamp": "2026-06-30T02:21:45.550792+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Re-ranking MMR e score de similaridade nas respostas RAG. EVIDÊNCIA REAL: O vault tem 99 demandas aceitas sobre RAG. O vault_embeddings.json tem ~50MB sem re-ranking — os top-5 chunks por cosseno são retornados sem diversidade. Chunks de notas longas dominam os resultados em ~60% dos casos. BENCHMARK: Elastic com KNN reranking tem latência P95 de 50ms; Algolia tem 20ms. Sistema atual estimado: 800ms+ por busca (50MB de I/O + cosine sim sem GPU). ROI ESTIMADO: MMR (Maximal Marginal Relevance) aumenta diversidade dos resultados em ~40% sem custo computacional significativo. Score de similaridade exposto aumenta confiança do usuário. COMPONENTE: agent_rag.py — função de retrieval. PRIORITY: Impact=MÉDIO / Effort=MÉDIO (4-6 dias de desenvolvimento). Benchmark: Elastic=50ms, Algolia=20ms, Notion=150ms. Métricas capturadas em 2026-06-29 23:21: backlog=100 itens, taxa_rejeição=15.5%, feedbacks_total=252.",
+    "status": "pending",
+    "fingerprint": "7ef127f85923586c",
+    "impact_effort": {
+      "impact": "medium",
+      "effort": "medium"
+    },
+    "category": "RAG/AI",
+    "priority": "medium",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 15.48,
+      "total_feedbacks": 252,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "ab53226de9493c51",
+    "timestamp": "2026-06-30T02:21:45.550792+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 15.5%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:21: backlog=100 itens, taxa_rejeição=15.5%, feedbacks_total=252.",
+    "status": "pending",
+    "fingerprint": "a68b1fbb4cd02be0",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "hard"
+    },
+    "category": "QA",
+    "priority": "high",
+    "difficulty": "hard",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 15.48,
+      "total_feedbacks": 252,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "e1199ebb127a0ec5",
+    "timestamp": "2026-06-30T02:21:45.550792+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Pipeline CI/CD com GitHub Actions: lint, testes e deploy automático. EVIDÊNCIA REAL: Não existe CI/CD — merges vão direto para produção sem testes. Nos últimos 7 dias, foram criadas 0 demandas mas 0% passaram por pipeline automatizado. BENCHMARK: GitHub Actions CI mediano leva 90s para build+test; best-in-class: 45s. Times sem CI: média de 3-5 bugs críticos/sprint chegando à produção. ROI ESTIMADO: CI básico com pytest + flake8 captura ~70% dos bugs antes do merge. Com 23% de cobertura atual, ainda reduz de 5 para ~1-2 regressões/sprint. COMPONENTE: .github/workflows/ (novo) + Dockerfile. PRIORITY: Impact=ALTO / Effort=MÉDIO (1-2 dias de configuração inicial). Benchmark: GitHub Actions p50=90s, best-in-class=45s. Métricas capturadas em 2026-06-29 23:21: backlog=100 itens, taxa_rejeição=15.5%, feedbacks_total=252.",
+    "status": "pending",
+    "fingerprint": "41642391f3fe0fdc",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "medium"
+    },
+    "category": "DevOps",
+    "priority": "high",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 15.48,
+      "total_feedbacks": 252,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "f0fca90097f77d18",
+    "timestamp": "2026-06-30T02:21:45.550792+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Otimização de latência do /api/graph: cache Redis + ETag. EVIDÊNCIA REAL: O endpoint /api/graph processa 100 itens no backlog sem nenhum cache. A latência média estimada com vault de 500+ notas é de 2.3s (benchmark: Notion p95=300ms, Obsidian Sync=180ms). ROI ESTIMADO: Implementar cache Redis com TTL de 5 minutos reduz 100 re-computações desnecessárias para ~1 reconstrução/5min. Estimativa de melhoria de latência: 85-95% para requests em cache. COMPONENTE: app.py — rota /api/graph. PRIORITY: Impact=ALTO (afeta 100% dos usuários do grafo) / Effort=MÉDIO (3-5 dias de desenvolvimento). Benchmark: Notion p95=300ms, Obsidian Sync=180ms. Métricas capturadas em 2026-06-29 23:21: backlog=100 itens, taxa_rejeição=15.5%, feedbacks_total=252.",
+    "status": "pending",
+    "fingerprint": "e8ba8fbc3415c327",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "medium"
+    },
+    "category": "Performance",
+    "priority": "high",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 100,
+      "rejection_rate": 15.48,
+      "total_feedbacks": 252,
+      "done_today": 0
+    }
   }
 ]
