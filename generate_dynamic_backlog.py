@@ -179,6 +179,69 @@ def safe_title(title: str, max_len: int = 60) -> str:
     return truncated.rstrip(".,;:").strip()
 
 
+def generate_fallback_title(complaint: str, category: str) -> str:
+    """Gera um título de backlog profissional por heurística a partir da reclamação."""
+    c_lower = complaint.lower()
+    
+    # Mapeamento de palavras-chave para títulos de alta qualidade
+    if "/api/graph" in c_lower and ("demora" in c_lower or "lento" in c_lower or "performance" in c_lower):
+        return "Otimizar tempo de resposta do endpoint /api/graph"
+    if "sobrepõ" in c_lower or "sobrepo" in c_lower or "labels" in c_lower:
+        return "Corrigir sobreposição de labels no grafo de notas"
+    if "telegram" in c_lower or "bot" in c_lower:
+        return "Implementar tratamento de erros e logs no Telegram bot"
+    if "sql" in c_lower or "injection" in c_lower or "sanitizar" in c_lower:
+        return "Sanitizar inputs e proteger contra SQL Injection"
+    if "sqlite" in c_lower or "banco" in c_lower or "pooling" in c_lower:
+        return "Implementar connection pooling para SQLite no Flask"
+    if "mobile" in c_lower or "responsiv" in c_lower or "layout" in c_lower:
+        return "Ajustar responsividade do layout e navegação mobile"
+    if "rag" in c_lower or "embeddings" in c_lower or "chunk" in c_lower:
+        return "Refinar estratégia de chunking e busca semântica no RAG"
+    if "testes" in c_lower or "pytest" in c_lower or "cobertura" in c_lower:
+        return "Expandir suite de testes unitários e de integração"
+    if "server.log" in c_lower or "logs" in c_lower or "trace" in c_lower:
+        return "Configurar rotação de logs e trace ID no Flask"
+    if "roadmap" in c_lower or "visual" in c_lower:
+        return "Criar visualizador de roadmap e evolução do backlog"
+    if "prompt" in c_lower or "engenharia" in c_lower:
+        return "Implementar avaliação de prompts e controle de versões"
+    if "schema" in c_lower or "versionamento" in c_lower:
+        return "Implementar versionamento de schema do banco de dados"
+    if "jwt" in c_lower or "autentica" in c_lower:
+        return "Implementar autenticação JWT no endpoint do admin"
+    if "cors" in c_lower or "header" in c_lower:
+        return "Corrigir políticas de CORS e segurança HTTP headers"
+    
+    # Fallback genérico inteligente: "Ação baseada na Categoria" + 4 primeiras palavras
+    words = complaint.strip().split()
+    clean_words = []
+    for w in words:
+        w_clean = w.strip(".,;:!?()—\"'[]{}")
+        if w_clean and len(w_clean) > 2:
+            clean_words.append(w_clean)
+        if len(clean_words) >= 4:
+            break
+            
+    prefix = f"Ajustar {category.lower()}"
+    if category.lower() == "performance":
+        prefix = "Otimizar performance"
+    elif category.lower() == "security":
+        prefix = "Corrigir segurança"
+    elif category.lower() == "ui/ux":
+        prefix = "Melhorar interface"
+    elif category.lower() == "devops":
+        prefix = "Ajustar pipeline"
+        
+    suffix = " ".join(clean_words)
+    title = f"{prefix}: {suffix}"
+    
+    # Trunca se passar de 60
+    if len(title) > 60:
+        title = title[:57] + "..."
+    return title
+
+
 # ── Triagem em Batch ──────────────────────────────────────────────────────────
 
 def batch_triage(complaints: list[str], backlog_titles: list[str], groq_key: str) -> list[bool]:
@@ -263,18 +326,46 @@ A lista deve ter exatamente {len(complaints)} cards."""
         data = json.loads(raw)
         cards = data.get("cards", [])
         if len(cards) == len(complaints):
-            # Aplica truncamento seguro em Python
+            # Aplica truncamento seguro e garante qualidade de títulos
             for card in cards:
-                card["title"] = safe_title(card.get("title", ""), 60)
+                title = card.get("title", "")
+                if "—" in title or "..." in title or len(title) < 10:
+                    card["title"] = generate_fallback_title(card.get("description", ""), card.get("category", "Arquitetura"))
+                else:
+                    card["title"] = safe_title(title, 60)
             return cards
     except Exception:
         pass
 
-    # Fallback: cria cards genéricos
+    # Fallback: cria cards genéricos de alta qualidade
     logging.warning("Conversão LLM falhou — criando cards genéricos.")
-    return [{"title": safe_title(c, 60), "description": c, "category": "Arquitetura",
-             "priority": "medium", "difficulty": "medium", "impact": "medium"}
-            for c in complaints]
+    out_cards = []
+    for c in complaints:
+        category = "Arquitetura"
+        c_lower = c.lower()
+        if "telegram" in c_lower or "bot" in c_lower:
+            category = "Telegram"
+        elif "performance" in c_lower or "demora" in c_lower or "lento" in c_lower:
+            category = "Performance"
+        elif "segurança" in c_lower or "sql" in c_lower or "sanitizar" in c_lower:
+            category = "Security"
+        elif "visual" in c_lower or "layout" in c_lower or "interface" in c_lower or "mobile" in c_lower or "sobrepõ" in c_lower:
+            category = "UI/UX"
+        elif "logs" in c_lower or "server.log" in c_lower or "pytest" in c_lower or "testes" in c_lower:
+            category = "DevOps"
+        elif "rag" in c_lower or "embedding" in c_lower:
+            category = "RAG/AI"
+            
+        title = generate_fallback_title(c, category)
+        out_cards.append({
+            "title": title,
+            "description": c,
+            "category": category,
+            "priority": "medium",
+            "difficulty": "medium",
+            "impact": "medium"
+        })
+    return out_cards
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────

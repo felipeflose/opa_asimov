@@ -777,3 +777,21 @@
 [2026-06-29 23:18:15] [AUTO-IMPROVEMENT] Aplicada: KAN-190 - Histórico de versão das notas no grafo
 
 [2026-06-29 23:18:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (2/10), PMs insuficientes (1/3)): Análise de sentimento das notas — detecta quando o estudo está frustrante vs eng
+
+[2026-06-29 23:20:54] [AUTO-IMPROVEMENT] Aplicada: KAN-179 - Ausência de Métricas Prometheus
+
+[2026-06-29 23:20:56] [AUTO-IMPROVEMENT] Aplicada: KAN-185 - Incompatibilidade SQLite Cloud
+
+[2026-06-29 23:20:58] [AUTO-IMPROVEMENT] Aplicada: KAN-181 - Backup SQLite Inexistente
+
+[2026-06-29 23:21:08] [AUTO-IMPROVEMENT] Aplicada: KAN-196 - Otimizar busca de texto no frontend
+
+[2026-06-29 23:21:12] [AUTO-IMPROVEMENT] Aplicada: KAN-180 - Temperatura LLM Hardcoded
+
+[2026-06-29 23:21:20] [AUTO-IMPROVEMENT] Aplicada: KAN-186 - Governança do Daily Digest
+
+[2026-06-29 23:21:29] [AUTO-IMPROVEMENT] Aplicada: KAN-183 - Cache de Recursos Estáticos
+
+[2026-06-29 23:21:30] [AUTO-IMPROVEMENT] Aplicada: KAN-182 - Persistência de Tooltips
+
+[2026-06-29 23:21:36] [AUTO-IMPROVEMENT] Aplicada: KAN-184 - Detecção de Notas Duplicadas
