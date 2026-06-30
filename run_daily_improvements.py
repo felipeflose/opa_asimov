@@ -509,6 +509,10 @@ def run_sprint(jira: JiraClient, config: dict):
         else:
             subprocess.run(["git", "checkout", "main"], cwd=APP_DIR, capture_output=True)
 
+        # Registra o desenvolvedor que realizou a entrega no Jira e localmente
+        dev_name = item.get("completed_by", "Lucas Oliveira")
+        jira.update_issue_completed_by(issue_key, dev_name)
+
         # Transiciona a issue para 'Concluído' no Jira
         jira.transition_issue(issue_key, "Concluído")
 
