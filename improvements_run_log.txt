@@ -679,3 +679,21 @@
 [2026-06-29 22:59:08] [AUTO-IMPROVEMENT] Aplicada: KAN-14 - Os logs do servidor incluem os prompts completos enviados ao
 
 [2026-06-29 22:59:15] [AUTO-IMPROVEMENT] Aplicada: KAN-20 - Falta um ambiente de staging isolado — qualquer teste manual
+
+[2026-06-29 23:02:16] [AUTO-IMPROVEMENT] Aplicada: KAN-97 - [ÉPICO] Security
+
+[2026-06-29 23:02:22] [AUTO-IMPROVEMENT] Aplicada: KAN-98 - [ÉPICO] RAG/AI
+
+[2026-06-29 23:02:26] [AUTO-IMPROVEMENT] Aplicada: KAN-104 - [ÉPICO] Telegram
+
+[2026-06-29 23:02:47] [AUTO-IMPROVEMENT] Aplicada: KAN-99 - [ÉPICO] UI/UX
+
+[2026-06-29 23:02:50] [AUTO-IMPROVEMENT] Aplicada: KAN-100 - [ÉPICO] DevOps
+
+[2026-06-29 23:02:56] [AUTO-IMPROVEMENT] Aplicada: KAN-101 - [ÉPICO] Arquitetura
+
+[2026-06-29 23:02:56] [AUTO-IMPROVEMENT] Aplicada: KAN-102 - [ÉPICO] Mobile
+
+[2026-06-29 23:03:06] [AUTO-IMPROVEMENT] Aplicada: KAN-103 - [ÉPICO] QA
+
+[2026-06-29 23:03:10] [AUTO-IMPROVEMENT] Aplicada: KAN-96 - [ÉPICO] Performance
