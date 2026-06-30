@@ -2245,7 +2245,7 @@ async function loadFactoryMetrics() {
         const ctrbEl = document.getElementById('factory-top-contributors');
         if (ctrbEl && metrics.top_contributors) {
             const MEDALS = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-            ctrbEl.innerHTML = metrics.top_contributors.map((c, i) => `
+            ctrbEl.innerHTML = metrics.top_contributors.slice(0, 5).map((c, i) => `
                 <div style="display:flex; align-items:center; gap:10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
                     <span style="font-size:1.1rem;">${c.avatar || '👤'}</span>
                     <div style="flex:1; min-width:0;">
@@ -2255,6 +2255,25 @@ async function loadFactoryMetrics() {
                     <div style="text-align:right;">
                         <span style="font-size:0.9rem;">${MEDALS[i] || '🏅'}</span>
                         <div style="font-size:0.65rem; color:var(--green); font-weight:700;">${c.count} aceitos</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ── Ranking de Devs (Leaderboard) ─────────────────────────
+        const devLeaderboardEl = document.getElementById('factory-top-devs');
+        if (devLeaderboardEl && metrics.dev_leaderboard) {
+            const MEDALS = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+            devLeaderboardEl.innerHTML = metrics.dev_leaderboard.slice(0, 5).map((d, i) => `
+                <div style="display:flex; align-items:center; gap:10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+                    <span style="font-size:1.1rem;">${d.emoji || '👨‍💻'}</span>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:700; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.name}</div>
+                        <div style="font-size:0.6rem; color:var(--text-muted);">Dev Contratado</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.9rem;">${MEDALS[i] || '🏅'}</span>
+                        <div style="font-size:0.65rem; color:var(--green); font-weight:700;">${d.count} feito</div>
                     </div>
                 </div>
             `).join('');
