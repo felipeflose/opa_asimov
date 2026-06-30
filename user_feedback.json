@@ -1225,7 +1225,7 @@
     "role": "ML Engineer",
     "area": "RAG/AI",
     "complaint": "O agent_rag.py não tem circuit breaker para falhas do Groq — quando a API ficou offline por 8 minutos na semana passada, todas as queries empilharam timeout de 30s, bloqueando 4 threads Flask.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v2",
     "improved_from": null,
     "total_submitted": 4,
