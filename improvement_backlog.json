@@ -1798,5 +1798,24 @@
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:02:25.484-0300",
     "completed_at": null
+  },
+  {
+    "id": "KAN-209",
+    "title": "Embeddings não atualizados após edição de nota",
+    "description": "Os embeddings em vault_embeddings.json não são atualizados após a edição de uma nota. Teste de busca RAG 30 minutos após a edição retornou a versão anterior em 100% das queries.",
+    "details": "Gerado via feedback de Mariana Costa (RAG Specialist)",
+    "motivation_justification": "Os embeddings em vault_embeddings.json não são atualizados após edição de nota — testei editando uma nota e fazendo busca 30 minutos depois; o RAG retornou a versão anterior em 100% das queries.",
+    "category": "RAG/AI",
+    "status": "todo",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "69ba611c8a56",
+    "source_user": "Mariana Costa",
+    "epic_key": "KAN-98",
+    "epic_area": "RAG/AI",
+    "created_at": "2026-06-29T23:27:33.746514",
+    "completed_at": null
   }
 ]
