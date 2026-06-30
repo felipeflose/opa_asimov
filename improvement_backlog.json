@@ -2007,5 +2007,24 @@
     "epic_area": "Arquitetura",
     "created_at": "2026-06-29T23:14:56.012016",
     "completed_at": null
+  },
+  {
+    "id": "KAN-186",
+    "title": "Governança do Daily Digest",
+    "description": "Geração automática do daily digest sem validação humana, falta de governança sobre as ações automatizadas",
+    "details": "Gerado via feedback de Vanessa Correia (Scrum Master)",
+    "motivation_justification": "O daily digest é gerado automaticamente mas 0 humanos validam se as ações fazem sentido — automatizamos geração mas não governança; já implementamos 2 features que ninguém pediu. — dado coletado de 6 semanas de operação sem nenhuma instrumentação",
+    "category": "RAG/AI",
+    "status": "in_progress",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "403b0db1fee2",
+    "source_user": "Vanessa Correia",
+    "epic_key": "KAN-98",
+    "epic_area": "RAG/AI",
+    "created_at": "2026-06-29T23:15:06.299413",
+    "completed_at": null
   }
 ]
