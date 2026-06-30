@@ -1931,5 +1931,24 @@
     "epic_area": "Arquitetura",
     "created_at": "2026-06-29T23:03:05.209431",
     "completed_at": null
+  },
+  {
+    "id": "KAN-114",
+    "title": "O obsidian_graph.json de 485KB é carregado inteiro a cada",
+    "description": "O obsidian_graph.json de 485KB é carregado inteiro a cada request GET /api/graph — com 10 usuários simultâneos, isso é 4.85MB de I/O de disco por segundo desnecessariamente.",
+    "details": "Gerado via feedback de Juliana Moreira (Full Stack Developer)",
+    "motivation_justification": "O obsidian_graph.json de 485KB é carregado inteiro a cada request GET /api/graph — com 10 usuários simultâneos, isso é 4.85MB de I/O de disco por segundo desnecessariamente.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "da860f3da97d",
+    "source_user": "Juliana Moreira",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:03:16.035693",
+    "completed_at": null
   }
 ]

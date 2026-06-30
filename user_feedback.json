@@ -1210,7 +1210,7 @@
     "role": "Full Stack Developer",
     "area": "Full Stack",
     "complaint": "O obsidian_graph.json de 485KB é carregado inteiro a cada request GET /api/graph — com 10 usuários simultâneos, isso é 4.85MB de I/O de disco por segundo desnecessariamente.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v2",
     "improved_from": null,
     "total_submitted": 5,
