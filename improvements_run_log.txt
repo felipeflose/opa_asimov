@@ -627,3 +627,55 @@
 [2026-06-29 19:46:52] [AUTO-IMPROVEMENT] Aplicada: KAN-68 - O servidor Flask roda sem HTTPS no modo desenvolvimento e ni
 
 [2026-06-29 19:46:56] [AUTO-IMPROVEMENT] Aplicada: KAN-21 - O sistema não tem SLOs definidos — não sabemos qual é o temp
+
+[2026-06-29 22:57:08] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (7/10)): API pública do grafo com autenticação OAuth para integração com Notion, Roam e L
+
+[2026-06-29 22:57:13] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (4/10)): Detecção de contradições: IA identifica notas que afirmam coisas opostas sobre o
+
+[2026-06-29 22:57:20] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (6/10)): Sistema de badges e achievements para gamificação do processo de aprendizado
+
+[2026-06-29 22:57:20] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (4/10), PMs insuficientes (1/3)): Exportar grafo para formato Obsidian nativo e sincronizar com vault local via rs
+
+[2026-06-29 22:57:20] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (6/10), PMs insuficientes (1/3)): API pública do grafo com autenticação OAuth para integração com Notion, Roam e L
+
+[2026-06-29 22:57:20] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (5/10), PMs insuficientes (1/3)): Voice search: busca por voz no grafo usando Whisper local
+
+[2026-06-29 22:57:20] [CHAOS-MONKEY] IDEIA REPROVADA (PMs insuficientes (1/3)): Modo 'Sala de Estudo' colaborativa: múltiplos usuários exploram o mesmo grafo em
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (4/10)): Implementar grafo de conhecimento temporal — cada nota tem score que decai com o
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (5/10), PMs insuficientes (1/3)): Sistema de podcast automático: o bot sintetiza os tópicos mais estudados da sema
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (4/10)): API pública do grafo com autenticação OAuth para integração com Notion, Roam e L
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (3/10), PMs insuficientes (1/3)): Análise de sentimento das notas — detecta quando o estudo está frustrante vs eng
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (6/10), PMs insuficientes (1/3)): Cluster automático de notas com K-Means e exibição de comunidades no grafo
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (4/10)): IA que sugere próxima nota a estudar baseada em lacunas do grafo (spaced repetit
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (6/10)): Dashboard de 'pontos cegos': tópicos citados mas nunca estudados em profundidade
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (7/10), PMs insuficientes (1/3)): Modo noturno adaptativo: ajusta densidade do grafo baseado no cansaço (detectado
+
+[2026-06-29 22:57:21] [CHAOS-MONKEY] IDEIA APROVADA e adicionada ao backlog (PRIORITY ZERO): Dashboard semanal enviado por email com estatísticas de aprendizado e recomendaç
+
+[2026-06-29 22:58:15] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (5/10)): Sistema de podcast automático: o bot sintetiza os tópicos mais estudados da sema
+
+[2026-06-29 22:58:35] [AUTO-IMPROVEMENT] Aplicada: KAN-13 - O servidor Flask não está usando connection pooling no SQLit
+
+[2026-06-29 22:58:37] [AUTO-IMPROVEMENT] Aplicada: KAN-19 - O SQLite não está configurado com WAL mode — em escritas sim
+
+[2026-06-29 22:58:37] [AUTO-IMPROVEMENT] Aplicada: KAN-12 - Quando dou zoom no grafo, os labels dos nós se sobrepõem uns
+
+[2026-06-29 22:58:41] [AUTO-IMPROVEMENT] Aplicada: KAN-15 - Enviei uma nota longa pelo Telegram e o bot travou por 30 se
+
+[2026-06-29 22:58:45] [AUTO-IMPROVEMENT] Aplicada: KAN-17 - Falta um arquivo .dockerignore adequado — o contexto de buil
+
+[2026-06-29 22:58:48] [AUTO-IMPROVEMENT] Aplicada: KAN-16 - Falta um score de similaridade nas respostas do RAG — não se
+
+[2026-06-29 22:58:49] [AUTO-IMPROVEMENT] Aplicada: KAN-18 - Não tem tratamento de erro no fetch para /api/graph — se o s
+
+[2026-06-29 22:59:08] [AUTO-IMPROVEMENT] Aplicada: KAN-14 - Os logs do servidor incluem os prompts completos enviados ao
+
+[2026-06-29 22:59:15] [AUTO-IMPROVEMENT] Aplicada: KAN-20 - Falta um ambiente de staging isolado — qualquer teste manual

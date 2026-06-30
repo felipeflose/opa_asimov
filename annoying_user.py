@@ -7,6 +7,7 @@ import json
 import random
 import hashlib
 import logging
+from typing import Optional
 from datetime import datetime, timedelta, timezone
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -546,7 +547,7 @@ def check_milestone(total: int, new_total: int, persona: dict):
 # Anti-repetição inteligente: verifica duplicata e gera versão melhorada
 # ---------------------------------------------------------------------------
 
-def get_last_rejected(feedbacks: list, persona_name: str, cutoff_hours: int = 24) -> dict | None:
+def get_last_rejected(feedbacks: list, persona_name: str, cutoff_hours: int = 24) -> Optional[dict]:
     """Retorna o último feedback rejeitado por falta de evidência desta persona nas últimas 24h."""
     cutoff = datetime.now(timezone.utc) - timedelta(hours=cutoff_hours)
     candidates = []
@@ -760,4 +761,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    if "--daemon" in sys.argv:
+        logging.info("🔄 [USER DAEMON] Iniciando annoying_user no modo daemon (sprints de 60s)...")
+        while True:
+            try:
+                main()
+            except Exception as e:
+                logging.error(f"Erro no loop do annoying_user: {e}")
+            time.sleep(60)
+    else:
+        main()
