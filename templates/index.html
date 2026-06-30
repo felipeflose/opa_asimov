@@ -619,133 +619,175 @@
             </div>
 
             <!-- MAPA DO ESCRITÓRIO REALISTA TECHFUSE LTDA -->
-            <div class="office-map" style="position: relative; width: 100%; height: 480px; background: #030712; border: 1px solid var(--border); border-radius: 24px; overflow: hidden; margin-bottom: 25px; box-shadow: inset 0 0 40px rgba(0,0,0,0.85);">
+            <div class="office-map" style="position: relative; width: 100%; height: 500px; background: #030712; border: 1px solid var(--border); border-radius: 24px; overflow: hidden; margin-bottom: 25px; box-shadow: inset 0 0 45px rgba(0,0,0,0.95);">
                 
                 <!-- Grade e marcações de corredores para visual de planta baixa -->
-                <div style="position: absolute; top: 180px; left: 0; right: 0; height: 35px; background: rgba(255,255,255,0.01); border-top: 1px dashed rgba(255,255,255,0.03); border-bottom: 1px dashed rgba(255,255,255,0.03); pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; color: rgba(255,255,255,0.08); letter-spacing: 3px; font-weight: 700; text-transform: uppercase;">Corredor de Integração</div>
+                <div style="position: absolute; top: 190px; left: 0; right: 0; height: 35px; background: rgba(255,255,255,0.01); border-top: 1px dashed rgba(255,255,255,0.03); border-bottom: 1px dashed rgba(255,255,255,0.03); pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; color: rgba(255,255,255,0.08); letter-spacing: 3px; font-weight: 700; text-transform: uppercase;">Corredor de Integração</div>
                 <div style="position: absolute; top: 0; bottom: 0; left: 375px; width: 15px; background: rgba(255,255,255,0.005); border-left: 1px dashed rgba(255,255,255,0.02); border-right: 1px dashed rgba(255,255,255,0.02); pointer-events: none;"></div>
 
-                <!-- SALA 1: SUPORTE TI & RECEPÇÃO (Clientes) -->
-                <div class="office-room" id="room-it" style="position: absolute; top: 20px; left: 20px; width: 220px; height: 140px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 16px; background: rgba(239, 68, 68, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
-                    <span style="font-weight: 800; color: #ef4444; font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(239,68,68,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">🏢 RECEPÇÃO & CLIENTES</span>
-                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center; height: 75px;">
-                        <div id="desk-reception" style="width: 70px; height: 42px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
-                            <div style="font-size: 0.5rem; color: #fca5a5; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Balcão</div>
-                            <div style="width: 25px; height: 4px; background: #64748b; border-radius: 2px; margin-top: 4px;"></div>
+                <!-- SALA 1: SUPORTE TI & SERVER ROOM (Clientes) -->
+                <div class="office-room" id="room-it" style="position: absolute; top: 20px; left: 20px; width: 230px; height: 150px; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 16px; background: rgba(239, 68, 68, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                    <span style="font-weight: 800; color: #ef4444; font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(239,68,68,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">🏢 SUPORTE TI & SERVER ROOM</span>
+                    <div style="display: flex; gap: 10px; justify-content: space-between; align-items: center; height: 85px;">
+                        <!-- Balcão de Atendimento -->
+                        <div id="desk-reception" style="width: 70px; height: 50px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                            <div style="font-size: 0.45rem; color: #fca5a5; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">SUPORTE</div>
+                            <div style="width: 25px; height: 18px; background: #1e293b; border-radius: 2px; margin-top: 4px; border: 1px solid #475569; position: relative; display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 15px; height: 1px; background: #06b6d4; box-shadow: 0 0 4px #06b6d4;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Racks de Servidor TechFuse -->
+                        <div style="display: flex; gap: 6px;">
+                            <div style="width: 42px; height: 75px; background: #090d16; border: 2px solid #1e293b; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-around; padding: 4px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.6);">
+                                <div style="border-bottom: 1px solid #1e293b; height: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <span class="server-led green"></span><span class="server-led red"></span><span class="server-led blue"></span>
+                                </div>
+                                <div style="border-bottom: 1px solid #1e293b; height: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <span class="server-led blue"></span><span class="server-led green"></span><span class="server-led green"></span>
+                                </div>
+                                <div style="height: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <span class="server-led red"></span><span class="server-led blue"></span><span class="server-led green"></span>
+                                </div>
+                            </div>
+                            <div style="width: 42px; height: 75px; background: #090d16; border: 2px solid #1e293b; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-around; padding: 4px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.6);">
+                                <div style="border-bottom: 1px solid #1e293b; height: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <span class="server-led blue"></span><span class="server-led red"></span><span class="server-led blue"></span>
+                                </div>
+                                <div style="border-bottom: 1px solid #1e293b; height: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <span class="server-led green"></span><span class="server-led green"></span><span class="server-led blue"></span>
+                                </div>
+                                <div style="height: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <span class="server-led blue"></span><span class="server-led green"></span><span class="server-led red"></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- SALA 2: COFFEE BREAK & RELAX (Copa) -->
-                <div class="office-room" id="room-cafe" style="position: absolute; top: 20px; left: 260px; width: 220px; height: 140px; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 16px; background: rgba(245, 158, 11, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                <div class="office-room" id="room-cafe" style="position: absolute; top: 20px; left: 270px; width: 210px; height: 150px; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 16px; background: rgba(245, 158, 11, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
                     <span style="font-weight: 800; color: #f59e0b; font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(245,158,11,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">☕ COFFEE BREAK (COPA)</span>
-                    <div style="display: flex; justify-content: space-between; align-items: center; height: 75px; padding: 0 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 5px;">
                         <!-- Máquina de café expresso -->
-                        <div style="width: 38px; height: 42px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; position: relative; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                        <div style="width: 44px; height: 50px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; position: relative; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
                             ☕
                             <div class="steam" style="position: absolute; top: -14px; font-size: 0.6rem; pointer-events: none; opacity: 0.8;">♨️</div>
                         </div>
                         <!-- Sofá moderno -->
-                        <div style="width: 100px; height: 35px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.52rem; color: #fbbf24; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">🛋️ Sofá Soft</div>
+                        <div style="width: 100px; height: 38px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.52rem; color: #fbbf24; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">🛋️ Sofá Soft</div>
                     </div>
                 </div>
                 
                 <!-- SALA 3: SALA DE PRODUTO (PMs) -->
-                <div class="office-room" id="room-pm" style="position: absolute; top: 20px; right: 20px; width: 240px; height: 140px; border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; background: rgba(168, 85, 247, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
-                    <span style="font-weight: 800; color: #a855f7; font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(168,85,247,0.15); padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px;">📋 PRODUTO (3 PMs)</span>
-                    <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center; height: 75px;">
-                        <!-- Mesa PM 0 (Beatriz) -->
-                        <div class="pm-desk-unit" id="pm-desk-0" style="flex: 1; height: 60px; border: 1px solid rgba(168,85,247,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.58rem; position: relative;">
-                            <span class="desk-monitor" id="pm-monitor-0" style="width: 16px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px; display: block;"></span>
+                <div class="office-room" id="room-pm" style="position: absolute; top: 20px; right: 20px; width: 260px; height: 150px; border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; background: rgba(168, 85, 247, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                    <span style="font-weight: 800; color: #a855f7; font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(168,85,247,0.15); padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 0.5px;">📋 PRODUTO (3 BAIAS)</span>
+                    <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center; height: 85px;">
+                        <!-- Baia PM 0 (Beatriz) -->
+                        <div class="pm-desk-unit" id="pm-desk-0" style="flex: 1; height: 75px; border: 1px solid rgba(168,85,247,0.25); background: rgba(15, 23, 42, 0.6); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.58rem; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="pm-monitor-0" style="width: 20px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px; display: block;"></span>
                             <span style="font-weight: 700; color: #d8b4fe;">Bea 👩‍💼</span>
-                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #1e1b4b; border: 1px solid #4338ca;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #1e1b4b; border: 1px solid #4338ca; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa PM 1 (Rodrigo) -->
-                        <div class="pm-desk-unit" id="pm-desk-1" style="flex: 1; height: 60px; border: 1px solid rgba(168,85,247,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.58rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="pm-monitor-1" style="width: 16px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px; display: block;"></span>
+                        <!-- Baia PM 1 (Rodrigo) -->
+                        <div class="pm-desk-unit" id="pm-desk-1" style="flex: 1; height: 75px; border: 1px solid rgba(168,85,247,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.58rem; position: relative; opacity: 0.3; box-shadow: 0 3px 6px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="pm-monitor-1" style="width: 20px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px; display: block;"></span>
                             <span style="font-weight: 700; color: #d8b4fe;">Rodri 🧑‍💼</span>
-                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #1e1b4b; border: 1px solid #4338ca;"></div>
+                            <div class="coffee-cup" style="display: none;"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #1e1b4b; border: 1px solid #4338ca; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa PM 2 (Camila) -->
-                        <div class="pm-desk-unit" id="pm-desk-2" style="flex: 1; height: 60px; border: 1px solid rgba(168,85,247,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.58rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="pm-monitor-2" style="width: 16px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px; display: block;"></span>
+                        <!-- Baia PM 2 (Camila) -->
+                        <div class="pm-desk-unit" id="pm-desk-2" style="flex: 1; height: 75px; border: 1px solid rgba(168,85,247,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.58rem; position: relative; opacity: 0.3; box-shadow: 0 3px 6px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="pm-monitor-2" style="width: 20px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px; display: block;"></span>
                             <span style="font-weight: 700; color: #d8b4fe;">Cami 👩‍🔬</span>
-                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #1e1b4b; border: 1px solid #4338ca;"></div>
+                            <div class="coffee-cup" style="display: none;"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #1e1b4b; border: 1px solid #4338ca; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- SALA 4: ESTAÇÃO DEV (10 MESAS FIXAS) -->
-                <div class="office-room" id="room-dev" style="position: absolute; bottom: 20px; left: 20px; width: 340px; height: 280px; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 16px; background: rgba(6, 182, 212, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
-                    <span style="font-weight: 800; color: var(--cyan); font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(6,182,212,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">👨‍💻 ESTAÇÃO DE DESENVOLVIMENTO (10 DEVS)</span>
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; height: 215px;">
-                        <!-- Mesa Dev 0 (Lucas) -->
-                        <div class="dev-desk-unit" id="dev-desk-0" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative;">
-                            <span class="desk-monitor" id="dev-monitor-0" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                <!-- SALA 4: ESTAÇÃO DEV (10 CUBÍCULOS EM L) -->
+                <div class="office-room" id="room-dev" style="position: absolute; bottom: 20px; left: 20px; width: 340px; height: 290px; border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 16px; background: rgba(6, 182, 212, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                    <span style="font-weight: 800; color: var(--cyan); font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(6,182,212,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">👨‍💻 ESTAÇÃO DE DESENVOLVIMENTO (10 BAIAS EM L)</span>
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; height: 220px;">
+                        <!-- Baia Dev 0 (Lucas) -->
+                        <div class="dev-desk-unit" id="dev-desk-0" style="border: 1px solid rgba(6,182,212,0.25); background: rgba(15, 23, 42, 0.65); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-0" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Luk 👨‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 1 (Ana Paula) -->
-                        <div class="dev-desk-unit" id="dev-desk-1" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-1" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 1 (Ana Paula) -->
+                        <div class="dev-desk-unit" id="dev-desk-1" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-1" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">AP 👩‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 2 (Thiago) -->
-                        <div class="dev-desk-unit" id="dev-desk-2" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-2" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 2 (Thiago) -->
+                        <div class="dev-desk-unit" id="dev-desk-2" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-2" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Thi 🧑‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 3 (Jessica) -->
-                        <div class="dev-desk-unit" id="dev-desk-3" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-3" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 3 (Jessica) -->
+                        <div class="dev-desk-unit" id="dev-desk-3" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-3" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Jess 👩‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 4 (Rafael) -->
-                        <div class="dev-desk-unit" id="dev-desk-4" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-4" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 4 (Rafael) -->
+                        <div class="dev-desk-unit" id="dev-desk-4" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-4" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Rafa 👨‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 5 (Fernanda) -->
-                        <div class="dev-desk-unit" id="dev-desk-5" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-5" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 5 (Fernanda) -->
+                        <div class="dev-desk-unit" id="dev-desk-5" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-5" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Fê 👩‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 6 (Gabriel) -->
-                        <div class="dev-desk-unit" id="dev-desk-6" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-6" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 6 (Gabriel) -->
+                        <div class="dev-desk-unit" id="dev-desk-6" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-6" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Gabs 👨‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 7 (Isabela) -->
-                        <div class="dev-desk-unit" id="dev-desk-7" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-7" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 7 (Isabela) -->
+                        <div class="dev-desk-unit" id="dev-desk-7" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-7" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Isa 👩‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 8 (Pedro) -->
-                        <div class="dev-desk-unit" id="dev-desk-8" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-8" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 8 (Pedro) -->
+                        <div class="dev-desk-unit" id="dev-desk-8" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-8" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Pedão 👨‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa Dev 9 (Mariana) -->
-                        <div class="dev-desk-unit" id="dev-desk-9" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="dev-monitor-9" style="width: 15px; height: 3px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                        <!-- Baia Dev 9 (Mariana) -->
+                        <div class="dev-desk-unit" id="dev-desk-9" style="border: 1px solid rgba(6,182,212,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; position: relative; opacity: 0.3; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="dev-monitor-9" style="width: 22px; height: 4px; background: #475569; margin-bottom: 5px; border-radius: 1px;"></span>
                             <div style="font-weight: 700; color: #22d3ee;">Mari 👩‍💻</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -6px; width: 12px; height: 12px; border-radius: 50%; background: #0f172a; border: 1px solid #334155;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; border: 1px solid #334155; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- SALA 5: SALA DE ALINHAMENTO (War Room) -->
-                <div class="office-room" id="room-meeting" style="position: absolute; bottom: 20px; left: 380px; width: 160px; height: 280px; border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 16px; background: rgba(251, 191, 36, 0.005); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                <div class="office-room" id="room-meeting" style="position: absolute; bottom: 20px; left: 380px; width: 160px; height: 290px; border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 16px; background: rgba(251, 191, 36, 0.005); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
                     <span style="font-weight: 800; color: #fbbf24; font-size: 0.55rem; display: block; border-bottom: 1px solid rgba(251,191,36,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px; text-align: center;">🤝 WAR ROOM</span>
-                    <div style="display: flex; justify-content: center; align-items: center; height: 215px;">
+                    <div style="display: flex; justify-content: center; align-items: center; height: 220px;">
                         <!-- Grande mesa redonda -->
                         <div style="width: 75px; height: 75px; border-radius: 50%; background: rgba(251,191,36,0.04); border: 2px solid rgba(251,191,36,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.52rem; color: #fef08a; font-weight: 700; text-align: center; box-shadow: 0 0 15px rgba(251,191,36,0.05);">
                             Mesa de<br>Sprint
@@ -753,21 +795,23 @@
                     </div>
                 </div>
                 
-                <!-- SALA 6: SALA QA (2 MESAS FIXAS) -->
-                <div class="office-room" id="room-qa" style="position: absolute; bottom: 20px; right: 20px; width: 330px; height: 280px; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; background: rgba(16, 185, 129, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
-                    <span style="font-weight: 800; color: rgb(16, 185, 129); font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(16,185,129,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">🧪 LABORATÓRIO DE QUALIDADE (QA)</span>
-                    <div style="display: flex; gap: 15px; justify-content: center; align-items: center; height: 215px;">
-                        <!-- Mesa QA 0 (Paulo) -->
-                        <div class="qa-desk-unit" id="qa-desk-0" style="width: 100px; height: 75px; border: 1px solid rgba(16,185,129,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.62rem; position: relative;">
-                            <span class="desk-monitor" id="qa-monitor-0" style="width: 18px; height: 3px; background: #475569; margin-bottom: 5px;"></span>
+                <!-- SALA 6: SALA QA (2 BAIAS FIXAS) -->
+                <div class="office-room" id="room-qa" style="position: absolute; bottom: 20px; right: 20px; width: 330px; height: 290px; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 16px; background: rgba(16, 185, 129, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                    <span style="font-weight: 800; color: rgb(16, 185, 129); font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(16,185,129,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">🧪 LABORATÓRIO QA (2 BAIAS)</span>
+                    <div style="display: flex; gap: 15px; justify-content: center; align-items: center; height: 220px;">
+                        <!-- Baia QA 0 (Paulo) -->
+                        <div class="qa-desk-unit" id="qa-desk-0" style="width: 110px; height: 85px; border: 1px solid rgba(16,185,129,0.25); background: rgba(15, 23, 42, 0.6); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.62rem; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="qa-monitor-0" style="width: 24px; height: 4px; background: #475569; margin-bottom: 6px;"></span>
                             <div style="font-weight: 700; color: #a7f3d0;">Paulão 🧑‍🔬</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #064e3b; border: 1px solid #047857;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #064e3b; border: 1px solid #047857; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
-                        <!-- Mesa QA 1 (Larissa) -->
-                        <div class="qa-desk-unit" id="qa-desk-1" style="width: 100px; height: 75px; border: 1px solid rgba(16,185,129,0.15); background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.62rem; position: relative; opacity: 0.3;">
-                            <span class="desk-monitor" id="qa-monitor-1" style="width: 18px; height: 3px; background: #475569; margin-bottom: 5px;"></span>
+                        <!-- Baia QA 1 (Larissa) -->
+                        <div class="qa-desk-unit" id="qa-desk-1" style="width: 110px; height: 85px; border: 1px solid rgba(16,185,129,0.15); background: rgba(15, 23, 42, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.62rem; position: relative; opacity: 0.3; box-shadow: 0 3px 6px rgba(0,0,0,0.4);">
+                            <span class="desk-monitor" id="qa-monitor-1" style="width: 24px; height: 4px; background: #475569; margin-bottom: 6px;"></span>
                             <div style="font-weight: 700; color: #a7f3d0;">Lari 👩‍🔬</div>
-                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #064e3b; border: 1px solid #047857;"></div>
+                            <div class="coffee-cup"></div>
+                            <div class="desk-chair" style="position: absolute; bottom: -8px; width: 14px; height: 14px; border-radius: 50%; background: #064e3b; border: 1px solid #047857; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
                         </div>
                     </div>
                 </div>

@@ -2644,11 +2644,16 @@ async function triggerOfficeAnimation(latestFeedback) {
     const devDeskId = `dev-desk-${devIdx}`;
     const devMonitorId = `dev-monitor-${devIdx}`;
     
-    // Acende o monitor do dev contratado com cor verde de coding
+    // Acende o monitor do dev contratado com cor verde de coding e inicia animação
     const monitor = document.getElementById(devMonitorId);
+    const devDesk = document.getElementById(devDeskId);
     if (monitor) {
+        monitor.classList.add('coding');
         monitor.style.backgroundColor = '#10b981';
         monitor.style.boxShadow = '0 0 15px #10b981, 0 0 5px #10b981';
+    }
+    if (devDesk) {
+        devDesk.classList.add('active-coding');
     }
 
     // Posiciona o Dev Avatar na mesa dele e o exibe
@@ -2742,8 +2747,13 @@ async function triggerOfficeAnimation(latestFeedback) {
     
     // Reseta cor do monitor do dev para azul (idle) se contratado
     if (monitor) {
+        monitor.classList.remove('coding');
         monitor.style.backgroundColor = '#06b6d4';
         monitor.style.boxShadow = '0 0 10px #06b6d4, 0 0 4px #06b6d4';
+    }
+    const activeDesk = document.getElementById(devDeskId);
+    if (activeDesk) {
+        activeDesk.classList.remove('active-coding');
     }
 
     isOfficeAnimating = false;
