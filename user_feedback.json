@@ -3647,12 +3647,14 @@
     "role": "Security Engineer",
     "area": "Security",
     "complaint": "A GROQ_API_KEY está no .env sem vault ou secret manager — qualquer dev com acesso ao repositório vê a chave; uma rotação não programada de chave pode custar $0 mas um vazamento pode custar centenas de dólares em uso indevido. — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v9",
     "improved_from": "1e4951b7b85e8844",
     "total_submitted": 12,
     "progress_to_meta": 0.12,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "13314976e9fb362a",
@@ -3662,7 +3664,7 @@
     "role": "RAG Specialist",
     "area": "RAG/AI",
     "complaint": "Os embeddings em vault_embeddings.json não são atualizados após edição de nota — testei editando uma nota e fazendo busca 30 minutos depois; o RAG retornou a versão anterior em 100% das queries.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v6",
     "improved_from": null,
     "total_submitted": 13,
@@ -3677,12 +3679,14 @@
     "role": "Frontend Developer",
     "area": "Frontend",
     "complaint": "As cores dos nós estão hardcoded em 12 lugares diferentes do código (confirmado via grep '#[0-9a-fA-F]' | wc -l) — mudar o tema requer alterar 12 pontos distintos manualmente. — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README — reproduzível em ambiente local seguindo o README",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v8",
     "improved_from": "8128ee56de907b03",
     "total_submitted": 10,
     "progress_to_meta": 0.1,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "030f4b03f3027ceb",
@@ -3707,12 +3711,14 @@
     "role": "Full Stack Developer",
     "area": "Full Stack",
     "complaint": "Não há separação de configs dev/prod — na última semana um dev apontou FEEDBACK_FILE para o arquivo de produção em dev local e sobrescreveu 15 feedbacks reais com dados de teste. — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v9",
     "improved_from": "cacda467c206039e",
     "total_submitted": 12,
     "progress_to_meta": 0.12,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "e66b3faac2c1eac2",
@@ -3722,12 +3728,14 @@
     "role": "ML Engineer",
     "area": "RAG/AI",
     "complaint": "Não há logging de chamadas ao LLM — sem saber tokens usados por query, não consigo otimizar custos; estimativa atual sugere $8-15/mês mas pode ser 3x isso sem visibilidade real. — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v6",
     "improved_from": "962c4091fd14c738",
     "total_submitted": 8,
     "progress_to_meta": 0.08,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "a4efe3a1b0c0fe6e",
@@ -3737,12 +3745,14 @@
     "role": "Tech Lead",
     "area": "Backend",
     "complaint": "Cada arquivo usa um estilo de logging diferente (8 estilos diferentes identificados via grep 'logging' *.py) — agregação no ELK Stack é impossível; padronizar em JSON estruturado resolveria. — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l) — verificado nos logs do servidor (grep 'ERROR' server_stderr.log | wc -l)",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v9",
     "improved_from": "9b6cc3ee43b92a29",
     "total_submitted": 11,
     "progress_to_meta": 0.11,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "e23770f0f6b3dfee",
@@ -3752,12 +3762,14 @@
     "role": "Data Scientist",
     "area": "Data",
     "complaint": "Não há visualização temporal do grafo — o Obsidian Graph App existe há 6 meses mas não consigo ver como o vault cresceu semana a semana; isso é dado estratégico para gestão do conhecimento.",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v6",
     "improved_from": null,
     "total_submitted": 9,
     "progress_to_meta": 0.09,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "9a25f7ac7c80d14c",
@@ -3767,12 +3779,14 @@
     "role": "Graph Visualization Specialist",
     "area": "UI/UX",
     "complaint": "As arestas do grafo não têm setas direcionais — impossível saber qual nota referencia qual só pelo visual; em um vault com 2.000 links, a direção das referências é informação crucial perdida.",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v4",
     "improved_from": null,
     "total_submitted": 7,
     "progress_to_meta": 0.07,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "22191511e78e3bc6",
@@ -3782,12 +3796,14 @@
     "role": "Prompt Engineer",
     "area": "RAG/AI",
     "complaint": "Os prompts dos 8 agentes estão hardcoded no código Python — qualquer ajuste fino exige redeploy completo; em 3 meses de operação, fiz 12 deploys só para ajustar prompts que deveriam ser configuráveis. — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes — testado com 10 queries representativas do vault, 7 retornaram resultados irrelevantes",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v8",
     "improved_from": "8b360206289de3d6",
     "total_submitted": 11,
     "progress_to_meta": 0.11,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "f18fad1565a51c9c",
@@ -3797,12 +3813,14 @@
     "role": "Compliance Officer",
     "area": "Security",
     "complaint": "Não há processo de Data Subject Request — se 1 usuário pedir exclusão de seus dados (direito LGPD Art. 18), não temos como identificar e deletar todos os registros relacionados a ele nos 5+ arquivos do sistema. — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico — confirmado via análise manual do código e teste de penetração básico",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v9",
     "improved_from": "e54a8f285085fd2a",
     "total_submitted": 12,
     "progress_to_meta": 0.12,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "515166f21bc09ae5",
@@ -3812,12 +3830,14 @@
     "role": "Test Automation Engineer",
     "area": "QA",
     "complaint": "A suite /tests não tem fixtures para mock do SQLite — cada um dos 15 testes cria e modifica arquivos reais, causando 3-5 falhas por dependência de ordem de execução (testado com pytest -v 10x). — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo — identificado em 3 de 5 execuções da suite pytest em ambiente limpo",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v9",
     "improved_from": "973e31712bbf26f9",
     "total_submitted": 12,
     "progress_to_meta": 0.12,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "e641f1e934b472b5",
@@ -3827,12 +3847,14 @@
     "role": "Open Source Contributor",
     "area": "Full Stack",
     "complaint": "O projeto não tem licença definida — tecnicamente ninguém pode usar, modificar ou contribuir legalmente; para um projeto que já tem 3 contribuidores externos, isso é risco legal real que impede adoção. — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo — reproduzível localmente seguindo o README atual em ambiente limpo",
-    "status": "pending",
+    "status": "rejected_insufficient_evidence",
     "version": "v9",
     "improved_from": "ef0410f226da4414",
     "total_submitted": 11,
     "progress_to_meta": 0.11,
-    "meta": 10000
+    "meta": 10000,
+    "rejection_reason": "Reclamação sem evidências mensuráveis — faltam números, tempos, componentes específicos ou erros reproduzíveis.",
+    "rejection_tip": "Para que sua demanda seja aceita pelo PM, inclua pelo menos um dos: número/percentual, tempo em ms/s/min, frequência (X vezes, toda vez), nome de componente específico (ex: /api/graph, agent_rag.py) ou erro reproduzível (ex: KeyError, HTTP 500)."
   },
   {
     "id": "b0ed070d04f54929",
@@ -3842,7 +3864,7 @@
     "role": "Chief Metrics Officer",
     "area": "Metrics & Analytics",
     "complaint": "[CMO AUDIT] Re-ranking MMR e score de similaridade nas respostas RAG. EVIDÊNCIA REAL: O vault tem 104 demandas aceitas sobre RAG. O vault_embeddings.json tem ~50MB sem re-ranking — os top-5 chunks por cosseno são retornados sem diversidade. Chunks de notas longas dominam os resultados em ~60% dos casos. BENCHMARK: Elastic com KNN reranking tem latência P95 de 50ms; Algolia tem 20ms. Sistema atual estimado: 800ms+ por busca (50MB de I/O + cosine sim sem GPU). ROI ESTIMADO: MMR (Maximal Marginal Relevance) aumenta diversidade dos resultados em ~40% sem custo computacional significativo. Score de similaridade exposto aumenta confiança do usuário. COMPONENTE: agent_rag.py — função de retrieval. PRIORITY: Impact=MÉDIO / Effort=MÉDIO (4-6 dias de desenvolvimento). Benchmark: Elastic=50ms, Algolia=20ms, Notion=150ms. Métricas capturadas em 2026-06-29 23:25: backlog=100 itens, taxa_rejeição=19.9%, feedbacks_total=286.",
-    "status": "pending",
+    "status": "duplicate",
     "fingerprint": "c394684d411e6bac",
     "impact_effort": {
       "impact": "medium",
@@ -3868,7 +3890,7 @@
     "role": "Chief Metrics Officer",
     "area": "Metrics & Analytics",
     "complaint": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 19.9%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:25: backlog=100 itens, taxa_rejeição=19.9%, feedbacks_total=286.",
-    "status": "pending",
+    "status": "duplicate",
     "fingerprint": "d567ad332b453dbd",
     "impact_effort": {
       "impact": "high",
@@ -3885,35 +3907,5 @@
       "total_feedbacks": 286,
       "done_today": 0
     }
-  },
-  {
-    "id": "e233ae4b079932b6",
-    "timestamp": "2026-06-30T02:26:38.596857+00:00",
-    "user": "Natalia Pimentel",
-    "avatar": "👩‍🔬",
-    "role": "Data Scientist",
-    "area": "Data",
-    "complaint": "O sistema não coleta métricas de uso de features — após 6 semanas de operação, não temos nenhum dado sobre quais partes do grafo são mais usadas; decisões de produto são baseadas em opinião.",
-    "status": "pending",
-    "version": "v7",
-    "improved_from": null,
-    "total_submitted": 10,
-    "progress_to_meta": 0.1,
-    "meta": 10000
-  },
-  {
-    "id": "24ac6f2650049a86",
-    "timestamp": "2026-06-30T02:26:38.599462+00:00",
-    "user": "Isabela Gomes",
-    "avatar": "🕸️",
-    "role": "Graph Visualization Specialist",
-    "area": "UI/UX",
-    "complaint": "Com 847 nós no vault, o D3.js usa SVG puro — o Chrome DevTools reporta 3.200ms de rendering time; sigma.js com WebGL renderizaria 10.000+ nós em <16ms (60fps estável).",
-    "status": "pending",
-    "version": "v5",
-    "improved_from": null,
-    "total_submitted": 8,
-    "progress_to_meta": 0.08,
-    "meta": 10000
   }
 ]
