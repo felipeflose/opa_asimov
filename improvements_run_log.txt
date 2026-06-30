@@ -893,3 +893,23 @@
 [2026-06-29 23:38:30] [AUTO-IMPROVEMENT] Aplicada: KAN-144 - O fluxo de indexação do vault não tem testes de integração
 
 [2026-06-29 23:38:36] [AUTO-IMPROVEMENT] Aplicada: KAN-142 - O obsidian_graph.json não tem schema versionado — na última
+
+[2026-06-29 23:43:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (6/10)): Export do grafo como mindmap interativo em PDF com links clicáveis
+
+[2026-06-29 23:45:22] [AUTO-IMPROVEMENT] Aplicada: KAN-226 - Aumentar cobertura de testes agent_core e agent_rag
+
+[2026-06-29 23:45:24] [AUTO-IMPROVEMENT] Aplicada: KAN-225 - Implementar Logging estruturado com Trace ID
+
+[2026-06-29 23:45:25] [AUTO-IMPROVEMENT] Aplicada: KAN-228 - Implementar rate limiting no endpoint /api/ask
+
+[2026-06-29 23:45:27] [AUTO-IMPROVEMENT] Aplicada: KAN-224 - Validação de schema JSON em scripts de I/O
+
+[2026-06-29 23:45:31] [AUTO-IMPROVEMENT] Aplicada: KAN-230 - Adicionar endpoint /api/health/db para verificar SQLite
+
+[2026-06-29 23:45:57] [AUTO-IMPROVEMENT] Aplicada: KAN-227 - Re-ranking MMR e similaridade em RAG
+
+[2026-06-29 23:45:59] [AUTO-IMPROVEMENT] Aplicada: KAN-223 - Filtros inacessíveis em telas pequenas
+
+[2026-06-29 23:46:13] [AUTO-IMPROVEMENT] Aplicada: KAN-229 - Implementar comando /status no bot do Telegram
+
+[2026-06-29 23:46:14] [AUTO-IMPROVEMENT] Aplicada: KAN-222 - Implementar ambiente de staging isolado
