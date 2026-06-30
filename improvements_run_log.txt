@@ -699,3 +699,21 @@
 [2026-06-29 23:03:10] [AUTO-IMPROVEMENT] Aplicada: KAN-96 - [ÉPICO] Performance
 
 [2026-06-29 23:03:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (5/10)): Modo 'Sala de Estudo' colaborativa: múltiplos usuários exploram o mesmo grafo em
+
+[2026-06-29 23:06:14] [AUTO-IMPROVEMENT] Aplicada: KAN-128 - Não há mini-mapa de navegação — em vault com 847 nós em
+
+[2026-06-29 23:06:15] [AUTO-IMPROVEMENT] Aplicada: KAN-125 - O server.log mistura INFO, DEBUG e ERROR em texto livre sem
+
+[2026-06-29 23:06:23] [AUTO-IMPROVEMENT] Aplicada: KAN-126 - O bot do Telegram não coleta feedback pós-resposta (thumbs
+
+[2026-06-29 23:06:24] [AUTO-IMPROVEMENT] Aplicada: KAN-130 - Não há avaliação de qualidade de prompts — mudamos o system
+
+[2026-06-29 23:06:24] [AUTO-IMPROVEMENT] Aplicada: KAN-132 - Com 300+ nós no vault, os labels se sobrepõem em 60-80% da
+
+[2026-06-29 23:06:31] [AUTO-IMPROVEMENT] Aplicada: KAN-131 - Os inputs do painel admin não têm labels associadas (<label
+
+[2026-06-29 23:06:31] [AUTO-IMPROVEMENT] Aplicada: KAN-129 - O SQLite não tem índices nas colunas de busca — uma query
+
+[2026-06-29 23:06:46] [AUTO-IMPROVEMENT] Aplicada: KAN-133 - O /api/graph reconstrói o JSON completo a cada request sem
+
+[2026-06-29 23:07:22] [AUTO-IMPROVEMENT] Aplicada: KAN-127 - O obsidian_graph.json de 485KB é carregado inteiro a cada
