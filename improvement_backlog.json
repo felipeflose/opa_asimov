@@ -2083,5 +2083,43 @@
     "epic_area": "Arquitetura",
     "created_at": "2026-06-29T23:07:46.782812",
     "completed_at": null
+  },
+  {
+    "id": "KAN-167",
+    "title": "Os logs não têm trace ID correlacionando requests entre os",
+    "description": "Os logs não têm trace ID correlacionando requests entre os agentes — para rastrear 1 bug no RAG, analisei 3 arquivos de log diferentes por 40 minutos sem conseguir correlacionar a sessão completa.",
+    "details": "Gerado via feedback de Amanda Ribeiro (Observability Engineer)",
+    "motivation_justification": "Os logs não têm trace ID correlacionando requests entre os agentes — para rastrear 1 bug no RAG, analisei 3 arquivos de log diferentes por 40 minutos sem conseguir correlacionar a sessão completa.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "2cb0e8b32fba",
+    "source_user": "Amanda Ribeiro",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:07:51.568734",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-168",
+    "title": "O obsidian_graph.json não tem schema versionado — na última",
+    "description": "O obsidian_graph.json não tem schema versionado — na última atualização um campo mudou de 'link' para 'links' (array) e 2 consumers quebraram silenciosamente sem nenhum aviso de breaking change.",
+    "details": "Gerado via feedback de Thiago Nascimento (Data Engineer)",
+    "motivation_justification": "O obsidian_graph.json não tem schema versionado — na última atualização um campo mudou de 'link' para 'links' (array) e 2 consumers quebraram silenciosamente sem nenhum aviso de breaking change.",
+    "category": "Arquitetura",
+    "status": "todo",
+    "priority": "medium",
+    "difficulty": "medium",
+    "impact": "medium",
+    "qualified": true,
+    "fingerprint": "97f882a20dc9",
+    "source_user": "Thiago Nascimento",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:07:53.380055",
+    "completed_at": null
   }
 ]

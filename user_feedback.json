@@ -1597,7 +1597,7 @@
     "role": "Data Engineer",
     "area": "Data",
     "complaint": "O obsidian_graph.json não tem schema versionado — na última atualização um campo mudou de 'link' para 'links' (array) e 2 consumers quebraram silenciosamente sem nenhum aviso de breaking change.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v3",
     "improved_from": null,
     "total_submitted": 4,
