@@ -1798,5 +1798,43 @@
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:04:08.756-0300",
     "completed_at": null
+  },
+  {
+    "id": "KAN-223",
+    "title": "Filtros inacessíveis em telas pequenas",
+    "description": "As últimas opções de filtro na barra lateral são inacessíveis em telas de 1280px ou menores devido à falta de scroll, afetando 35% do tráfego mobile.",
+    "details": "Gerado via feedback de Aline Rodrigues (UI Designer)",
+    "motivation_justification": "A barra lateral de filtros em telas 1280px ou menores perde as 4 últimas opções de filtro abaixo da dobra — sem scroll, essas opções ficam inacessíveis para 35% do tráfego mobile.",
+    "category": "UI/UX",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "040f2789c4c8",
+    "source_user": "Aline Rodrigues",
+    "epic_key": "KAN-99",
+    "epic_area": "UI/UX",
+    "created_at": "2026-06-29T23:42:43.045376",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-224",
+    "title": "Validação de schema JSON em scripts de I/O",
+    "description": "Implementar validação de schema para dados JSON lidos e escritos, prevenindo entradas malformadas e erros KeyError no PM Agent.",
+    "details": "Gerado via feedback de Thiago Nascimento (Data Engineer)",
+    "motivation_justification": "Os scripts leem e escrevem JSON direto sem validação de schema — encontrei 3 entradas malformadas no user_feedback.json hoje que causaram KeyError silencioso no PM Agent.",
+    "category": "RAG/AI",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "c1c395b8e981",
+    "source_user": "Thiago Nascimento",
+    "epic_key": "KAN-98",
+    "epic_area": "RAG/AI",
+    "created_at": "2026-06-29T23:42:45.861945",
+    "completed_at": null
   }
 ]
