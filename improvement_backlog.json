@@ -1988,5 +1988,24 @@
     "epic_area": "RAG/AI",
     "created_at": "2026-06-29T23:14:45.837654",
     "completed_at": null
+  },
+  {
+    "id": "KAN-185",
+    "title": "Incompatibilidade SQLite Cloud",
+    "description": "SQLite é incompatível com multi-instância cloud, exigindo migração para PostgreSQL para escalabilidade horizontal",
+    "details": "Gerado via feedback de Henrique Monteiro (Cloud Architect)",
+    "motivation_justification": "O SQLite é incompatível com multi-instância cloud — qualquer tentativa de escalar horizontalmente resultará em corrupção de dados; migração para PostgreSQL é pré-requisito para qualquer escala. — medido via 'docker stats' e 'ls -lh' dos arquivos de log",
+    "category": "Arquitetura",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "hard",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "9791f5835ca2",
+    "source_user": "Henrique Monteiro",
+    "epic_key": "KAN-101",
+    "epic_area": "Arquitetura",
+    "created_at": "2026-06-29T23:14:56.012016",
+    "completed_at": null
   }
 ]
