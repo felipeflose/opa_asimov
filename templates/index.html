@@ -639,18 +639,32 @@
                 <!-- SALA 1: SUPORTE TI & SERVER ROOM (Clientes) -->
                 <div class="office-room" id="room-it" style="position: absolute; top: 20px; left: 20px; width: 230px; height: 150px; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 16px; background: rgba(239, 68, 68, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
                     <span style="font-weight: 800; color: #ef4444; font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(239,68,68,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">🏢 SUPORTE TI & SERVER ROOM</span>
-                    <div style="display: flex; gap: 10px; justify-content: space-between; align-items: center; height: 85px;">
+                    <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center; height: 85px;">
                         <!-- Balcão de Atendimento -->
-                        <div id="desk-reception" style="width: 70px; height: 50px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                        <div id="desk-reception" style="width: 60px; height: 50px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
                             <div style="font-size: 0.45rem; color: #fca5a5; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">SUPORTE</div>
                             <div style="width: 25px; height: 18px; background: #1e293b; border-radius: 2px; margin-top: 4px; border: 1px solid #475569; position: relative; display: flex; align-items: center; justify-content: center;">
                                 <div style="width: 15px; height: 1px; background: #06b6d4; box-shadow: 0 0 4px #06b6d4;"></div>
                             </div>
                         </div>
+
+                        <!-- Mesas de Clientes / Suporte -->
+                        <div style="display: flex; gap: 6px;">
+                            <div class="client-desk-unit" id="desk-client-0" style="width: 32px; height: 45px; border: 1px solid rgba(255,255,255,0.06); background: rgba(15,23,42,0.4); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.35rem; color: var(--text-muted); position: relative;">
+                                <span style="width: 14px; height: 2px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                                Desk 1
+                                <div class="desk-chair" style="position: absolute; bottom: -5px; width: 10px; height: 10px; border-radius: 50%; background: #334155; border: 1px solid #475569;"></div>
+                            </div>
+                            <div class="client-desk-unit" id="desk-client-1" style="width: 32px; height: 45px; border: 1px solid rgba(255,255,255,0.06); background: rgba(15,23,42,0.4); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.35rem; color: var(--text-muted); position: relative;">
+                                <span style="width: 14px; height: 2px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                                Desk 2
+                                <div class="desk-chair" style="position: absolute; bottom: -5px; width: 10px; height: 10px; border-radius: 50%; background: #334155; border: 1px solid #475569;"></div>
+                            </div>
+                        </div>
                         
                         <!-- Racks de Servidor TechFuse -->
-                        <div style="display: flex; gap: 6px;">
-                            <div style="width: 42px; height: 75px; background: #090d16; border: 2px solid #1e293b; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-around; padding: 4px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.6);">
+                        <div style="display: flex; gap: 4px;">
+                            <div style="width: 36px; height: 75px; background: #090d16; border: 2px solid #1e293b; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-around; padding: 4px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.6);">
                                 <div style="border-bottom: 1px solid #1e293b; height: 12px; display: flex; align-items: center; justify-content: center;">
                                     <span class="server-led green"></span><span class="server-led red"></span><span class="server-led blue"></span>
                                 </div>
@@ -661,17 +675,6 @@
                                     <span class="server-led red"></span><span class="server-led blue"></span><span class="server-led green"></span>
                                 </div>
                             </div>
-                            <div style="width: 42px; height: 75px; background: #090d16; border: 2px solid #1e293b; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-around; padding: 4px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.6);">
-                                <div style="border-bottom: 1px solid #1e293b; height: 12px; display: flex; align-items: center; justify-content: center;">
-                                    <span class="server-led blue"></span><span class="server-led red"></span><span class="server-led blue"></span>
-                                </div>
-                                <div style="border-bottom: 1px solid #1e293b; height: 12px; display: flex; align-items: center; justify-content: center;">
-                                    <span class="server-led green"></span><span class="server-led green"></span><span class="server-led blue"></span>
-                                </div>
-                                <div style="height: 12px; display: flex; align-items: center; justify-content: center;">
-                                    <span class="server-led blue"></span><span class="server-led green"></span><span class="server-led red"></span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -679,14 +682,29 @@
                 <!-- SALA 2: COFFEE BREAK & RELAX (Copa) -->
                 <div class="office-room" id="room-cafe" style="position: absolute; top: 20px; left: 270px; width: 210px; height: 150px; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 16px; background: rgba(245, 158, 11, 0.015); padding: 12px; box-sizing: border-box; backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
                     <span style="font-weight: 800; color: #f59e0b; font-size: 0.65rem; display: block; border-bottom: 1px solid rgba(245,158,11,0.15); padding-bottom: 4px; margin-bottom: 12px; letter-spacing: 0.5px;">☕ COFFEE BREAK (COPA)</span>
-                    <div style="display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 2px;">
                         <!-- Máquina de café expresso -->
-                        <div style="width: 44px; height: 50px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; position: relative; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                        <div style="width: 36px; height: 50px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; position: relative; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
                             ☕
                             <div class="steam" style="position: absolute; top: -14px; font-size: 0.6rem; pointer-events: none; opacity: 0.8;">♨️</div>
                         </div>
+
+                        <!-- Mesas de Clientes Lounge -->
+                        <div style="display: flex; gap: 6px;">
+                            <div class="client-desk-unit" id="desk-client-2" style="width: 32px; height: 45px; border: 1px solid rgba(255,255,255,0.06); background: rgba(15,23,42,0.4); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.35rem; color: var(--text-muted); position: relative;">
+                                <span style="width: 14px; height: 2px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                                Lng 1
+                                <div class="desk-chair" style="position: absolute; bottom: -5px; width: 10px; height: 10px; border-radius: 50%; background: #334155; border: 1px solid #475569;"></div>
+                            </div>
+                            <div class="client-desk-unit" id="desk-client-3" style="width: 32px; height: 45px; border: 1px solid rgba(255,255,255,0.06); background: rgba(15,23,42,0.4); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.35rem; color: var(--text-muted); position: relative;">
+                                <span style="width: 14px; height: 2px; background: #475569; margin-bottom: 4px; border-radius: 1px;"></span>
+                                Lng 2
+                                <div class="desk-chair" style="position: absolute; bottom: -5px; width: 10px; height: 10px; border-radius: 50%; background: #334155; border: 1px solid #475569;"></div>
+                            </div>
+                        </div>
+
                         <!-- Sofá moderno -->
-                        <div style="width: 100px; height: 38px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.52rem; color: #fbbf24; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">🛋️ Sofá Soft</div>
+                        <div style="width: 65px; height: 38px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.45rem; color: #fbbf24; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">🛋️ Sofá</div>
                     </div>
                 </div>
                 
