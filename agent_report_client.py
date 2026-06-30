@@ -632,4 +632,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys, time
+    if "--daemon" in sys.argv:
+        logging.info("🧑‍💼 [RAFAEL AUDITORIA] Iniciando no modo daemon (sprints de 120s)...")
+        while True:
+            try:
+                main()
+            except Exception as e:
+                logging.error(f"Erro no loop do Rafael Auditoria: {e}")
+            time.sleep(120)
+    else:
+        main()

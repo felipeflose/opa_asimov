@@ -3,6 +3,7 @@ import json
 import re
 import logging
 import requests
+from typing import Optional
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 
@@ -74,7 +75,7 @@ class JiraClient:
             logging.warning(f"Erro ao buscar épicos no Jira: {e}")
         return []
 
-    def _create_epic(self, categoria: str) -> str | None:
+    def _create_epic(self, categoria: str) -> Optional[str]:
         """Tenta criar um Epic no Jira. Retorna a key ou None."""
         url = f"{self.host}/rest/api/3/issue"
         payload = {

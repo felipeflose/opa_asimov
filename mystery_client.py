@@ -364,4 +364,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    if "--daemon" in sys.argv:
+        logging.info("🐒 [CHAOS MONKEY] Iniciando no modo daemon (sprints de 5 minutos)...")
+        while True:
+            try:
+                main()
+            except Exception as e:
+                logging.error(f"Erro no loop do Chaos Monkey: {e}")
+            time.sleep(300)
+    else:
+        main()

@@ -1,5 +1,22 @@
 [
   {
+    "id": "CHAOS-20260629225721",
+    "title": "Dashboard semanal enviado por email com estatísticas de aprendizado e recomendações",
+    "description": "[CHAOS MONKEY] Ideia revolucionária aprovada por votação do time.\nDevs: 8/10 | PMs: 2/3\n\nIdeia completa: Dashboard semanal enviado por email com estatísticas de aprendizado e recomendações",
+    "status": "todo",
+    "priority": "ZERO",
+    "category": "Inovação",
+    "difficulty": "high",
+    "impact": "high",
+    "source": "chaos_monkey",
+    "created_at": "2026-06-29T22:57:21.349263",
+    "vote_summary": {
+      "devs_yes": 8,
+      "pms_yes": 2,
+      "approved_at": "2026-06-29T22:57:21.349265"
+    }
+  },
+  {
     "id": "KAN-95",
     "title": "Não há spans de tracing nas chamadas LLM — impossível saber ",
     "description": "Não há spans de tracing nas chamadas LLM — impossível saber qual etapa do pipeline RAG está causando lentidão.",
