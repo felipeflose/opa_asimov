@@ -1,12 +1,66 @@
 [
   {
+    "id": "KAN-216",
+    "title": "Melhorar representação visual de arestas no grafo",
+    "description": "A espessura das arestas no grafo não reflete a força da conexão, perdendo informação de centralidade em grafos grandes",
+    "details": "Gerado via feedback de Simone Batista (Knowledge Manager)",
+    "motivation_justification": "O grafo mostra todas as arestas com espessura 1px independente da força da conexão — uma nota com 50 links tem a mesma representação visual que uma com 1 link; perdo 100% da informação de centralidade.",
+    "category": "Arquitetura|Visualização de Dados|Performance",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "2452ffb213ea",
+    "source_user": "Simone Batista",
+    "epic_key": "KAN-101",
+    "created_at": "2026-06-29T23:33:30.762-0300",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-215",
+    "title": "Implementar versionamento para API de grafo",
+    "description": "Adicionar versionamento às rotas /api/graph para evitar que mudanças no esquema quebrem consumidores em produção. Sugerido: /api/v1/graph e /api/v2/graph.",
+    "details": "Gerado via feedback de Eduardo Prado (API Specialist)",
+    "motivation_justification": "A API não tem versionamento — mudei o campo 'link' para 'links' (array) no /api/graph e quebraram 3 consumers em produção simultaneamente; /api/v1/graph e /api/v2/graph resolveriam isso.",
+    "category": "Arquitetura",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "cc5ff04d876e",
+    "source_user": "Eduardo Prado",
+    "epic_key": "KAN-101",
+    "created_at": "2026-06-29T23:32:13.740-0300",
+    "completed_at": null
+  },
+  {
+    "id": "KAN-214",
+    "title": "Indexação Vault ignora frontmatter YAML",
+    "description": "A indexação do vault ignora completamente os metadados do frontmatter YAML (author, date, tags, status), resultando na perda de riqueza semântica essencial para o RAG.",
+    "details": "Gerado via feedback de Simone Batista (Knowledge Manager)",
+    "motivation_justification": "A indexação do vault ignora o frontmatter YAML completamente — metadados como 'author', 'date', 'tags' e 'status' são ignorados, perdendo riqueza semântica que melhoraria o RAG em ~30%.",
+    "category": "RAG/AI",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "medium",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "b8b4844609ad",
+    "source_user": "Simone Batista",
+    "epic_key": "KAN-98",
+    "created_at": "2026-06-29T23:32:10.739-0300",
+    "completed_at": null
+  },
+  {
     "id": "KAN-213",
     "title": "Atualizar base Python para evitar quebra de dependências",
     "description": "Mudar FROM python:latest para python:3.11-slim para corrigir falhas silenciosas de dependências e reduzir o tamanho da imagem em 40%",
     "details": "Gerado via feedback de Rafael Barbosa (DevOps Engineer)",
     "motivation_justification": "O Dockerfile usa 'FROM python:latest' — a última quebra de versão (3.11→3.12) causou falha silenciosa em 3 dependências; fixar em python:3.11-slim reduz o tamanho da imagem em 40% também.",
     "category": "DevOps",
-    "status": "todo",
+    "status": "in_progress",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -24,7 +78,7 @@
     "details": "Gerado via feedback de Aline Rodrigues (UI Designer)",
     "motivation_justification": "O botão 'Resetar Grafo' está a apenas 8px do botão 'Deletar Nota' no layout atual — cliquei errado 2 vezes hoje, causando perda de estado; a distância mínima recomendada pelo Fitts's Law é 24px.",
     "category": "UI/UX",
-    "status": "todo",
+    "status": "in_progress",
     "priority": "medium",
     "difficulty": "easy",
     "impact": "medium",
@@ -42,7 +96,7 @@
     "details": "Gerado via feedback de Isabela Gomes (Graph Visualization Specialist)",
     "motivation_justification": "As arestas do grafo não têm setas direcionais — impossível saber qual nota referencia qual só pelo visual; em um vault com 2.000 links, a direção das referências é informação crucial perdida. — medido via DevTools Performance tab com 500+ nós no viewport",
     "category": "Performance",
-    "status": "todo",
+    "status": "in_progress",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -60,7 +114,7 @@
     "details": "Gerado via feedback de Thiago Nascimento (Data Engineer)",
     "motivation_justification": "O vault_embeddings.json contém vetores de 47 notas deletadas há mais de 30 dias (verificado via diff com vault ativo) — embeddings mortos aumentam o tamanho do arquivo em ~4MB desnecessariamente.",
     "category": "RAG/AI",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -69,7 +123,7 @@
     "source_user": "Thiago Nascimento",
     "epic_key": "KAN-98",
     "created_at": "2026-06-29T23:27:35.794-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:31:25.423-0300"
   },
   {
     "id": "KAN-209",
@@ -78,7 +132,7 @@
     "details": "Gerado via feedback de Mariana Costa (RAG Specialist)",
     "motivation_justification": "Os embeddings em vault_embeddings.json não são atualizados após edição de nota — testei editando uma nota e fazendo busca 30 minutos depois; o RAG retornou a versão anterior em 100% das queries.",
     "category": "RAG/AI",
-    "status": "in_progress",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -87,7 +141,7 @@
     "source_user": "Mariana Costa",
     "epic_key": "KAN-98",
     "created_at": "2026-06-29T23:27:32.645-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:31:58.785-0300"
   },
   {
     "id": "KAN-208",
@@ -744,7 +798,7 @@
     "details": "Gerado via feedback de Aline Rodrigues (UI Designer)",
     "motivation_justification": "Os tooltips dos nós do D3.js somem após 800ms (medido via setTimeout debug no browser), antes de eu conseguir ler mais de 10 palavras — impacta 100% dos usuários que exploram o grafo por hover.",
     "category": "UI/UX",
-    "status": "in_progress",
+    "status": "done",
     "priority": "high",
     "difficulty": "medium",
     "impact": "high",
@@ -753,7 +807,7 @@
     "source_user": "Aline Rodrigues",
     "epic_key": "KAN-99",
     "created_at": "2026-06-29T23:12:41.827-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:32:02.546-0300"
   },
   {
     "id": "KAN-171",
@@ -762,7 +816,7 @@
     "details": "Gerado via feedback de Viviane Araujo (Open Source Contributor)",
     "motivation_justification": "O README.md não tem instruções de setup do ambiente de desenvolvimento — passei 2h e 15min descobrindo dependências na força bruta (virtualenv, dotenv, vault path); novas contribuições são bloqueadas por esse atrito.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -771,7 +825,7 @@
     "source_user": "Viviane Araujo",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:10:17.733-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:31:52.022-0300"
   },
   {
     "id": "KAN-170",
@@ -780,7 +834,7 @@
     "details": "Gerado via feedback de Isabela Gomes (Graph Visualization Specialist)",
     "motivation_justification": "O layout de força do D3.js oscila indefinidamente sem convergência — com 500+ nós, o alpha nunca cai abaixo de 0.05 (monitorado via d3.simulation.alpha()) e os nós continuam tremendo mesmo após 10s.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -789,7 +843,7 @@
     "source_user": "Isabela Gomes",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:10:06.145-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:31:45.097-0300"
   },
   {
     "id": "KAN-169",
@@ -1122,7 +1176,7 @@
     "details": "Gerado via feedback de Carlos Mendes (Backend Engineer)",
     "motivation_justification": "O servidor Flask não usa connection pooling no SQLite — nos logs de servidor vejo 'database is locked' em 100% das execuções simultâneas de 2+ agentes, causando HTTP 500 no frontend.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1131,7 +1185,7 @@
     "source_user": "Carlos Mendes",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:54.795-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:32:04.322-0300"
   },
   {
     "id": "KAN-150",
@@ -1140,7 +1194,7 @@
     "details": "Gerado via feedback de Roberto Cardoso (Database Administrator)",
     "motivation_justification": "O SQLite é compartilhado entre agent_core, agent_rag e agent_bot sem serialização — com File Locking desabilitado no NFS, isso corrompe o banco; já vi checksum error em 2 ocasiões.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1149,7 +1203,7 @@
     "source_user": "Roberto Cardoso",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:49.550-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:32:00.672-0300"
   },
   {
     "id": "KAN-149",
@@ -1158,7 +1212,7 @@
     "details": "Gerado via feedback de Aline Rodrigues (UI Designer)",
     "motivation_justification": "Com 300+ nós no vault, os labels se sobrepõem em 60-80% da área visível (testado em viewport 1366x768) — o grafo se torna inutilizável para vaults de médio porte.",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1167,7 +1221,7 @@
     "source_user": "Aline Rodrigues",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:43.305-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:31:31.761-0300"
   },
   {
     "id": "KAN-148",
@@ -1176,7 +1230,7 @@
     "details": "Gerado via feedback de Lucas Rezende (ML Engineer)",
     "motivation_justification": "Não há benchmark de avaliação do RAG — mudei o chunking de 512 para 256 tokens e não tenho como saber se melhorou ou piorou; opero sem nenhuma métrica de qualidade (MRR, NDCG, Hit@K).",
     "category": "Arquitetura",
-    "status": "in_progress",
+    "status": "done",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1185,7 +1239,7 @@
     "source_user": "Lucas Rezende",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:06:37.813-0300",
-    "completed_at": null
+    "completed_at": "2026-06-29T23:31:38.575-0300"
   },
   {
     "id": "KAN-147",
@@ -1194,7 +1248,7 @@
     "details": "Gerado via feedback de Tiago Borges (Prompt Engineer)",
     "motivation_justification": "Não há avaliação de qualidade de prompts — mudamos o system prompt do agent_core.py na semana passada e só saberemos se melhorou quando o usuário reclamar; sem evals automatizados, operamos às cegas.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_progress",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1212,7 +1266,7 @@
     "details": "Gerado via feedback de Felipe Fróes (Product Owner)",
     "motivation_justification": "Sem roadmap visual, em 2 meses diferentes devs implementaram cache (agent_rag.py) e sem-cache (agent_core.py) para o mesmo problema — trabalho duplicado estimado em 3 dias de desenvolvimento.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_progress",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1230,7 +1284,7 @@
     "details": "Gerado via feedback de Isabela Gomes (Graph Visualization Specialist)",
     "motivation_justification": "Não há mini-mapa de navegação — em vault com 847 nós em área de 8.000x8.000px, o usuário perde a localização depois de 3 interações de zoom; um mini-mapa de 200x150px resolveria completamente.",
     "category": "Arquitetura",
-    "status": "todo",
+    "status": "in_progress",
     "priority": "medium",
     "difficulty": "medium",
     "impact": "medium",
@@ -1743,60 +1797,6 @@
     "source_user": "Camila Duarte",
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:03:41.065-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-116",
-    "title": "O SQLite não tem índices nas colunas de busca — uma query",
-    "description": "O SQLite não tem índices nas colunas de busca — uma query LIKE '%termo%' em tabela com 5.000 registros leva 340ms (medido via EXPLAIN QUERY PLAN); com índice trigram seria <10ms.",
-    "details": "Gerado via feedback de Roberto Cardoso (Database Administrator)",
-    "motivation_justification": "O SQLite não tem índices nas colunas de busca — uma query LIKE '%termo%' em tabela com 5.000 registros leva 340ms (medido via EXPLAIN QUERY PLAN); com índice trigram seria <10ms.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "7b1cb8101551",
-    "source_user": "Roberto Cardoso",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:03:31.025-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-115",
-    "title": "O agent_rag.py não tem circuit breaker para falhas do Groq",
-    "description": "O agent_rag.py não tem circuit breaker para falhas do Groq — quando a API ficou offline por 8 minutos na semana passada, todas as queries empilharam timeout de 30s, bloqueando 4 threads Flask.",
-    "details": "Gerado via feedback de Lucas Rezende (ML Engineer)",
-    "motivation_justification": "O agent_rag.py não tem circuit breaker para falhas do Groq — quando a API ficou offline por 8 minutos na semana passada, todas as queries empilharam timeout de 30s, bloqueando 4 threads Flask.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "ba513e7823f7",
-    "source_user": "Lucas Rezende",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:03:21.555-0300",
-    "completed_at": null
-  },
-  {
-    "id": "KAN-114",
-    "title": "O obsidian_graph.json de 485KB é carregado inteiro a cada",
-    "description": "O obsidian_graph.json de 485KB é carregado inteiro a cada request GET /api/graph — com 10 usuários simultâneos, isso é 4.85MB de I/O de disco por segundo desnecessariamente.",
-    "details": "Gerado via feedback de Juliana Moreira (Full Stack Developer)",
-    "motivation_justification": "O obsidian_graph.json de 485KB é carregado inteiro a cada request GET /api/graph — com 10 usuários simultâneos, isso é 4.85MB de I/O de disco por segundo desnecessariamente.",
-    "category": "Arquitetura",
-    "status": "todo",
-    "priority": "medium",
-    "difficulty": "medium",
-    "impact": "medium",
-    "qualified": true,
-    "fingerprint": "da860f3da97d",
-    "source_user": "Juliana Moreira",
-    "epic_key": "KAN-101",
-    "created_at": "2026-06-29T23:03:14.779-0300",
     "completed_at": null
   }
 ]

@@ -853,3 +853,23 @@
 [2026-06-29 23:31:11] [AUTO-IMPROVEMENT] Aplicada: KAN-172 - Latência de Tooltips D3.js
 
 [2026-06-29 23:31:15] [AUTO-IMPROVEMENT] Aplicada: KAN-151 - O servidor Flask não usa connection pooling no SQLite — nos
+
+[2026-06-29 23:33:16] [CHAOS-MONKEY] IDEIA REPROVADA (devs insuficientes (4/10)): Integração com GitHub: notas de código linkadas automaticamente a commits releva
+
+[2026-06-29 23:34:14] [AUTO-IMPROVEMENT] Aplicada: KAN-146 - Sem roadmap visual, em 2 meses diferentes devs
+
+[2026-06-29 23:34:14] [AUTO-IMPROVEMENT] Aplicada: KAN-211 - Criar visualizador de roadmap e evolução do backlog
+
+[2026-06-29 23:34:20] [AUTO-IMPROVEMENT] Aplicada: KAN-213 - Atualizar base Python para evitar quebra de dependências
+
+[2026-06-29 23:34:21] [AUTO-IMPROVEMENT] Aplicada: KAN-216 - Melhorar representação visual de arestas no grafo
+
+[2026-06-29 23:34:56] [AUTO-IMPROVEMENT] Aplicada: KAN-147 - Não há avaliação de qualidade de prompts — mudamos o system
+
+[2026-06-29 23:35:00] [AUTO-IMPROVEMENT] Aplicada: KAN-212 - Ajustar espaçamento entre botões Resetar e Deletar Nota
+
+[2026-06-29 23:35:02] [AUTO-IMPROVEMENT] Aplicada: KAN-215 - Implementar versionamento para API de grafo
+
+[2026-06-29 23:35:05] [AUTO-IMPROVEMENT] Aplicada: KAN-214 - Indexação Vault ignora frontmatter YAML
+
+[2026-06-29 23:35:07] [AUTO-IMPROVEMENT] Aplicada: KAN-145 - Não há mini-mapa de navegação — em vault com 847 nós em

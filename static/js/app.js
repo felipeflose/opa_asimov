@@ -2112,6 +2112,16 @@ async function loadOfficeData() {
         renderDevs(devCountVal, data.dev_status);
         renderPMs(pmCountVal);
         renderQAs(qaCountVal);
+
+        // Posiciona clientes ociosos nas suas respectivas mesas físicas
+        const c0 = document.getElementById('client-static-0');
+        const c1 = document.getElementById('client-static-1');
+        const c2 = document.getElementById('client-static-2');
+        const c3 = document.getElementById('client-static-3');
+        if (c0) Object.assign(c0.style, getCoords('desk-client-2'));
+        if (c1) Object.assign(c1.style, getCoords('desk-client-3'));
+        if (c2) Object.assign(c2.style, getCoords('desk-client-0'));
+        if (c3) Object.assign(c3.style, getCoords('desk-client-1'));
         
         // 2. Renderiza logs do Cliente Oculto
         const mysteryContainer = document.getElementById('mystery-logs-container');
