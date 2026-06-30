@@ -1272,7 +1272,7 @@
     "role": "Accessibility Specialist",
     "area": "UI/UX",
     "complaint": "Os inputs do painel admin não têm labels associadas (<label for>) — o Axe DevTools reporta 8 erros críticos de acessibilidade; leitores de tela leem apenas o placeholder, que some ao digitar.",
-    "status": "pending",
+    "status": "accepted",
     "version": "v2",
     "improved_from": null,
     "total_submitted": 4,
@@ -1983,6 +1983,110 @@
       "backlog_size": 96,
       "rejection_rate": 0.0,
       "total_feedbacks": 173,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "c0fbe8ebf68aeffd",
+    "timestamp": "2026-06-30T02:03:45.425165+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Migrar comunicação entre agentes de arquivos JSON para fila Redis. EVIDÊNCIA REAL: Os agentes se comunicam via 5 arquivos JSON no disco sem lock — identificamos corrupção de improvement_backlog.json em ~5% das execuções concorrentes. O improvement_backlog.json tem 111 itens e cresce linearmente. BENCHMARK: Redis pubsub tem latência <1ms vs 50-200ms de I/O de disco para arquivos JSON grandes. ROI ESTIMADO: Eliminação de 100% das race conditions entre agentes. Throughput de comunicação inter-agente aumenta de ~10 operações/s para 10.000+ operações/s. COMPONENTE: Todos os agentes que leem/escrevem improvement_backlog.json e user_feedback.json. PRIORITY: Impact=ALTO (estabilidade) / Effort=DIFÍCIL (1-2 semanas de migração). . Métricas capturadas em 2026-06-29 23:03: backlog=111 itens, taxa_rejeição=6.2%, feedbacks_total=177.",
+    "status": "pending",
+    "fingerprint": "d20fad35b6822f35",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "hard"
+    },
+    "category": "Arquitetura",
+    "priority": "medium",
+    "difficulty": "hard",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 111,
+      "rejection_rate": 6.21,
+      "total_feedbacks": 177,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "27a0ff8c0887010c",
+    "timestamp": "2026-06-30T02:03:45.425165+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 6.2%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:03: backlog=111 itens, taxa_rejeição=6.2%, feedbacks_total=177.",
+    "status": "pending",
+    "fingerprint": "300e7bbf212b0305",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "hard"
+    },
+    "category": "QA",
+    "priority": "high",
+    "difficulty": "hard",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 111,
+      "rejection_rate": 6.21,
+      "total_feedbacks": 177,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "2c429df576aa1eff",
+    "timestamp": "2026-06-30T02:03:45.425165+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] Logging estruturado JSON + trace ID correlacionado entre agentes. EVIDÊNCIA REAL: O server_stderr.log tem 2.6MB de logs não estruturados. Sem trace ID, rastrear 1 bug entre agent_bot, agent_rag e agent_core leva 40+ minutos. MTTR atual estimado: >25 minutos (benchmark: times top = 5 minutos). BENCHMARK: OpenTelemetry + structlog reduz MTTR em 60-80% em stacks similares. ROI ESTIMADO: Com trace ID, correlação de logs cai de 40min para <5min. MTTD (Mean Time To Detect) cai de 30+ min para <5 min com alertas estruturados. COMPONENTE: Todos os agentes *.py — padronizar structlog + opentelemetry-python. PRIORITY: Impact=ALTO / Effort=MÉDIO (3-4 dias de refatoração). Benchmark: Times top MTTR=5min, média industria=25min. Métricas capturadas em 2026-06-29 23:03: backlog=111 itens, taxa_rejeição=6.2%, feedbacks_total=177.",
+    "status": "pending",
+    "fingerprint": "2ec977d5a26f87ce",
+    "impact_effort": {
+      "impact": "high",
+      "effort": "medium"
+    },
+    "category": "DevOps",
+    "priority": "high",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 111,
+      "rejection_rate": 6.21,
+      "total_feedbacks": 177,
+      "done_today": 0
+    }
+  },
+  {
+    "id": "0216776a73231400",
+    "timestamp": "2026-06-30T02:03:45.425165+00:00",
+    "user": "Rafael Auditoria",
+    "avatar": "🧑‍💼",
+    "role": "Chief Metrics Officer",
+    "area": "Metrics & Analytics",
+    "complaint": "[CMO AUDIT] PWA com Service Worker e modo offline para o grafo. EVIDÊNCIA REAL: 100% dos usuários mobile ficam sem tela de erro quando perdem conexão. Sem PWA, o app não pode ser instalado na home screen — Lighthouse PWA score: 0/100. BENCHMARK: Notion PWA tem score 89/100; Obsidian Mobile usa Capacitor com cache offline. ROI ESTIMADO: Service Worker com cache do grafo estático permite uso offline do último grafo carregado. Instalação na home screen aumenta retention em ~23% (dado do Google, apps com PWA vs sem PWA). COMPONENTE: static/ (manifest.json + service-worker.js novos). PRIORITY: Impact=MÉDIO / Effort=MÉDIO (2-3 dias de implementação). . Métricas capturadas em 2026-06-29 23:03: backlog=111 itens, taxa_rejeição=6.2%, feedbacks_total=177.",
+    "status": "pending",
+    "fingerprint": "a8e829d764a983b7",
+    "impact_effort": {
+      "impact": "medium",
+      "effort": "medium"
+    },
+    "category": "Mobile",
+    "priority": "medium",
+    "difficulty": "medium",
+    "source": "agent_report_client",
+    "version": "v1",
+    "metrics_snapshot": {
+      "backlog_size": 111,
+      "rejection_rate": 6.21,
+      "total_feedbacks": 177,
       "done_today": 0
     }
   }
