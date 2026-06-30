@@ -1798,5 +1798,24 @@
     "epic_key": "KAN-101",
     "created_at": "2026-06-29T23:05:24.553-0300",
     "completed_at": "2026-06-29T23:08:02.937-0300"
+  },
+  {
+    "id": "KAN-231",
+    "title": "Aumentar cobertura de testes agent_core e agent_rag",
+    "description": "Elevar a cobertura de testes de 23% para 70% em agent_core e agent_rag. Módulos críticos com 0% de cobertura. Reduzir regressões estimadas de 3-5/mês.",
+    "details": "Gerado via feedback de Rafael Auditoria (Chief Metrics Officer)",
+    "motivation_justification": "[CMO AUDIT] Elevar cobertura de testes de 23% para 70% em agent_core e agent_rag. EVIDÊNCIA REAL: Cobertura atual = 23% (pytest --cov). Taxa de rejeição atual do PM = 36.6%. Benchmark: Times ágeis top têm >82% de first-pass QA rate; industry avg = 65%. Os módulos agent_core.py e agent_rag.py têm 0% de cobertura — são os mais críticos do pipeline. ROI ESTIMADO: Cada bug detectado em teste custa 10x menos que em produção; com 77% do código sem cobertura, estimamos 3-5 regressões/mês chegando ao usuário. COMPONENTE: tests/ + agent_core.py + agent_rag.py. PRIORITY: Impact=ALTO / Effort=DIFÍCIL (2-3 semanas para cobertura abrangente). Benchmark: Times ágeis top=82%, média industria=65%. Métricas capturadas em 2026-06-29 23:45: backlog=100 itens, taxa_rejeição=36.6%, feedbacks_total=399.",
+    "category": "QA",
+    "status": "in_progress",
+    "priority": "high",
+    "difficulty": "hard",
+    "impact": "high",
+    "qualified": true,
+    "fingerprint": "6b66e8a94ed5",
+    "source_user": "Rafael Auditoria",
+    "epic_key": "KAN-103",
+    "epic_area": "QA",
+    "created_at": "2026-06-29T23:46:30.132313",
+    "completed_at": null
   }
 ]
